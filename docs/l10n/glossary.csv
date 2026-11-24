@@ -1,0 +1,259 @@
+term_id,en,vi,part_of_speech,definition_en,notes,do_not_translate,es,pt-BR,ja,ko,zh-Hant,id,de,fr
+"brand_remindme","RemindMe","RemindMe","proper noun","App name.","Working name, not final (open question in docs/STATE.md). Never translate, transliterate or inflect; keep Latin script in ja/ko/zh-Hant.","yes","RemindMe","RemindMe","RemindMe","RemindMe","RemindMe","RemindMe","RemindMe","RemindMe"
+"plan_plus","Plus","Plus","proper noun","Name of the paid plan.","Always capitalized. vi: 'gói Plus'. Never 'Pro', 'Premium' or 'Plus+'.","yes","Plus","Plus","Plus","Plus","Plus","Plus","Plus","Plus"
+"plan_free","Free","Free","proper noun","Name of the free plan (the plan name, not the adjective).","Proposed DNT so Free and Plus read as a pair (pricing doc uses 'gói Free'). The adjective 'free' (no cost) is translated: see bill_free_adj. PO to confirm per locale; ja/ko/zh-Hant/de translators may argue for a translated plan name.","yes (proposed)","Free","Free","Free","Free","Free","Free","Free","Free"
+"brand_apple_watch","Apple Watch","Apple Watch","proper noun","Apple's smartwatch.","Apple trademark. Never translate or pluralize.","yes","Apple Watch","Apple Watch","Apple Watch","Apple Watch","Apple Watch","Apple Watch","Apple Watch","Apple Watch"
+"brand_wear_os","Wear OS","Wear OS","proper noun","Google's smartwatch platform.","Keep the space and capital OS.","yes","Wear OS","Wear OS","Wear OS","Wear OS","Wear OS","Wear OS","Wear OS","Wear OS"
+"brand_ms_todo","Microsoft To Do","Microsoft To Do","proper noun","Microsoft's task app; a migration source.","Product name has a space: 'To Do'.","yes","Microsoft To Do","Microsoft To Do","Microsoft To Do","Microsoft To Do","Microsoft To Do","Microsoft To Do","Microsoft To Do","Microsoft To Do"
+"brand_google_calendar","Google Calendar","Lịch Google","proper noun","Google's calendar service (sync integration).","Use Google's own localized product name per locale; do not coin one.","no","Google Calendar","Google Agenda","Google カレンダー","Google 캘린더","Google 日曆","Google Kalender","Google Kalender","Google Agenda"
+"brand_notion","Notion","Notion","proper noun","Third-party notes/database app (integration).","","yes","Notion","Notion","Notion","Notion","Notion","Notion","Notion","Notion"
+"brand_gmail","Gmail","Gmail","proper noun","Google's email service.","Used in email-forwarding setup guides.","yes","Gmail","Gmail","Gmail","Gmail","Gmail","Gmail","Gmail","Gmail"
+"brand_outlook","Outlook","Outlook","proper noun","Microsoft's email service.","Used in email-forwarding setup guides.","yes","Outlook","Outlook","Outlook","Outlook","Outlook","Outlook","Outlook","Outlook"
+"brand_app_store","App Store","App Store","proper noun","Apple's store.","Apple trademark; keep as is in every locale.","yes","App Store","App Store","App Store","App Store","App Store","App Store","App Store","App Store"
+"brand_google_play","Google Play","Google Play","proper noun","Google's store.","Google trademark; keep as is.","yes","Google Play","Google Play","Google Play","Google Play","Google Play","Google Play","Google Play","Google Play"
+"brand_sign_in_apple","Sign in with Apple","Đăng nhập bằng Apple","button","Apple's sign-in button.","Rendered by the system button (ASAuthorizationAppleIDButton), which localizes itself. Never draw or translate it. Same rule for the Google sign-in button.","yes (system-rendered)",,,,,,,,
+"brand_live_activities","Live Activities","Hoạt động trực tiếp","proper noun","iOS feature showing live info on the Lock Screen and Dynamic Island.","Apple localizes this feature name. Copy the exact term from iOS Settings in each locale; vi value to verify on device.","no",,,"ライブアクティビティ",,,,,
+"brand_whisper","PhoWhisper / Whisper","PhoWhisper / Whisper","proper noun","Downloadable on-device speech models.","Keep model names out of main UI (say 'Enhanced recognition'); if shown in details or licenses, never translate.","yes","PhoWhisper / Whisper","PhoWhisper / Whisper","PhoWhisper / Whisper","PhoWhisper / Whisper","PhoWhisper / Whisper","PhoWhisper / Whisper","PhoWhisper / Whisper","PhoWhisper / Whisper"
+"platform_apple_reminders","Reminders","Lời nhắc","proper noun","Apple's built-in Reminders app (comparison/import copy only).","Use Apple's localized app name exactly. Do not use this name for our own feature.","no","Recordatorios","Lembretes","リマインダー","미리 알림","提醒事項","Pengingat","Erinnerungen","Rappels"
+"core_item","item","mục","noun","Any entry in the app: task, event, appointment, booking or habit.","Generic/internal. Prefer the specific word (task, appointment) in UI. vi 'mục', never the loanword 'item'. Count noun in plurals ('Found {count} items').","no",,,,,,,,
+"core_task","task","việc","noun","Something to do, optionally with a due date and reminders.","vi 'việc': short and neutral. Not 'nhiệm vụ' (sounds like an assigned mission) and not 'công việc' (that is the 'Work' list name, see list_work).","no","tarea","tarefa","タスク","할 일",,"tugas","Aufgabe","tâche"
+"core_event","event","sự kiện","noun","Item with a start time, such as a meeting or birthday (kind=event).","Counts toward the appointment limit in the Free plan.","no","evento","evento","イベント","이벤트","活動","acara","Ereignis","événement"
+"core_habit","habit","thói quen","noun","Repeating personal routine, such as drinking water (kind=habit).","Default time mode is floating (follows the user's time zone).","no",,,,,,,,
+"core_list","list","danh sách","noun","User-created group of items (Work, Home...).","Not the checklist inside one item (item_checklist).","no","lista","lista","リスト","목록","列表","daftar","Liste","liste"
+"core_inbox","Inbox","Hộp thư","noun","Default list for items that belong to no list.","AMBIGUITY: UX doc names it 'Hộp thư', which collides with the email-forwarding mailbox and sits next to 'Hộp đề xuất'. Proposal: vi 'Chưa phân loại', en 'Inbox'. PO to decide before S1.","no",,,,,,,,
+"core_suggestions","Suggestions","Hộp đề xuất","noun (screen)","Screen that holds items found by email forwarding or imports that the user has not reviewed.","Named in i18n-l10n.md §8. en 'Suggestions', not 'Inbox' (clash with core_inbox).","no",,,,,,,,
+"core_suggestion","suggestion","đề xuất","noun","One unreviewed candidate item in Suggestions.","vi 'đề xuất', not 'gợi ý' (gợi ý is used for UI hints such as 'Thêm hoạt động').","no",,,,,,,,
+"core_reminder","reminder","nhắc","noun","Alert at a set time (or place) attached to an item.","vi: 'nhắc' in counters, chips and buttons ('7/10 nhắc hôm nay', 'Thêm nhắc'); 'lời nhắc' allowed in full sentences and headings. Do not mix both on one screen.","no","recordatorio","lembrete","リマインダー","미리 알림","提醒","pengingat","Erinnerung","rappel"
+"core_ring","ring","kêu","verb","A reminder fires with sound/vibration.","vi 'kêu' is the docs' word ('Nhắc vẫn kêu đúng giờ'). en 'ring' or 'go off'; avoid 'fire' (developer word).","no",,,,,,,,
+"core_repeat","Repeat","Lặp lại","noun/verb (label)","Rule that makes an item happen again (daily, weekly, lunar...).","'Recurrence' is internal; UI says 'Repeat' like Apple/Google.","no","Repetir","Repetir","繰り返し","반복","重複","Ulangi","Wiederholen","Répéter"
+"core_repeat_never","Never","Không lặp","option","Repeat option: item happens once.","UX chip '🔁 Không lặp'. en option label 'Never' under the 'Repeat' label.","no",,,,,,,,
+"core_series","repeating series","chuỗi lặp","noun","All occurrences generated by one repeat rule.","Do not show bare 'series' in en UI. Paywall says 'repeating reminders' / 'nhắc lặp lại' (key max_recurring_series).","no",,,,,,,,
+"core_occurrence","occurrence","lần","noun","One instance of a repeating item.","Never 'occurrence' in en UI: use 'this one'. vi 'lần' ('chỉ lần này').","no",,,,,,,,
+"core_scope_this","Only this one","Chỉ lần này","option","Edit/delete scope: one occurrence.","","no",,,,,,,,
+"core_scope_future","This and future ones","Lần này và các lần sau","option","Edit/delete scope: this and following occurrences.","","no",,,,,,,,
+"core_scope_all","All repeats","Tất cả các lần","option","Edit/delete scope: whole series.","","no",,,,,,,,
+"core_skip_this","Skip this one","Bỏ qua lần này","button","Exclude one occurrence (exdate).","","no",,,,,,,,
+"core_after_completion","After completion","Sau khi hoàn thành","option","Repeat type: next one is N days after the last was done.","Pair with ICU plural: '{days} days after done' / '{days} ngày sau khi xong'.","no",,,,,,,,
+"core_workdays","workdays","ngày làm việc","noun","Days that are neither weekend nor a public holiday in the chosen holiday country.","Weekend comes from CLDR weekData (not always Sat-Sun).","no","días laborables","dias úteis","平日","평일","工作日","hari kerja","Werktage","jours ouvrés"
+"core_snooze","snooze","hoãn","verb/noun","Postpone a reminder that has already rung.","vi: UX/PRD use 'Hoãn'; iOS Clock in vi uses 'Báo lại'. Keep 'Hoãn' (short, matches docs) and test with users. de 'Schlummern' is the alarm term; translator may prefer 'Später erinnern' for reminders. fr: translator to check platform wording.","no","Posponer","Adiar","スヌーズ","다시 알림","稍後提醒","Tunda","Schlummern",
+"notif_done","Done","Xong","button","Marks the item (or this occurrence) complete. Notification, list and watch action.","vi 'Xong', not 'Hoàn thành' (too long for watch). ≤ 20 chars.","no","Hecho","Concluído","完了","완료","完成","Selesai","Erledigt","Terminé"
+"notif_snooze_10","Snooze 10 min","Hoãn 10 phút","button","Notification action: ring again in 10 minutes.","Number and unit via ICU + duration formatter. Wireframe 'Hoãn 10'' uses a prime sign: do not ship it. ≤ 20 chars.","no",,,,,,,,
+"notif_snooze_1h","Snooze 1 hour","Hoãn 1 giờ","button","Notification action: ring again in 1 hour.","Wireframe 'Hoãn 1h': ship 'Hoãn 1 giờ'. ≤ 20 chars.","no",,,,,,,,
+"notif_open","Open","Mở","button","Opens the item in the app.","","no","Abrir","Abrir","開く","열기","打開","Buka","Öffnen","Ouvrir"
+"notif_open_ticket","Open ticket","Mở vé","button","Opens booking documents (QR, boarding pass) from a travel notification.","From reminder-engine.md §6.","no",,,,,,,,
+"notif_directions","Directions","Chỉ đường","button","Opens the maps app with a route to the venue.","Match the wording of the platform maps app per locale.","no",,,,,,,,
+"notif_remaining_today","{count} more today","Còn {count} lần hôm nay","phrase (ICU plural)","Second line of a repeating reminder notification.","From reminder-engine.md §6. vi/ja/ko/zh-Hant/id have only the 'other' plural form.","no",,,,,,,,
+"notif_rings_again","Rings again in {minutes} min","Sẽ nhắc lại sau {minutes} phút","phrase (ICU plural)","Alarm-style reminder that was not acted on rings again.","Default 5 min, up to 3 times (UX §3.2).","no",,,,,,,,
+"notif_alarm_style","Alarm-style reminder","Nhắc kiểu báo thức","noun","Loud reminder that repeats until acted on.","","no",,,,,,,,
+"notif_notifications","notifications","thông báo","noun","OS notifications.","de: iOS says 'Mitteilungen', Android 'Benachrichtigungen'; follow the platform the string ships on.","no","notificaciones","notificações","通知","알림","通知","notifikasi","Mitteilungen (iOS) / Benachrichtigungen (Android)","notifications"
+"notif_quiet_hours","Quiet hours","Giờ yên lặng","noun (setting)","App-level window when non-urgent reminders stay silent.","Not the OS feature (Focus / Do Not Disturb, vi 'Không làm phiền'); never reuse OS feature names for it.","no",,,,,,,,
+"notif_reliability","Reminder reliability","Độ tin cậy của nhắc","noun (setting)","Settings page with battery and exact-alarm checks.","","no",,,,,,,,
+"notif_test","Send test notification in 1 minute","Gửi thông báo thử sau 1 phút","button","Onboarding check that reminders ring on this phone.","UX §3.1 step 5.","no",,,,,,,,
+"notif_may_not_ring","Reminders may not ring","Nhắc nhở có thể không kêu","phrase (card title)","Warning when notification or exact-alarm permission is missing.","UX §6b. Must be followed by one action that opens the right settings page.","no",,,,,,,,
+"perm_exact_alarm","Alarms & reminders","Báo thức và lời nhắc","noun (Android special access)","Android special access for exact alarms (SCHEDULE_EXACT_ALARM).","Must match the label in Android Settings for each locale. Copy it from a real device; vi value unverified.","no",,,,,,,,
+"perm_battery_opt","battery optimization","tối ưu hóa pin","noun","Android power management that can delay or kill reminders.","OEM labels differ (Xiaomi, Samsung, OPPO...). Guides quote the OEM's own label per locale, taken from screenshots.","no",,,,,,,,
+"time_today","Today","Hôm nay","noun (tab, section)","The current day in the user's current time zone.","Tab name and section header.","no","Hoy","Hoje","今日","오늘","今天","Hari ini","Heute","Aujourd'hui"
+"time_tomorrow","Tomorrow","Ngày mai","noun/adverb","The next day.","es 'mañana' = tomorrow AND morning; never use bare 'mañana' for morning in chips. de 'morgen' (tomorrow) vs 'Morgen' (morning). pt-BR 'amanhã' vs 'manhã'. vi chips may shorten to 'Mai'; NLU accepts 'mai', 'sáng mai'.","no","Mañana","Amanhã","明日","내일","明天","Besok","Morgen","Demain"
+"time_yesterday","Yesterday","Hôm qua","noun/adverb","The previous day.","","no","Ayer","Ontem","昨日","어제","昨天","Kemarin","Gestern","Hier"
+"time_day_after_tomorrow","Day after tomorrow","Ngày kia","noun/adverb","Two days from today.","vi regional: North 'ngày kia', South 'ngày mốt'. UI uses 'ngày kia'; NLU accepts both. North 'ngày kìa' = 3 days out: NLU must confirm with a chip.","no","Pasado mañana","Depois de amanhã","明後日","모레","後天","Lusa","Übermorgen","Après-demain"
+"time_overdue","Overdue","Quá hạn","adjective (section, badge)","Past its due time and not done.","Neutral tone: state, not blame.","no","Vencido","Atrasado","期限切れ","기한 지남","逾期","Terlambat","Überfällig","En retard"
+"time_upcoming","Upcoming","Sắp tới","adjective (section)","Next 3 days on Today; future trips on Trips.","","no",,,,,,,,
+"time_no_time","No time set","Chưa đặt giờ","section header","Items dated today without a time.","UX wireframe says 'KHÔNG GIỜ', which a vi reader can parse as 'không giờ' = 0:00 (midnight). Ship 'Chưa đặt giờ'. Proposed.","no",,,,,,,,
+"time_all_day","All-day","Cả ngày","adjective","Item with a date but no time; stored as date without time zone.","","no","Todo el día","Dia inteiro","終日","하루 종일","全天","Sepanjang hari","Ganztägig","Toute la journée"
+"time_due","Due","Hạn","noun/adjective","Date/time an item should be done by.","vi 'Hạn: {date}'; state label 'Đến hạn'. No 'deadline' loanword in vi UI.","no",,,,,,,,
+"time_starts","Starts","Bắt đầu","label","Start date/time.","","no",,,,,,,,
+"time_ends","Ends","Kết thúc","label","End date/time.","","no",,,,,,,,
+"time_time_zone","time zone","múi giờ","noun","IANA time zone of an item or the user.","Show city/region names from CLDR (e.g. 'Hanoi time'), never raw IANA ids or 'GMT+7' alone.","no","zona horaria","fuso horário","タイムゾーン","시간대","時區","zona waktu","Zeitzone","fuseau horaire"
+"time_home_tz","Home time zone","Múi giờ chính","noun (setting)","User's home time zone; used for daily limits and new items.","Internal name home_tz. vi 'múi giờ nhà' sounds odd: use 'chính'.","no",,,,,,,,
+"time_local_time","local time","giờ địa phương","noun","Time at the place where an event happens.","Pair with the place: '10:30 Hanoi time · 04:30 London time' (i18n-l10n.md §6).","no","hora local","horário local","現地時間","현지 시간","當地時間","waktu setempat","Ortszeit","heure locale"
+"time_floating","Follows current time zone","Theo múi giờ hiện tại","option","Time mode 'floating': rings at the same clock time wherever the user is.","Never show the word 'floating' to users.","no",,,,,,,,
+"time_fixed","Fixed to event time zone","Cố định theo múi giờ sự kiện","option","Time mode 'fixed': tied to the event's time zone.","","no",,,,,,,,
+"time_dst","daylight saving time","giờ mùa hè","noun","Seasonal clock change.","Vietnam has no DST; explain in a short note when shown. en-GB users say 'summer time'.","no","horario de verano","horário de verão","夏時間",,"夏令時間",,"Sommerzeit","heure d'été"
+"time_morning","morning","sáng","noun","Day part.","vi day parts for NLU defaults: sáng ~05-10, trưa ~11-13, chiều ~13-18, tối ~18-22, đêm ~22-04. UI shows times via CLDR, not day-part words.","no",,,,,,,,
+"time_noon","noon / midday","trưa","noun","Day part around 12:00.","vi '12 giờ trưa' = 12:00.","no",,,,,,,,
+"time_afternoon","afternoon","chiều","noun","Day part.","vi '3 giờ chiều' = 15:00.","no",,,,,,,,
+"time_evening","evening","tối","noun","Day part.","vi '8 giờ tối' = 20:00.","no",,,,,,,,
+"time_night","night","đêm","noun","Day part.","vi '12 giờ đêm' is ambiguous (start or end of the day): NLU shows a chip.","no",,,,,,,,
+"time_now","now","bây giờ","adverb","The current moment.","vi: avoid regional 'chừ', 'giờ' alone in UI.","no",,,,,,,,
+"time_relative","in {duration}","{duration} nữa","phrase","Relative future time ('in 2 hours').","Always from the ICU relative-time formatter, never concatenated. Example in i18n-l10n.md §4.","no",,,,,,,,
+"time_this_week","This week","Tuần này","noun","","Week start comes from CLDR (Sunday in US, Monday in VN/EU).","no",,,,,,,,
+"time_next_week","Next week","Tuần sau","noun","","vi 'tuần sau' and 'tuần tới' both fine; UI uses 'tuần sau'.","no",,,,,,,,
+"time_week_starts","Week starts on","Tuần bắt đầu vào","label (setting)","First day of week; default from CLDR.","","no",,,,,,,,
+"cal_calendar","Calendar","Lịch","noun (tab)","Calendar tab and views.","vi 'lịch' also means 'schedule'; context makes it clear.","no","Calendario","Calendário","カレンダー","캘린더","行事曆","Kalender","Kalender","Calendrier"
+"cal_gregorian","Gregorian calendar","dương lịch","noun","The civil (solar) calendar.","vi 'dương lịch' in UI, not 'lịch Gregory'.","no",,,,,,,,
+"cal_lunar","lunar calendar","âm lịch","noun","Lunisolar calendar used in VN, CN, KR and others.","Variants use different time zones (UTC+7/+8/+9) and can differ by one day. vi abbreviation 'ÂL' (Today header).","no",,,"旧暦","음력","農曆",,,
+"cal_lunar_vi","Lunar calendar (Vietnam)","Âm lịch Việt Nam","noun (option)","Vietnamese lunisolar variant (UTC+7).","Label variants by country in settings only.","no",,,,,,,,
+"cal_lunar_zh","Lunar calendar (China)","Âm lịch Trung Quốc","noun (option)","Chinese lunisolar variant (UTC+8).","zh-Hant users say '農曆'; do not label it in a way that implies VN/KR dates are 'Chinese'.","no",,,,,,,,
+"cal_lunar_ko","Lunar calendar (Korea)","Âm lịch Hàn Quốc","noun (option)","Korean lunisolar variant (UTC+9).","","no",,,,"음력",,,,
+"cal_hijri","Hijri calendar","lịch Hijri","noun","Islamic calendar (Umm al-Qura or tabular).","Dates can differ by ±1 day from local announcements (Ramadan, Eid): copy must say so.","no",,,"ヒジュラ暦",,,"kalender Hijriah",,"calendrier hégirien"
+"cal_leap_month","leap month","tháng nhuận","noun","Extra month in a lunisolar year.","Options: skip / both / first only (data-model).","no",,,"閏月","윤달","閏月",,,
+"cal_full_moon_day","15th of the lunar month (full moon)","ngày rằm","noun","15th day of a lunar month.","en has no single word: use the long form in settings, 'full moon day' in chips.","no",,,,,,,,
+"cal_new_moon_day","1st of the lunar month","mùng 1","noun","First day of a lunar month.","vi spelling 'mùng 1' (docs); 'mồng 1' also correct but do not mix.","no",,,,,,,,
+"cal_death_anniversary","death anniversary","ngày giỗ","noun","Yearly remembrance on the lunar date of a relative's death.","Respectful tone; no emoji, no jokes, no upsell copy next to it.","no",,,,,,,,
+"cal_lunar_new_year","Lunar New Year","Tết Nguyên đán","proper noun","New year of the lunisolar calendar.","en: 'Lunar New Year', not 'Chinese New Year'. Promo copy per market (Tết / Seollal / 春節).","no",,,"旧正月","설날","農曆新年",,,
+"cal_secondary","Secondary calendar","Hệ lịch phụ","label (setting)","Optional extra calendar shown under Gregorian dates.","","no",,,,,,,,
+"cal_holidays","public holidays","ngày lễ","noun","Official holidays of the chosen country.","","no",,,,,,,,
+"cal_holiday_country","Holiday country","Ngày lễ theo quốc gia","label (setting)","Country whose holidays and weekend are used.","Docs say 'quốc gia ngày lễ'; UI wording proposed.","no",,,,,,,,
+"cal_weekend","weekend","cuối tuần","noun","Weekend days per CLDR for the holiday country.","Fri-Sat in some Middle East markets.","no",,,,,,,,
+"input_quick_add","Quick Add","Thêm nhanh","noun (feature)","Bottom sheet to type or speak a new item.","Named feature: en title case allowed here only.","no",,,,,,,,
+"input_speak","Speak","Nói","button","Starts voice input.","","no",,,,,,,,
+"input_hold_to_talk","Hold to talk","Nhấn giữ để nói","instruction","Mic hint.","","no",,,,,,,,
+"input_transcript","transcript","nội dung nghe được","noun","Live text of what speech recognition heard.","vi: not 'bản ghi âm' (implies audio is stored; it is not).","no",,,,,,,,
+"input_take_photo","Take photo","Chụp ảnh","button","Opens the camera to capture a ticket or document.","UX shows 'Chụp' in a tight row; full label for screen readers.","no",,,,,,,,
+"input_photo","Photo","Ảnh","noun/button","Pick an image from the gallery.","","no",,,,,,,,
+"input_file","File","Tệp","noun/button","Pick a PDF, xlsx, csv or md file.","vi: iOS says 'Tệp' (Files app); UX wireframe says 'File'. Proposed 'Tệp' for consistency with the OS; LQA confirm.","no",,,,,,,,
+"input_import","Import","Nhập","verb","Bring items in from a photo, file, email or another app.","vi AMBIGUITY: 'nhập' also means 'type in' (nhập tay). Always give an object: 'Nhập từ ảnh', 'Nhập từ Microsoft To Do'. Docs use the loanword 'Import'; UI should not.","no","Importar","Importar","読み込む","가져오기","匯入","Impor","Importieren","Importer"
+"input_manual_entry","Enter manually","Nhập tay","button","Type details yourself.","","no",,,,,,,,
+"input_manual_with_reference","Enter manually with photo as reference","Nhập tay với ảnh làm tham chiếu","button","Form with the source image on top; tap OCR text to fill fields.","UX §2.4. May wrap to 2 lines.","no",,,,,,,,
+"input_review","Review","Xem lại","noun (screen)/verb","Screen where the user checks extracted items before saving.","vi: not 'Duyệt' (sounds like approval workflow).","no",,,,,,,,
+"input_found_n","Found {count} items","Tìm thấy {count} mục","phrase (ICU plural)","Review screen header.","","no",,,,,,,,
+"input_needs_check","Check this","Cần kiểm tra","label","Field the reader is unsure about (highlighted).","Never 'Error' / 'Lỗi': the field may be right.","no",,,,,,,,
+"input_ai_on_device","On-device AI","AI trên máy","label","Marks fields filled by the OS on-device model.","Keep 'AI' in Latin script. Never imply cloud processing.","no",,,,,,,,
+"input_on_device_note","Processed on this device. Nothing is uploaded.","Xử lý trên máy, không gửi lên mạng","phrase","Privacy note on the reading screen.","The claim must stay literally true. Do not strengthen it ('100% secure', 'an toàn tuyệt đối').","no",,,,,,,,
+"input_reading","Reading…","Đang đọc…","phrase (progress)","Progress label while OCR runs.","Use the ellipsis character …, not three dots.","no",,,,,,,,
+"input_save_all","Save all","Lưu tất cả","button","Saves all selected candidates on Review.","","no",,,,,,,,
+"input_add_to_trip","Add to trip","Gộp vào chuyến","label","Picker to attach bookings to a trip.","UX shows 'Gộp vào: [Chuyến Hà Nội ▾]'.","no",,,,,,,,
+"input_send_sample","Send redacted sample to help improve","Gửi mẫu để cải thiện (đã che thông tin cá nhân)","button","Sends a redacted copy of a document layout.","Must mention redaction; a preview of the redacted copy is shown first.","no",,,,,,,,
+"input_email_forwarding","Email forwarding","Chuyển tiếp email","noun (feature)","Forward booking emails to a personal address.","","no",,,,,,,,
+"input_forwarding_address","Forwarding address","Địa chỉ chuyển tiếp","noun","Personal address u-<token>@in.remindme.app.","Never translate or reformat the address. Wrap in bidi isolate for RTL.","no",,,,,,,,
+"input_send_test_email","Send test email","Gửi email thử","button","Checks the forwarding setup.","","no",,,,,,,,
+"trip_trip","trip","chuyến đi","noun (tab)","Group of bookings and plans for one journey.","Tab label plural in en ('Trips'), vi 'Chuyến đi'.","no","viaje","viagem","旅行","여행",,"perjalanan","Reise","voyage"
+"trip_itinerary","itinerary","lịch trình","noun","Ordered timeline of a trip.","","no",,,,,,,,
+"trip_segment","segment","chặng","noun","One leg or stay inside a trip.","Internal word; UI usually shows the booking itself.","no",,,,,,,,
+"trip_booking","booking","đặt chỗ","noun","Reservation: flight, train, bus, hotel, car rental, ferry, tour...","vi: avoid loanword 'booking' in UI (NLU accepts it). Use 'vé' when it is a ticket.","no","reserva","reserva","予約","예약","預訂","pemesanan","Buchung","réservation"
+"trip_booking_code","booking code","mã đặt chỗ","noun","PNR / confirmation number, usually 6 letters or digits.","The code itself: never translate, never change case, monospace, bidi isolate. Compact form 'Mã: ABC123'.","no","código de reserva","código de reserva","予約番号","예약 번호","訂位代號","kode booking","Buchungscode","code de réservation"
+"trip_pnr","PNR","PNR","abbreviation","Passenger Name Record.","Only in help/FAQ; UI says 'booking code'.","yes","PNR","PNR","PNR","PNR","PNR","PNR","PNR","PNR"
+"trip_ticket","ticket","vé","noun","Travel or event ticket.","es: 'billete' (ES) vs 'boleto' (LatAm); pt-BR 'passagem' (air) vs 'bilhete'. Translator decides per variant.","no",,,"チケット","티켓","票","tiket","Ticket","billet"
+"trip_eticket","e-ticket","vé điện tử","noun","Electronic ticket (PDF or email).","","no",,,,,,,,
+"trip_boarding_pass","boarding pass","thẻ lên máy bay","noun","Document that lets a passenger board.","vi: Vietnam Airlines writes 'thẻ lên tàu bay'; UI uses 'thẻ lên máy bay'; extractor accepts both plus 'boarding pass'. es: ES 'tarjeta de embarque', MX 'pase de abordar'.","no",,"cartão de embarque","搭乗券","탑승권","登機證",,"Bordkarte","carte d'embarquement"
+"trip_flight","flight","chuyến bay","noun","","","no","vuelo","voo","フライト","항공편","航班","penerbangan","Flug","vol"
+"trip_flight_number","flight number","số hiệu chuyến bay","noun","E.g. VN245.","The number itself is never translated.","no",,,"便名",,,,"Flugnummer","numéro de vol"
+"trip_departure","Departure","Khởi hành","noun (label)","Leaving time/place.","de: 'Abflug' (flight) vs 'Abfahrt' (train/bus): separate keys per booking type, or a select.","no","Salida","Partida","出発","출발","出發","Keberangkatan",,"Départ"
+"trip_arrival","Arrival","Đến","noun (label)","Arriving time/place.","vi 'Đến' alone is vague in labels: 'Giờ đến' for time, 'Nơi đến' for place.","no","Llegada","Chegada","到着","도착","抵達","Kedatangan","Ankunft","Arrivée"
+"trip_gate","Gate","Cửa","noun","Boarding gate.","vi airports show 'Cửa 12'; en example 'Gate 12' (reminder-engine.md §6).","no","Puerta","Portão","搭乗口","탑승구","登機門","Gerbang","Gate","Porte"
+"trip_terminal","Terminal","Nhà ga","noun","Airport terminal.","vi 'Nhà ga T1' (UX §3.2). zh-Hant: TW '航廈', HK '客運大樓'.","no","Terminal","Terminal","ターミナル","터미널","航廈","Terminal","Terminal","Terminal"
+"trip_seat","Seat","Ghế","noun","Seat or berth number.","VN trains: 'Chỗ' or 'Giường' for sleeper berths; use the word printed on the ticket type.","no","Asiento","Assento","座席","좌석","座位","Kursi","Sitzplatz","Siège"
+"trip_boarding_time","Boarding time","Giờ lên máy bay","noun","Time boarding starts.","","no",,,"搭乗時刻",,,,,
+"trip_checkin_flight","check-in (flight)","làm thủ tục","noun/verb","Airline check-in, online or at the counter.","Different word from hotel check-in in many locales (zh-Hant 報到 vs 入住, fr enregistrement vs arrivée, vi 'làm thủ tục' vs 'nhận phòng'). Keep separate keys.","no",,,"チェックイン","체크인","報到",,"Check-in","enregistrement"
+"trip_checkin_hotel","check-in (hotel)","nhận phòng","noun/verb","Hotel arrival.","See trip_checkin_flight.","no",,"check-in","チェックイン","체크인","入住",,"Check-in","arrivée"
+"trip_checkout_hotel","check-out (hotel)","trả phòng","noun/verb","Hotel departure.","","no",,"check-out","チェックアウト","체크아웃","退房",,"Check-out","départ"
+"trip_hotel","hotel","khách sạn","noun","Any lodging booking (hotel, homestay, apartment).","","no","hotel","hotel","ホテル","호텔","飯店","hotel","Hotel","hôtel"
+"trip_train","train","tàu hỏa","noun","","vi 'tàu' alone also means ship; use 'tàu hỏa' where context is unclear.","no","tren","trem","列車","기차","火車","kereta","Zug","train"
+"trip_carriage","carriage","toa","noun","Train car number.","en label: 'Car {number}' (US) or 'Coach {number}' (UK); en-GB LQA decides.","no",,,"号車","호차","車廂","gerbong","Wagen","voiture"
+"trip_platform","platform","sân ga","noun","Train platform or track.","VN tickets rarely show it; EU tickets do (de 'Gleis 7'). vi translator to confirm wording.","no",,,"番線","승강장","月台",,"Gleis","voie"
+"trip_bus","bus","xe khách","noun","Intercity bus/coach booking.","vi 'xe khách' (intercity), not 'xe buýt' (city bus).","no",,,,,,,,
+"trip_car_rental","car rental","thuê xe","noun","","","no",,,,,,,,
+"trip_ferry","ferry","phà","noun","Ferry or boat booking.","vi: 'tàu cao tốc' for fast boats; translator picks by ticket type.","no",,,,,,,,
+"trip_passenger","passenger","hành khách","noun","Person named on a booking.","Sensitive data: never in logs or analytics.","no",,,,,,,,
+"trip_baggage","baggage","hành lý","noun","","","no",,,,,,,,
+"trip_packing_list","Packing list","Danh sách hành lý","noun","Checklist of things to bring on a trip.","UX says 'Checklist hành lý'; proposed full vi term.","no",,,,,,,,
+"trip_documents","Documents","Tài liệu","noun (tab)","Trip tab with original files and QR codes.","","no",,,,,,,,
+"trip_qr","QR code","mã QR","noun","","Keep 'QR' in Latin.","no","código QR","código QR","QRコード","QR 코드","QR 碼","kode QR","QR-Code","code QR"
+"trip_id_card","ID card","căn cước","noun","National identity card.","vi: since 1 Jul 2024 the card is 'thẻ căn cước' (was CCCD); extractor still accepts CMND/CCCD. Sensitive: mask numbers.","no",,,,,,,,
+"trip_passport","passport","hộ chiếu","noun","","Sensitive: mask numbers.","no","pasaporte","passaporte","パスポート","여권","護照","paspor","Reisepass","passeport"
+"trip_layover","layover","quá cảnh","noun","Stop between two flights.","en-GB may prefer 'stopover'.","no",,,,,,,,
+"trip_add_activity","Add activity","Thêm hoạt động","button","Suggestion shown in gaps > 3h on the trip timeline.","","no",,,,,,,,
+"trip_past","Past","Đã qua","noun (segment)","Finished trips.","","no",,,,,,,,
+"med_appointment","appointment","lịch hẹn","noun","Scheduled visit (kind=appointment).","Paywall limit 'appointments' (max_active_appointments) also counts events and bookings: help text must say 'events, appointments and bookings'. vi 'lịch hẹn' generic; 'lịch khám' when medical.","no","cita",,"予約","예약","預約","janji temu","Termin","rendez-vous"
+"med_medical_appointment","medical appointment","lịch khám","noun","Doctor/hospital appointment.","Health data (sensitive).","no","cita médica","consulta","診察予約","진료 예약",,,"Arzttermin","rendez-vous médical"
+"med_follow_up","follow-up visit","tái khám","noun","Return visit, often repeating.","","no",,,,,,,,
+"med_clinic","clinic","phòng khám","noun","","","no",,,,,,,,
+"med_hospital","hospital","bệnh viện","noun","","","no","hospital","hospital","病院","병원","醫院","rumah sakit","Krankenhaus","hôpital"
+"med_department","department","khoa","noun","Hospital department on an appointment slip.","","no",,,,,,,,
+"med_doctor","doctor","bác sĩ","noun","","","no",,,,,,,,
+"med_queue_number","queue number","số thứ tự","noun","Number printed on hospital slips (VN, JP...).","Market-specific field.","no",,,,,,,,
+"med_fasting","Fasting required","Cần nhịn ăn","phrase","Preparation note before a test.","Never phrase as medical advice; we only repeat what the slip says.","no",,"Jejum necessário",,,,,,
+"med_bring_documents","Bring documents","Mang theo giấy tờ","phrase","Default checklist line before an appointment.","","no",,,,,,,,
+"med_medication","medication","thuốc","noun","","","no",,,,,,,,
+"med_take_medication","Take medication","Uống thuốc","verb phrase","Common habit title.","en sample 'Take blood pressure pill' (reminder-engine.md §6).","no",,,,,,,,
+"med_prescription","prescription","đơn thuốc","noun","","","no",,,,,,,,
+"med_health_insurance_card","health insurance card","thẻ bảo hiểm y tế","noun","","vi: 'thẻ BHYT' allowed in checklists. Market-specific.","no",,,,,,,,
+"med_health_data","health data","dữ liệu sức khỏe","noun","Sensitive category (GDPR Art. 9).","","no",,,,,,,,
+"bill_plan","plan","gói","noun","Free or Plus.","","no","plan","plano","プラン",,"方案","paket",,
+"bill_subscription","subscription","gói đăng ký","noun","Auto-renewing purchase of Plus.","","no","suscripción","assinatura","サブスクリプション","구독","訂閱","langganan","Abo","abonnement"
+"bill_free_adj","free","miễn phí","adjective","Costs nothing.","Not the plan name (plan_free).","no","gratis","grátis","無料","무료","免費","gratis","kostenlos","gratuit"
+"bill_free_trial","free trial","dùng thử miễn phí","noun","Store-managed trial period before the first charge.","pt-BR: Apple uses 'avaliação gratuita'; translator confirms.","no","prueba gratuita",,"無料トライアル","무료 체험","免費試用",,,"essai gratuit"
+"bill_trial_days","{days}-day free trial","Dùng thử miễn phí {days} ngày","phrase (ICU plural)","Trial length on the paywall.","Trial length comes from the store product, not a literal.","no",,,,,,,,
+"bill_monthly","Monthly","Theo tháng","option","Billing period: 1 month.","","no","Mensual","Mensal","月額","월간",,"Bulanan","Monatlich","Mensuel"
+"bill_quarterly","Every 3 months","Theo quý (3 tháng)","option","Billing period: 3 months.","Always show '3 months'; 'quarterly' is less clear to many users.","no","Trimestral","Trimestral",,,,,,"Trimestriel"
+"bill_yearly","Yearly","Theo năm","option","Billing period: 12 months.","","no","Anual","Anual","年額","연간",,"Tahunan","Jährlich","Annuel"
+"bill_per_month","{price}/month","{price}/tháng","phrase","Price per period.","{price} is the store-localized string (or a CLDR currency format of the store amount). Never build it from a number and a symbol.","no",,,,,,,,
+"bill_billed_yearly","Billed {price} per year","Thanh toán {price} mỗi năm","phrase","Actual charge under a per-month equivalent.","Required whenever a per-month equivalent is shown.","no",,,,,,,,
+"bill_upgrade","Upgrade","Nâng cấp","button","Opens the paywall or confirms purchase.","","no",,,,,,,,
+"bill_restore","Restore purchases","Khôi phục mua hàng","button","Re-applies an existing store purchase on this account.","Required by both stores. vi from pricing doc.","no","Restaurar compras","Restaurar compras","購入を復元",,"恢復購買","Pulihkan Pembelian","Käufe wiederherstellen","Restaurer les achats"
+"bill_manage_subscription","Manage subscription","Quản lý gói đăng ký","button","Opens the store's subscription page.","","no",,,,,,,,
+"bill_cancel_anytime","Cancel anytime in {store} settings","Hủy bất cứ lúc nào trong phần cài đặt của {store}","phrase","How to cancel, shown on the paywall.","{store} = App Store / Google Play (DNT). Must be accurate.","no",,,,,,,,
+"bill_auto_renew","Renews automatically","Tự động gia hạn","phrase","","Required disclosure.","no",,,,,,,,
+"bill_payment_issue","Payment didn't go through","Thanh toán chưa thành công","phrase","Store billing retry / grace period.","No blame, no threats; reminders keep ringing (pricing §3).","no",,,,,,,,
+"bill_unlimited","Unlimited","Không giới hạn","adjective","No limit.","Only for entitlement keys with value -1. Plus still limits PDF pages per import and cloud storage: never say 'unlimited everything'.","no",,,,,,,,
+"bill_usage","Plan & usage","Gói & mức sử dụng","noun (screen)","Settings screen with QuotaMeter.","","no",,,,,,,,
+"bill_limit","limit","giới hạn","noun","Free plan cap.","","no",,,,,,,,
+"bill_unlocked","Plus unlocked","Đã mở khóa Plus","phrase","Confirmation after purchase.","","no",,,,,,,,
+"bill_refund","refund","hoàn tiền","noun","Handled by Apple/Google.","Copy points to the store's refund page.","no",,,,,,,,
+"bill_offer_code","offer code","mã ưu đãi","noun","Store promo/offer code.","Apple says 'offer code', Google 'promo code'.","no",,,,,,,,
+"priv_privacy_policy","Privacy Policy","Chính sách quyền riêng tư","proper noun","Legal document title.","Legal text: local lawyer reviews.","no","Política de privacidad","Política de Privacidade","プライバシーポリシー","개인정보 처리방침","隱私權政策","Kebijakan Privasi","Datenschutzerklärung","Politique de confidentialité"
+"priv_terms","Terms of Service","Điều khoản dịch vụ","proper noun","Legal document title.","Legal text: local lawyer reviews.","no","Términos del servicio","Termos de Serviço","利用規約","이용약관","服務條款","Ketentuan Layanan","Nutzungsbedingungen","Conditions d'utilisation"
+"priv_consent","consent","đồng ý","noun/verb","User's explicit permission for a data use.","","no",,,,,,,,
+"priv_allow","Allow","Cho phép","button","","","no","Permitir","Permitir","許可","허용","允許","Izinkan","Erlauben","Autoriser"
+"priv_not_now","Not now","Để sau","button","Secondary button on permission priming screens.","Never confirmshaming ('No, I like missing things').","no","Ahora no","Agora não","後で","나중에","稍後","Nanti saja","Nicht jetzt","Plus tard"
+"priv_on_device","on this device","trên máy","phrase","Processing happens on the phone.","vi 'trên máy' = on this phone; 'trên máy chủ' would mean server: never shorten to 'máy' where it can be misread.","no",,,,,,,,
+"priv_on_device_only","On-device recognition only","Chỉ nhận dạng trên máy","option (setting)","Blocks online speech services.","","no",,,,,,,,
+"priv_online_speech","online speech recognition","nhận dạng giọng nói trực tuyến","noun","Apple/Google cloud STT, used only with consent when no on-device engine exists.","","no",,,,,,,,
+"priv_personal_data","personal data","dữ liệu cá nhân","noun","","","no",,,,,,,,
+"priv_redacted","redacted","đã che","adjective","Letters replaced by X, digits by 9.","","no",,,,,,,,
+"priv_export","Export data","Xuất dữ liệu","button","JSON + ICS export.","","no",,,,,,,,
+"priv_delete_account","Delete account","Xóa tài khoản","button","Deletes account and synced data.","Destructive: confirmation states what is deleted and that the store subscription must be cancelled separately.","no",,,,,,,,
+"priv_analytics","usage analytics","thống kê sử dụng","noun","Anonymous events, consent-based.","","no",,,,,,,,
+"priv_crash_reports","crash reports","báo cáo sự cố","noun","","","no",,,,,,,,
+"priv_data_privacy","Data & privacy","Dữ liệu & quyền riêng tư","noun (settings section)","","","no",,,,,,,,
+"priv_permission","permission","quyền","noun","OS permission (notifications, mic, camera, calendar).","","no",,,,,,,,
+"priv_microphone","microphone","micrô","noun","","vi: iOS writes 'Micrô'; UX doc 'micro'. Follow the OS spelling.","no",,,"マイク","마이크","麥克風",,"Mikrofon","micro"
+"set_settings","Settings","Cài đặt","noun (screen)","","es: iOS 'Ajustes', Android 'Configuración'; pt-BR iOS 'Ajustes', Android 'Configurações'; fr iOS 'Réglages', Android 'Paramètres'. Follow the platform.","no","Ajustes (iOS) / Configuración (Android)","Ajustes (iOS) / Configurações (Android)","設定","설정","設定","Pengaturan","Einstellungen","Réglages (iOS) / Paramètres (Android)"
+"set_language_region","Language & region","Ngôn ngữ & vùng","noun (settings section)","App language, region format, voice language, holiday country, secondary calendar.","","no","Idioma y región","Idioma e região","言語と地域","언어 및 지역","語言與地區","Bahasa & Wilayah","Sprache & Region","Langue et région"
+"set_app_language","App language","Ngôn ngữ giao diện","label (setting)","Language of the UI, notifications, widgets, watch.","","no",,,,,,,,
+"set_region_format","Region format","Định dạng vùng","label (setting)","Dates, 12/24h, numbers, week start.","","no",,,,,,,,
+"set_voice_language","Voice language","Ngôn ngữ giọng nói","label (setting)","Language/variant for speech recognition; can differ from app language.","","no",,,,,,,,
+"set_extra_languages","Additional input languages","Ngôn ngữ nhập phụ","label (setting)","Extra languages the text parser accepts.","","no",,,,,,,,
+"set_enhanced_recognition","Enhanced recognition","Nhận dạng nâng cao","noun (feature)","Downloadable on-device speech model.","","no",,,,,,,,
+"set_devices","Devices that get reminders","Thiết bị nhận nhắc","label (setting)","","","no",,,,,,,,
+"set_main_device_only","Main device only","Chỉ thiết bị chính","option","","","no",,,,,,,,
+"set_appearance","Appearance","Hiển thị","noun (settings section)","Theme, colors.","vi: 'Giao diện' already means UI in 'Ngôn ngữ giao diện'; use 'Hiển thị' for this section. Proposed.","no",,,,,,,,
+"set_large_text","Large text","Chữ lớn","option","Follows OS dynamic type.","","no",,,,,,,,
+"set_sync","Sync","Đồng bộ","noun/verb","","","no",,,,,,,,
+"set_offline","offline","offline","adjective","No network connection.","vi: accepted loanword ('Đang offline' in UX §6b); not 'ngoại tuyến' in banners.","no",,,,,,,,
+"set_help","Help","Trợ giúp","noun","","","no",,,,,,,,
+"set_send_feedback","Send feedback","Gửi phản hồi","button","","","no",,,,,,,,
+"set_report_problem","Report a problem","Báo lỗi","button","","","no",,,,,,,,
+"integ_integrations","Integrations","Tích hợp","noun (screen)","","","no",,,,,,,,
+"integ_connect","Connect","Kết nối","button","","","no",,,,,,,,
+"integ_reconnect","Reconnect","Kết nối lại","button","Shown when an integration token expired.","","no",,,,,,,,
+"integ_add_to_calendar","Add to Calendar","Thêm vào lịch máy","button","Adds the item to the device calendar (EventKit / CalendarContract).","vi 'lịch máy' = the phone's calendar app.","no",,,,,,,,
+"integ_move_from_todo","Move from Microsoft To Do","Chuyển từ Microsoft To Do","button","Migration entry point.","","no",,,,,,,,
+"integ_ics_feed","Calendar feed (ICS)","Nguồn lịch (ICS)","noun (feature)","webcal subscription feed (Phase 2).","Proposed vi term.","no",,,,,,,,
+"nav_me","Me","Tôi","noun (tab)","Tab with lists, Suggestions, integrations, plan, settings.","en alternatives 'You', 'Profile': test in prototype.","no",,,,,,,,
+"nav_search","Search","Tìm kiếm","noun/button","","","no","Buscar","Buscar","検索","검색","搜尋","Cari","Suchen","Rechercher"
+"watch_up_next","Up next","Tiếp theo","noun","Watch main list and complication.","≤ 30 chars on watch (i18n-l10n.md §7).","no",,,,,,,,
+"watch_complication","complication","complication","noun","watchOS watch-face element.","Use Apple's localized term from watchOS per locale; vi to verify on device. Do not coin a term.","no",,,"コンプリケーション",,,,,
+"watch_tile","Tile","Tile","noun","Wear OS tile.","Use Google's localized term from Wear OS per locale; vi to verify.","no",,,,,,,,
+"widget_widget","widget","tiện ích","noun","Home/Lock Screen widget.","iOS and Android vi both say 'tiện ích'.","no",,,"ウィジェット","위젯","小工具",,"Widget","widget"
+"item_notes","Notes","Ghi chú","noun","","","no","Notas","Notas","メモ","메모","附註",,"Notizen","Notes"
+"item_checklist","checklist","danh sách kiểm tra","noun","Sub-steps inside one item.","Microsoft To Do calls them 'steps' (import mapping).","no",,,,,,,,
+"item_priority","priority","ưu tiên","noun","","","no",,,,,,,,
+"item_tag","tag","thẻ","noun","#label on items.","vi 'thẻ' follows Apple Reminders but also means 'card'; never call BookingCard a 'thẻ' in UI copy next to tags.","no",,,,,,,,
+"item_location","location","vị trí","noun","","","no",,,,,,,,
+"item_source","Source","Nguồn","label","Where an item came from ('From Vietjet email, Nov 24').","Date via formatter: 'Từ email Vietjet · {date}'.","no",,,,,,,,
+"item_two_versions","2 versions","Có 2 phiên bản","label","Note edited on 2 devices offline.","UX §3.6.","no",,,,,,,,
+"item_keep_this","Keep this version","Giữ bản này","button","","","no",,,,,,,,
+"item_merge_both","Combine both","Gộp cả hai","button","Joins the two note texts.","","no",,,,,,,,
+"item_archive","Archive","Lưu trữ","verb/noun","Hide without deleting.","Items over the Free limit after import go to Archive (archived_reason=quota): say so plainly.","no",,,,,,,,
+"item_save","Save","Lưu","button","","","no","Guardar","Salvar","保存","저장","儲存","Simpan","Speichern","Enregistrer"
+"item_edit","Edit","Sửa","button","","","no","Editar","Editar","編集","편집","編輯","Edit","Bearbeiten","Modifier"
+"item_delete","Delete","Xóa","button","","","no","Eliminar","Apagar","削除","삭제","刪除","Hapus","Löschen","Supprimer"
+"item_cancel","Cancel","Hủy","button","Dismiss a dialog without changes.","vi 'Hủy' also reads as cancelling a booking/subscription. In dialogs about bookings or plans, use 'Đóng' or 'Không' instead.","no","Cancelar","Cancelar","キャンセル","취소","取消","Batal","Abbrechen","Annuler"
+"item_undo","Undo","Hoàn tác","button","Snackbar after Done/Delete.","","no",,,,,,,,
+"item_add_another","Add another","Thêm việc khác","button","Keeps Quick Add open for the next item.","","no",,,,,,,,
+"list_work","Work","Công việc","noun (list template)","Starter list / onboarding goal.","","no",,,,,,,,
+"goal_travel","Travel","Du lịch","noun (onboarding goal)","","","no",,,,,,,,
+"goal_health","Health & medication","Sức khỏe & thuốc","noun (onboarding goal)","","","no",,,,,,,,
+"goal_family","Family & occasions","Gia đình & dịp lễ","noun (onboarding goal)","","","no",,,,,,,,
+"goal_study","Study","Học tập","noun (onboarding goal)","","","no",,,,,,,,
