@@ -177,3 +177,18 @@ Plus "máy tính" cần web app hoặc desktop app, hiện ở Phase 4 (`plan/im
 Thiết bị bị đá có thể còn thay đổi chưa đồng bộ: giữ trong outbox, đẩy lên khi đăng nhập lại đúng tài khoản; tài khoản khác đăng nhập vào máy đó thì
 cảnh báo trước khi xóa dữ liệu local (`uiux/ux-flows-and-screens.md` §3.7). Thiết bị offline vẫn có thể kêu nhắc đã lập lịch cho tới khi online lại.
 IP là dữ liệu cá nhân: lưu 90 ngày, lịch sử 12 tháng (`security-privacy.md` §6).
+
+## ADR-014: Một codebase Flutter cho mọi nền tảng, máy tính (macOS + Windows) ở Phase 4
+**Bối cảnh.** Plus hứa đăng nhập trên điện thoại, tablet và máy tính (ADR-013). Chủ dự án chọn: paywall tạm ghi "máy tính: sắp có";
+máy tính có thể là app PC/MacBook chứ không chỉ web. Cần quyết công nghệ từ bây giờ để sau này thêm desktop không phải viết lại.
+
+**Phương án.** (a) Flutter desktop (macOS, Windows) cùng codebase với mobile. (b) Web app riêng (Next.js): phải viết lại UI và logic sync/NLU.
+(c) Native riêng (SwiftUI, WinUI): chi phí x2, không dùng lại được Dart.
+
+**Quyết định.** (a). Một project Flutter `apps/client` (Android, iOS, iPadOS lúc launch; thêm `macos`, `windows` ở Phase 4, web sau đó).
+Logic nằm trong package Dart thuần, tính năng nền tảng sau interface + `PlatformCapabilities`, layout thích ứng từ S1 (`architecture/multi-platform.md` §2).
+Paywall đọc remote config `desktop_client_available` để bỏ chữ "sắp có" khi phát hành.
+
+**Hệ quả.** S1 tốn thêm ~2-3 ngày dựng cấu trúc package và layout thích ứng; đổi lại Phase 4 desktop ước ~5 tuần thay vì làm app mới.
+Windows không có SDK RevenueCat nên không bán trong app Windows (mua trên điện thoại/web, quyền theo tài khoản). Windows không có FCM:
+dùng Realtime khi app mở. Có thể cho app iPad chạy trên Mac Apple Silicon từ Phase 2 như bước đệm.

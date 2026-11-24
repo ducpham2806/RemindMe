@@ -2,7 +2,7 @@
 """Chặn chuỗi hiển thị hard-code trong Flutter (AGENTS.md quy tắc 5b, i18n-l10n.md).
 Bắt chuỗi literal có chữ cái nằm trong các widget/tham số hiển thị: Text('..'), labelText: '..', tooltip: '..'...
 Cho phép bỏ qua 1 dòng bằng comment `// l10n-ignore` (ví dụ tên thương hiệu, mã IATA demo).
-Chạy: python3 tools/lint-hardcoded-strings.py [thư mục ...]  (mặc định apps/mobile/lib, apps/*/lib)"""
+Chạy: python3 tools/lint-hardcoded-strings.py [thư mục ...]  (mặc định apps/*/lib)"""
 import pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

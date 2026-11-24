@@ -1,17 +1,17 @@
 # Graph Report - RemindMe  (2026-11-24)
 
 ## Corpus Check
-- 59 files · ~65,195 words
+- 60 files · ~67,016 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 5 file(s) not represented in the graph (top: (none) 3, .csv 1, .psql 1)
 
 ## Summary
-- 388 nodes · 362 edges · 34 communities (27 shown, 7 thin omitted)
+- 398 nodes · 371 edges · 35 communities (28 shown, 7 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4f785182`
+- Built from commit: `1b68bf29`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -48,17 +48,18 @@
 - Bộ mẫu tài liệu cho eval trích xuất (E0.4)
 - db-test.sh
 - install-hooks.sh
+- Đa nền tảng: điện thoại, tablet, máy tính (macOS, Windows), web
 
 ## God Nodes (most connected - your core abstractions)
-1. `Hướng dẫn tích hợp với nền tảng khác` - 15 edges
-2. `Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình` - 15 edges
-3. `Architecture Decision Records (ADR)` - 14 edges
+1. `Architecture Decision Records (ADR)` - 15 edges
+2. `Hướng dẫn tích hợp với nền tảng khác` - 15 edges
+3. `Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình` - 15 edges
 4. `RemindMe English style guide (source language)` - 14 edges
 5. `Hướng dẫn văn phong tiếng Việt cho RemindMe` - 14 edges
 6. `3. Phân tích từng đối thủ` - 14 edges
-7. `Kế hoạch triển khai` - 12 edges
-8. `Quốc tế hóa và bản địa hóa (i18n / l10n)` - 12 edges
-9. `Design system` - 11 edges
+7. `Kế hoạch triển khai` - 13 edges
+8. `Design system` - 12 edges
+9. `Quốc tế hóa và bản địa hóa (i18n / l10n)` - 12 edges
 10. `UX: kiến trúc thông tin, luồng, màn hình` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
@@ -67,7 +68,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (34 total, 7 thin omitted)
+## Communities (35 total, 7 thin omitted)
 
 ### Community 0 - "UX: kiến trúc thông tin, luồng, màn hình"
 Cohesion: 0.08
@@ -94,12 +95,12 @@ Cohesion: 0.17
 Nodes (11): 1. Sơ đồ thành phần, 2. Thành phần và trách nhiệm, 3.1 Tạo nhắc nhở nhanh (offline được), 3.2 Import booking từ ảnh/pdf/xlsx/email (hoàn toàn trên máy), 3.3 Thông báo kêu và hành động, 3. Luồng chính, 4. Đồng bộ (Sync), 5. Yêu cầu phi chức năng (+3 more)
 
 ### Community 6 - "Design system"
-Cohesion: 0.17
-Nodes (11): 10. Bàn giao cho Flutter, 1. Nguyên tắc, 2. Màu (token), 3. Chữ, 4. Khoảng cách, bo góc, đổ bóng, 5. Icon & hình, 6. Component chính, 7. Chuyển động (+3 more)
+Cohesion: 0.15
+Nodes (12): 10. Bàn giao cho Flutter, 11. Màn hình lớn (tablet, máy tính), 1. Nguyên tắc, 2. Màu (token), 3. Chữ, 4. Khoảng cách, bo góc, đổ bóng, 5. Icon & hình, 6. Component chính (+4 more)
 
 ### Community 7 - "Architecture Decision Records (ADR)"
-Cohesion: 0.13
-Nodes (14): ADR-001: Flutter cho app mobile, native cho watch, ADR-002: Supabase + worker TypeScript, ADR-003: Offline-first, nhắc nhở local, ADR-004: AI extraction phía server (Superseded by ADR-010), ADR-005: Email chuyển tiếp trước, Gmail API sau, ADR-006: RevenueCat cho subscription, ADR-007: Lặp lại RRULE + hệ lịch khác, ADR-008: Entitlement phía server (+6 more)
+Cohesion: 0.12
+Nodes (15): ADR-001: Flutter cho app mobile, native cho watch, ADR-002: Supabase + worker TypeScript, ADR-003: Offline-first, nhắc nhở local, ADR-004: AI extraction phía server (Superseded by ADR-010), ADR-005: Email chuyển tiếp trước, Gmail API sau, ADR-006: RevenueCat cho subscription, ADR-007: Lặp lại RRULE + hệ lịch khác, ADR-008: Entitlement phía server (+7 more)
 
 ### Community 8 - "Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình"
 Cohesion: 0.10
@@ -110,8 +111,8 @@ Cohesion: 0.20
 Nodes (9): 1. Sync (RPC Postgres, `SECURITY DEFINER`, kiểm `auth.uid()`), 2. Worker `/v1`, 3. Webhook (không dùng JWT, xác thực bằng chữ ký/secret), 4. Mã lỗi & rate limit, API spec, Dữ liệu tĩnh trên CDN (không qua worker), Hộp thư email & bản gốc, Thiết bị & push (+1 more)
 
 ### Community 10 - "Kế hoạch triển khai"
-Cohesion: 0.10
-Nodes (20): Checklist tích hợp theo phase, E0. Spike & dữ liệu (Phase 0, ~8d), E1. Decoder T0 (S5, ~7d), `packages/parsers/decoders/`, E2. Plugin OCR native (S5, ~7d), E3. Bộ máy luật T2 (S4-S5, ~10d), `packages/parsers/engine/`, E4. Mẫu nhà cung cấp (S4-S6 rồi liên tục), E5. Màn Xem lại & vòng cải thiện (S6, ~7d), E6. Hộp thư email (S6, ~4d) (+12 more)
+Cohesion: 0.09
+Nodes (21): Checklist tích hợp theo phase, D. App máy tính (chi tiết, Phase 4), E0. Spike & dữ liệu (Phase 0, ~8d), E1. Decoder T0 (S5, ~7d), `packages/parsers/decoders/`, E2. Plugin OCR native (S5, ~7d), E3. Bộ máy luật T2 (S4-S5, ~10d), `packages/parsers/engine/`, E4. Mẫu nhà cung cấp (S4-S6 rồi liên tục), E5. Màn Xem lại & vòng cải thiện (S6, ~7d) (+13 more)
 
 ### Community 11 - "Quốc tế hóa và bản địa hóa (i18n / l10n)"
 Cohesion: 0.15
@@ -134,8 +135,8 @@ Cohesion: 0.25
 Nodes (7): 1. Phân loại dữ liệu, 2. Kiểm soát, 3. Bên thứ ba xử lý dữ liệu (liệt kê trong Privacy Policy), 4. Pháp lý theo thị trường (checklist, luật sư địa phương xác nhận), 5. Ứng phó sự cố, 6. Xóa tài khoản, xuất dữ liệu, lưu trữ, Bảo mật & quyền riêng tư
 
 ### Community 20 - "STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)"
-Cohesion: 0.07
-Nodes (25): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+17 more)
+Cohesion: 0.06
+Nodes (26): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+18 more)
 
 ### Community 21 - "Quy trình phát triển với AI (Claude Code, Codex) + graphify, unslop, agency agents"
 Cohesion: 0.25
@@ -177,9 +178,13 @@ Nodes (6): 1. Cấu trúc, 2. Thu mẫu, 3. Ẩn danh (bắt buộc trước khi
 Cohesion: 0.67
 Nodes (3): PGUSER, run(), db-test.sh script
 
+### Community 34 - "Đa nền tảng: điện thoại, tablet, máy tính (macOS, Windows), web"
+Cohesion: 0.33
+Nodes (5): 1. Lộ trình, 2. Quy tắc code từ S1 (để thêm desktop không phải viết lại), 3. Ma trận năng lực theo nền tảng, 4. Phát hành máy tính, Đa nền tảng: điện thoại, tablet, máy tính (macOS, Windows), web
+
 ## Knowledge Gaps
 - **1 isolated node(s):** `PGUSER`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 322 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 331 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
@@ -198,4 +203,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `3. Phân tích từng đối thủ` be split into smaller, more focused modules?**
   _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
 - **Should `Architecture Decision Records (ADR)` be split into smaller, more focused modules?**
-  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.125 - nodes in this community are weakly interconnected._

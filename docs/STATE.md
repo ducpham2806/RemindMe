@@ -3,7 +3,7 @@
 **Cập nhật:** 2026-11-24 · **Phase:** 0, tài liệu và nền móng · **Nhánh:** `ccr-7a85f116-dswwig`
 
 ## Đã có
-- Bộ docs v2 (`docs/INDEX.md`) + 13 ADR (ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính, đã duyệt). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
+- Bộ docs v2 (`docs/INDEX.md`) + 14 ADR (ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
 - DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
   + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói) + 102 test pgTAP; CI GitHub chạy job DB pass.
 - Khung repo: CI `.github/workflows/ci.yml` (job DB pass trên GitHub; job docs vừa sửa lỗi jsonschema), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
@@ -16,18 +16,18 @@
 3. Đăng ký Apple Developer (tổ chức, D-U-N-S), Google Play Console, domain, Firebase, Supabase (region theo mục 1); hồ sơ thuế storefront.
 4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
 5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
-6. Sprint S1: workspace Flutter + `packages/parsers`, khung i18n (L1), auth; nối app với `profile_init` → `session_claim` → `sync_push` đã có.
+6. Sprint S1: `apps/client` + package `core`/`data`/`platform`/`parsers` theo `architecture/multi-platform.md` §2 (layout thích ứng, `PlatformCapabilities`), khung i18n (L1), auth; nối app với `profile_init` → `session_claim` → `sync_push` đã có.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
 - Tên thương mại/domain (docs dùng giả định `RemindMe`, `remindme.app`, bundle `app.remindme`).
 - Đợt locale 1, region, nhóm giá: xem Tiếp theo mục 1.
 - l10n: giữ tên gói "Free" không dịch ở mọi locale? Đổi tên list mặc định "Inbox/Hộp thư" (trùng nghĩa hộp thư email, đề xuất "Chưa phân loại")?
   Một file `en` hay thêm `en_GB`; tách `es-ES`/`es-419` ở đợt 1? Ngân sách dịch giả cấp B.
-- Plus hứa "máy tính" nhưng web app đang ở Phase 4: kéo web app (Flutter web, đọc/sửa) lên sớm hơn, hay ghi rõ trên paywall là "sắp có"?
 - Đăng nhập theo thị trường (Zalo/LINE/Kakao) ở Phase 1? Bán qua web? Chấp nhận CASA cho Gmail nếu Google yêu cầu? Đội ngũ thực tế.
 
 ## Việc kỹ thuật còn nợ
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.
+  Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).
 - Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.

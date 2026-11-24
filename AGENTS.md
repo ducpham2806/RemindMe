@@ -15,6 +15,7 @@ Giai đoạn: **Phase 0** (docs xong; đã có Supabase migrations + test, CI; c
 ## Stack đã chốt (lý do: `docs/architecture/decisions.md`)
 - Mobile: Flutter 3 (Dart), Riverpod, go_router, Drift (SQLite), offline-first
 - Watch: watchOS (SwiftUI) + Wear OS (Compose, Tiles), Phase 2
+- Máy tính: Flutter macOS + Windows cùng codebase, Phase 4 (ADR-014). Từ S1 giữ quy tắc `docs/architecture/multi-platform.md` §2
 - Backend: Supabase (Postgres, Auth, Storage, RLS; ghi chỉ qua RPC `sync_push`) + `worker` TypeScript (Node 22, Fastify, pg-boss)
 - i18n: ARB + ICU (`gen-l10n`), CLDR qua `intl`; NLU, mẫu tài liệu, ngày lễ là **gói dữ liệu theo locale** tải qua CDN có chữ ký
 - OS tối thiểu: iOS 17+, Android 8.0+ (ADR-011)
@@ -25,11 +26,13 @@ Giai đoạn: **Phase 0** (docs xong; đã có Supabase migrations + test, CI; c
 
 ## Cấu trúc repo (`*` = chưa tạo)
 ```
-apps/mobile/*       Flutter app
+apps/client/*       Flutter app: Android, iOS, iPadOS; macOS, Windows ở Phase 4
 apps/watch-ios/*    watchOS app        apps/wear-android/*  Wear OS app
 services/worker/*   TS worker: entitlement, hộp thư email, push, OAuth, webhooks (không phân tích nội dung, không nằm trên đường ghi)
 supabase/           migrations/ (schema, RLS, sync_push/pull, quota, seed gói), tests/database/ (pgTAP), tests/shim/
-packages/parsers/   Dart thuần*: decoder, luật + mẫu, NLU, recurrence + hệ lịch; fixtures/ (bộ mẫu eval, đã có schema)
+packages/core*      Dart thuần: model, thời gian/DST, recurrence, hệ lịch      packages/data*  Drift, outbox, sync engine
+packages/platform/* interface + adapter theo nền tảng (thông báo, OCR, STT, mua hàng...)
+packages/parsers/   Dart thuần*: decoder, luật + mẫu, NLU; fixtures/ (bộ mẫu eval, đã có schema)
 docs/               tài liệu (bản đồ: docs/INDEX.md)
 tools/              script cho AI tooling (graphify, unslop)
 ```

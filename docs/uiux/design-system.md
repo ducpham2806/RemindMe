@@ -88,3 +88,7 @@ Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương
 ## 10. Bàn giao cho Flutter
 `lib/core/theme/tokens.dart` (hằng số), `app_theme.dart` (ThemeData light/dark từ token), `ThemeExtension<RemindColors>`
 cho màu ngoài Material (`travel`, `health`, `lunar`, `warning`). Mọi widget dùng token, không dùng mã màu trực tiếp.
+
+## 11. Màn hình lớn (tablet, máy tính)
+Breakpoint, master-detail, chuột/bàn phím: `architecture/multi-platform.md` §2 (nguồn chuẩn). Component phải có trạng thái hover, focus nhìn thấy được,
+tooltip cho nút chỉ có icon, và không phụ thuộc cử chỉ vuốt (luôn có nút hoặc menu thay thế). Golden test chạy ở compact, medium, expanded.

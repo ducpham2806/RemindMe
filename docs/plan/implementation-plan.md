@@ -23,7 +23,7 @@ gantt
   section Phase 3
   Gmail trên máy, flight status, kênh nhắn tin, đợt locale 3 (RTL) :p3, after p2, 8w
   section Phase 4
-  Web app, chia sẻ gia đình, gói Family          :p4, after p3, 8w
+  App máy tính macOS + Windows, chia sẻ gia đình, gói Family :p4, after p3, 8w
 ```
 Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Phase 3, **P3** = Phase 4 trở đi.
 
@@ -42,7 +42,7 @@ Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Pha
 ## Phase 1: MVP (16 tuần = 8 sprint)
 | Sprint | Mục tiêu | Deliverable chính |
 |---|---|---|
-| S1 | Bootstrap | Flutter (flavors), theme từ token, go_router, Drift schema, Supabase migrations + RLS + pgTAP, **auth (anonymous + Google + Apple + email OTP)**, khung i18n (L1), CI build/test |
+| S1 | Bootstrap | Flutter `apps/client` (flavors; Android, iOS, iPadOS) + package `core`/`data`/`platform`, `PlatformCapabilities`, layout thích ứng 3 kích thước (`multi-platform.md` §2), theme từ token, go_router, Drift schema, Supabase migrations + RLS + pgTAP, **auth (anonymous + Google + Apple + email OTP)**, khung i18n (L1), CI build/test |
 | S2 | Todo core + sync | Lists, items, Hôm nay, chi tiết item, **RPC `sync_push`/`sync_pull` + entitlement cơ bản (`plan_entitlements`, cache client)**, Quick Add gõ (V1 gói `en`, `vi`), tìm kiếm |
 | S3 | Reminder engine | Rolling window, Android exact alarm + receivers, iOS categories/actions, snooze, DST/tz (`reminder-engine.md` §5), nhiều thiết bị, telemetry, onboarding OEM |
 | S4 | Lặp, hệ lịch, giọng nói | RRULE UI + engine, âm lịch VN/TQ/HQ, ngày lễ/cuối tuần theo quốc gia (L3), STT của OS + bias (V2), đa việc trong 1 câu; E3.2/E4.3 bắt đầu song song |
@@ -57,7 +57,7 @@ Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Pha
 
 ## Phase 2: Hệ sinh thái (8 tuần)
 Apple Watch app + complication, Wear OS app + Tile, widget iOS/Android, Google Calendar 2 chiều (sau OAuth verification), Google Tasks, Notion,
-feed ICS, import Todoist/TickTick, nhắc kiểu báo thức, nhắc vị trí, Siri/App Intents, E7 (LLM của OS), V3 (model giọng nói tải về),
+feed ICS, import Todoist/TickTick, (tùy chọn) app iPad chạy trên Mac Apple Silicon, nhắc kiểu báo thức, nhắc vị trí, Siri/App Intents, E7 (LLM của OS), V3 (model giọng nói tải về),
 mẫu cho thị trường đợt 2, **đợt locale 2** (`i18n-l10n.md` §2), Hijri.
 
 ## Phase 3: Thông minh hơn (8 tuần)
@@ -65,7 +65,8 @@ Gmail chạy trên máy, trạng thái chuyến bay + Live Activities, kênh nh�
 thống kê thói quen, E8 nếu cần, **đợt locale 3 (gồm RTL `ar`, `he`)**, Hebrew/Persian/lịch Ấn Độ.
 
 ## Phase 4: Mở rộng
-Web app (Flutter web hoặc Next.js) đọc/sửa, chia sẻ chuyến đi/list cho gia đình, gói Family, data residency EU nếu cần (ADR-011).
+**App máy tính macOS + Windows** (kế hoạch D bên dưới, ADR-014), chia sẻ chuyến đi/list cho gia đình, gói Family, data residency EU nếu cần (ADR-011).
+Sau đó: web app (Flutter web) đọc/sửa. Tới khi có app máy tính, paywall Plus ghi "máy tính: sắp có" (`desktop_client_available = false`).
 
 ## E. Trích xuất tài liệu trên máy (chi tiết)
 Ước lượng theo ngày công (d) của 1 dev, chưa gồm review/QA. Thiết kế: `architecture/on-device-extraction.md`.
@@ -134,6 +135,17 @@ E7: Foundation Models (`@Generable`, iOS 27 nhận ảnh) + Gemini Nano Prompt A
 E8: Gemma nhỏ qua LiteRT-LM cho máy RAM ≥ 8 GB không có LLM của OS; chỉ làm nếu E7 chứng minh có ích.
 
 **Tổng E0-E6: ~56 ngày công.** E0 ở Phase 0; E3.2 và E4.3 bắt đầu từ S4 (khi có fixtures); phần còn lại trong S5-S6.
+
+## D. App máy tính (chi tiết, Phase 4)
+Thiết kế: `architecture/multi-platform.md`. Điều kiện để D rẻ: quy tắc §2 của tài liệu đó được giữ từ S1 (Code Reviewer kiểm mỗi PR).
+| # | Việc | d | AC |
+|---|---|---|---|
+| D0 | Spike: build `macos`/`windows` từ codebase, chạy thử mọi plugin; đo giờ kêu thông báo Windows; OAuth trên desktop | 3 | Danh sách plugin cần thay; quyết định OCR Windows (Windows OCR hay PP-OCRv5) |
+| D1 | macOS: Vision OCR + STT (dùng chung code Swift với iOS), thông báo, StoreKit qua RevenueCat, sandbox, Mac App Store | 5 | Luồng P0 chạy trên Mac; mua Plus trên Mac |
+| D2 | Windows: OCR, thông báo toast, đăng nhập (email OTP + OAuth qua trình duyệt), MSIX + Microsoft Store, màn "Mua trên điện thoại/web" | 8 | Luồng P0 chạy trên Windows 10/11; không có nút mua trong app |
+| D3 | UX máy tính: phím tắt, kéo thả file để import, menu chuột phải, cửa sổ nhỏ nhất 800x600, (tùy chọn) Quick Add từ khay hệ thống/menu bar | 5 | Test 5 người dùng máy tính |
+| D4 | QA, LQA ảnh chụp desktop, phát hành; bật `desktop_client_available` | 5 | Cổng chất lượng như mobile |
+**Tổng D: ~26 ngày công** (1 dev Flutter + phần native macOS/Windows).
 
 ## V. Giọng nói & NLU (chi tiết)
 Thiết kế: `architecture/voice-and-text-input.md`.

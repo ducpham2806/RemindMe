@@ -12,6 +12,16 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · Lộ trình app máy tính, chuẩn bị nền tảng để nâng cấp (ADR-014) · Claude Code
+- **Làm:** chủ dự án chốt: paywall ghi "máy tính: sắp có"; máy tính có thể là app PC/MacBook. Thêm ADR-014 (một codebase Flutter, macOS + Windows ở Phase 4)
+  và `architecture/multi-platform.md` (lộ trình, 6 quy tắc code từ S1, ma trận năng lực theo nền tảng, phát hành desktop).
+  Plan: Phase 4 = app máy tính + Family; kế hoạch D (D0-D4, ~26 ngày công); S1 thêm cấu trúc package + `PlatformCapabilities` + layout thích ứng;
+  Phase 2 tùy chọn cho app iPad chạy trên Mac. Đổi `apps/mobile` → `apps/client`; AGENTS thêm package `core`/`data`/`platform`.
+  Pricing: chuỗi `paywall_devices` có "(sắp có)", bật/tắt bằng remote config `desktop_client_available`. Design system §11 màn hình lớn.
+- **Kiểm chứng (tra web 24/11/2026):** `flutter_local_notifications` hỗ trợ Windows từ 19.5 (chưa thấy xác nhận độ chính xác giờ kêu);
+  `purchases_flutter` hỗ trợ macOS, không hỗ trợ Windows, có Web Billing; `Windows.Media.Ocr` cần package identity, ngôn ngữ theo language pack.
+- **Dở dang / tiếp theo:** chính sách thanh toán Microsoft Store chưa xác minh; xem `docs/STATE.md`.
+
 ## 2026-11-24 · Plus đăng nhập nhiều loại thiết bị (ADR-013 sửa đổi 1) · Claude Code
 - **Làm:** chủ dự án duyệt: Plus dùng đồng thời điện thoại, tablet, laptop. Migration `20261124000007_plus_multi_device.sql`: entitlement
   `max_devices_per_class` (Free 1, Plus 1) + `max_active_devices` Plus 3; cột `device_class` (web/desktop luôn `computer`, `ipados` luôn `tablet`);

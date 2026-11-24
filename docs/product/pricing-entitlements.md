@@ -41,7 +41,7 @@
 | `max_originals_mb` | 0 | 1024 | "Giữ bản gốc" trên cloud (Free: bản gốc chỉ nằm trên máy) |
 | `max_lists` | 5 | -1 | Inbox không tính |
 | `max_active_devices` | 1 | 3 | Tổng số thiết bị đăng nhập cùng lúc; vượt thì máy hoạt động lâu nhất bị đăng xuất (ADR-013). Đồng hồ, widget không tính |
-| `max_devices_per_class` | 1 | 1 | Số thiết bị mỗi loại (`phone`, `tablet`, `computer`): Plus = 1 điện thoại + 1 tablet + 1 máy tính. `-1` cho phép nhiều máy cùng loại |
+| `max_devices_per_class` | 1 | 1 | Số thiết bị mỗi loại (`phone`, `tablet`, `computer`): Plus = 1 điện thoại + 1 tablet + 1 máy tính (app máy tính: Phase 4, ghi "sắp có"). `-1` cho phép nhiều máy cùng loại |
 | `calendar_sync_accounts` | 1 | 5 | Google/Microsoft |
 | `feature_watch_app` | 1 | 2 | 1 = xem danh sách + Xong/Hoãn; 2 = thêm nhanh bằng giọng nói, complication/tile, Live Activities. Thông báo mirror luôn có |
 | `feature_ics_feed` | 0 | 1 | Feed webcal (Phase 2) |
@@ -72,7 +72,7 @@
 | Import lần thứ 11 trong tháng | Vẫn đọc xong trên máy, hiện kết quả mờ của 1 candidate + CTA nâng cấp |
 | Chuyến đi thứ 2 | "Gói Free có 1 chuyến đi. Lưu trữ chuyến cũ hoặc nâng cấp" |
 | Ngày có đủ số nhắc tối đa | Banner nhẹ trong Hôm nay, không popup |
-| Free đăng nhập thiết bị thứ 2 | Trong hộp xác nhận đăng xuất máy cũ (UX §3.7): `paywall_devices`: "Plus dùng cùng lúc trên điện thoại, tablet và máy tính." [Nâng cấp] [Tiếp tục với 1 thiết bị] |
+| Free đăng nhập thiết bị thứ 2 | Trong hộp xác nhận đăng xuất máy cũ (UX §3.7): `paywall_devices`: "Plus dùng cùng lúc trên điện thoại, tablet và máy tính (sắp có)." Bỏ "(sắp có)" khi remote config `desktop_client_available = true` (ADR-014) [Nâng cấp] [Tiếp tục với 1 thiết bị] |
 - Không hiện paywall trong 3 ngày đầu sau khi cài, trừ khi người dùng chạm giới hạn.
 - Paywall phải ghi rõ giá, kỳ, cách hủy, link Terms/Privacy, nút Khôi phục mua hàng (yêu cầu store).
 
