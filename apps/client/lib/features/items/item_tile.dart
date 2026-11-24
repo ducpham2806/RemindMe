@@ -31,6 +31,17 @@ class ItemTile extends ConsumerWidget {
     }
   }
 
+  Widget? _trailing(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final recurring = ref.watch(recurringIdsProvider).value?.contains(item.id) ?? false;
+    final icons = [
+      if (recurring) Icon(Icons.repeat, size: 18, color: theme.colorScheme.onSurfaceVariant, semanticLabel: l.recurCustom),
+      if (item.priority >= 3) Icon(Icons.priority_high, color: theme.colorScheme.error, semanticLabel: l.priorityHigh),
+    ];
+    return icons.isEmpty ? null : Row(mainAxisSize: MainAxisSize.min, children: icons);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
@@ -54,7 +65,7 @@ class ItemTile extends ConsumerWidget {
       subtitle: when == null
           ? null
           : Text(when, style: overdue ? TextStyle(color: theme.colorScheme.error) : null),
-      trailing: item.priority >= 3 ? Icon(Icons.priority_high, color: theme.colorScheme.error, semanticLabel: l.priorityHigh) : null,
+      trailing: _trailing(context, ref),
       onTap: () => context.push('/today/item/${item.id}'),
     );
     if (item.isDone) return tile;

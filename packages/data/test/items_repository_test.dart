@@ -109,6 +109,22 @@ void main() {
       expect((await repo.watchToday(day).first).today.single.id, id);
     });
 
+    test('việc lặp: tạo hàng recurrences cùng outbox, time_mode floating; âm lịch lưu calendar', () async {
+      final id = await repo.create(
+          title: 'Uống thuốc', startsAt: DateTime.utc(2026, 12, 1, 13), tz: 'Asia/Ho_Chi_Minh',
+          recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY'}, recurrenceStart: DateTime.utc(2026, 12, 1, 13));
+      expect(await repo.recurrenceOf(id), containsPair('rrule', 'FREQ=DAILY'));
+      expect(await repo.watchRecurringIds().first, {id});
+      final row = await db.customSelect('SELECT time_mode FROM items WHERE id = ?', variables: [Variable.withString(id)]).getSingle();
+      expect(row.data['time_mode'], 'floating');
+      expect(await repo.engine.pendingCount(), 2);
+
+      final lunar = await repo.create(title: 'Đi chùa', startDate: '2026-12-24',
+          recurrence: {'kind': 'calendar', 'calendar': {'system': 'lunar_vi', 'day': 15}}, recurrenceStart: DateTime.utc(2026, 12, 23, 17));
+      expect((await repo.recurrenceOf(lunar))!['calendar'], {'system': 'lunar_vi', 'day': 15});
+      expect(() => repo.create(title: 'x', recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY'}), throwsArgumentError);
+    });
+
     test('device_id sinh 1 lần cho mỗi DB (mỗi lần cài)', () async {
       final a = await InstallInfo.deviceId(db);
       expect(await InstallInfo.deviceId(db), a);

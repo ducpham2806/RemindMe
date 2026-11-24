@@ -51,5 +51,18 @@
   "itemAllDay": "[Àļļ đàý~~]",
   "itemDateAllDay": "[{date} · Àļļ đàý~~]",
   "itemDateTime": "[{date} · {time}]",
-  "loadError": "[Çöûļđñ’ţ ļöàđ ýöûŕ îţéɱš~~~~~~~~]"
+  "loadError": "[Çöûļđñ’ţ ļöàđ ýöûŕ îţéɱš~~~~~~~~]",
+  "recurEveryNDays": "[{n, plural, =1{Éṽéŕý đàý~~~} other{Éṽéŕý ~~{n} đàýš~~}}]",
+  "recurEveryNHours": "[{n, plural, =1{Éṽéŕý ĥöûŕ~~~~} other{Éṽéŕý ~~{n} ĥöûŕš~~}}]",
+  "recurEveryNWeeks": "[{n, plural, =1{Éṽéŕý ŵééķ~~~~} other{Éṽéŕý ~~{n} ŵééķš~~}}]",
+  "recurWeeklyOn": "[{n, plural, =1{Éṽéŕý ~~{days}} other{Éṽéŕý ~~{n} ŵééķš öñ ~~~{days}}}]",
+  "recurEveryNMonths": "[{n, plural, =1{Éṽéŕý ɱöñţĥ~~~~} other{Éṽéŕý ~~{n} ɱöñţĥš~~}}]",
+  "recurMonthlyOnDay": "[Ṁöñţĥļý öñ đàý ~~~~~{day}]",
+  "recurEveryNYears": "[{n, plural, =1{Éṽéŕý ýéàŕ~~~~} other{Éṽéŕý ~~{n} ýéàŕš~~}}]",
+  "recurLunarMonthly": "[Ļûñàŕ đàý ~~~{day}, éṽéŕý ɱöñţĥ~~~~]",
+  "recurLunarYearly": "[Éṽéŕý ýéàŕ, ļûñàŕ ɱöñţĥ ~~~~~~~~{month} đàý ~{day}]",
+  "recurCustom": "[Ŕéþéàţš~~~]",
+  "quickAddFoundN": "[{count, plural, =1{Ƒöûñđ 1 îţéɱ~~~~} other{Ƒöûñđ ~~{count} îţéɱš~~}}]",
+  "quickAddSaveAll": "[Šàṽé àļļ~~~]",
+  "quickAddDidYouMean": "[Đîđ ýöû ɱéàñ~~~~]"
 }

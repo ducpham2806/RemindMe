@@ -16,11 +16,13 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.5.0
+  flutter_timezone: ^5.1.1
   go_router: ^18.1.4
   intl: ^0.20.3
   material_ui: ^1.1.0
   remindme_core: any
   remindme_data: any
+  remindme_parsers: any
   remindme_platform: any
 
 dev_dependencies:

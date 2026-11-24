@@ -40,6 +40,7 @@ Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Pha
 - [x] (Kéo sớm S1) Workspace Dart/Flutter 3.50.1: `packages/core` (HLC, UUIDv7, entitlement, giao thức sync), `packages/platform`, `packages/data`
   (Drift + outbox + SyncEngine, contract test với Postgres), `apps/client` khung (theme token, go_router + shell thích ứng, ARB en/vi + pseudo-locale, 14 test widget). Còn của S1: flavors, auth, font
 - [x] (Kéo sớm S2) Nối Drift vào app: `ItemsRepository`, Hôm nay (Quá hạn/Hôm nay/Chưa đặt giờ/Đã xong), chi tiết item (tên, ghi chú, ưu tiên, xóa), Quick Add lưu việc; offline, outbox chờ `SupabaseSyncApi`
+- [x] (Kéo sớm S2/S3) V1 engine NLU + gói `en`, `vi` (bộ câu tổng hợp, chờ bộ thật ≥ 300), recurrence engine + âm lịch VN/TQ/HQ (`packages/core`)
 - **Gate:** PRD chốt sau phỏng vấn; prototype pass (≥ 4/5 người hoàn thành tác vụ chính); spike có kết luận engine OCR/STT cho từng nền tảng.
 
 ## Phase 1: MVP (16 tuần = 8 sprint)

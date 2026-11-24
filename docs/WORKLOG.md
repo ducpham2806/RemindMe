@@ -12,6 +12,24 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · S1/S2 không cần tài khoản: chặn clock, nối DB vào app, NLU en/vi, recurrence + âm lịch · Claude Code
+- **Làm:**
+  - CI run #9 không tạo job (tên step chứa `: ` làm YAML hỏng) → quote; run #10 xanh cả 3 job.
+  - DB migration 08: clock HLC sai định dạng → `invalid/malformed_clock`; clock > now()+1 ngày kẹp về giờ server (`clamped`).
+    SyncEngine nhận clock server cho trường bị kẹp, `SyncReport.clockSkewDetected`. pgTAP 007 + contract test máy sai giờ năm 2030.
+  - `packages/data`: `ItemsRepository` (tạo/xong/mở lại/đổi tên/ghi chú có `base_clock`/ưu tiên/xóa/lặp), `DayWindow`, `TodaySections`,
+    `InstallInfo.deviceId`. SyncEngine báo bảng thay đổi cho stream Drift (trước đó stream không cập nhật sau `customUpdate`).
+  - `apps/client`: `drift_flutter`, providers; Hôm nay (Quá hạn/Hôm nay/Chưa đặt giờ/Đã xong, vuốt = Xong + Hoàn tác, 🔁), chi tiết item,
+    Quick Add có NLU: chip thời điểm/lặp/tag/ưu tiên, chip "Ý bạn là" khi mơ hồ, nhiều việc → "Lưu tất cả"; múi giờ IANA qua `flutter_timezone` (`lib/platform/`).
+  - `packages/parsers`: engine NLU không chứa từ ngữ + gói YAML `en`, `vi` (Bắc/Trung/Nam), bộ câu tổng hợp vi 76 / en 59, eval theo §7.
+  - `packages/core`: `CivilDate/Time/DateTime`, âm lịch Hồ Ngọc Đức (+7/+8/+9), `Recurrence` (bọc `rrule`, âm lịch, sau khi hoàn thành).
+- **Quyết định:** `device_id` lưu trong DB local thay vì secure storage (Keychain còn sau khi gỡ app, trái "1 lần mỗi lần cài"; multi-platform §2.5).
+  Tháng nhuận chỉ `skip | both` (bỏ `first` chưa định nghĩa), ngày 30 tháng thiếu → 29 (reminder-engine §4). Gói NLU là asset của `remindme_parsers`.
+- **Kiểm chứng:** `flutter analyze` 0; core 35, platform 2, data 17 (+4 contract với Postgres), parsers 17, client 28 test pass; pgTAP 109 pass.
+  Âm lịch khớp Tết 2023-2027, Tết VN/TQ 1985/2007, nhuận 2023/2025, Trung thu, Giỗ Tổ. NLU (bộ tổng hợp, do nhóm viết): vi 100%, en 98,3%, 0 sai nguy hiểm.
+- **Dở dang / tiếp theo:** bộ câu thật ≥ 300/gói (cần người dùng 3 miền); Hôm nay chưa trải lần lặp (chỉ hiện ngày bắt đầu: làm ở S3 cùng occurrence/rolling window);
+  ngôn ngữ giọng nói riêng (V2); auth/`SupabaseSyncApi` chờ project.
+
 ## 2026-11-24 · S1 phần 1: workspace Flutter, core/platform/data, sync engine, app khung · Claude Code
 - **Làm:**
   - Cài Flutter 3.50.1 (Dart 3.14) trong container; pub workspace ở gốc (`pubspec.yaml`, `analysis_options.yaml`).

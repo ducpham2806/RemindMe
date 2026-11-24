@@ -12,7 +12,9 @@
   `apps/client` (theme token, go_router + shell thích ứng 3 cỡ, ARB en/vi + pseudo `en_XA`, Ctrl/Cmd+N Quick Add). CI thêm job `flutter` + contract test.
 - App chạy offline với DB thật (`drift_flutter`): Hôm nay (Quá hạn/Hôm nay/Chưa đặt giờ/Đã xong, vuốt = Xong + Hoàn tác), chi tiết item
   (tên, ghi chú có `base_clock`, ưu tiên, xóa), Quick Add lưu việc. `ItemsRepository` + `InstallInfo.deviceId` trong `packages/data`. `OfflineSyncApi` giữ outbox tới khi có server.
-- Chưa có: worker, `packages/parsers` (code), auth/flavors, `SupabaseSyncApi`.
+- Quick Add hiểu câu tự nhiên en/vi (`packages/parsers`: engine NLU + gói YAML, chip thời điểm/lặp/tag/ưu tiên, "Ý bạn là" khi mơ hồ, nhiều việc 1 câu).
+  `packages/core`: âm lịch VN/TQ/HQ + `Recurrence` (RRULE qua `rrule`, âm lịch, sau khi hoàn thành). Bộ câu tổng hợp: vi 100%, en 98,3%.
+- Chưa có: worker, decoder/mẫu tài liệu, auth/flavors, `SupabaseSyncApi`; Hôm nay chưa trải các lần lặp (S3).
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
@@ -21,6 +23,7 @@
 3. Đăng ký Apple Developer (tổ chức, D-U-N-S), Google Play Console, domain, Firebase, Supabase (region theo mục 1); hồ sơ thuế storefront.
 4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
 5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
+   Bộ câu NLU thật ≥ 300 câu/gói (vi chia đều Bắc/Trung/Nam) thay bộ tổng hợp trong `packages/parsers/fixtures/nlu/`.
 6. Sprint S1 phần còn lại: tạo project Supabase/Firebase (cần tài khoản chủ dự án) → flavors dev/staging/prod, auth (ẩn danh + Google + Apple + email OTP),
    `SupabaseSyncApi` (bản thật của `SyncApi`, thay `OfflineSyncApi`) + luồng `profile_init` → `session_claim` → sync; bundle font Be Vietnam Pro; golden test.
 

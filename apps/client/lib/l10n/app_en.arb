@@ -251,5 +251,125 @@
   "loadError": "Couldn’t load your items",
   "@loadError": {
     "description": "Shown when the local database query fails (rare). No technical details."
+  },
+  "recurEveryNDays": "{n, plural, =1{Every day} other{Every {n} days}}",
+  "@recurEveryNDays": {
+    "description": "Recurrence chip: daily rule with interval n.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "recurEveryNHours": "{n, plural, =1{Every hour} other{Every {n} hours}}",
+  "@recurEveryNHours": {
+    "description": "Recurrence chip: hourly rule with interval n.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "recurEveryNWeeks": "{n, plural, =1{Every week} other{Every {n} weeks}}",
+  "@recurEveryNWeeks": {
+    "description": "Recurrence chip: weekly rule without specific days.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "recurWeeklyOn": "{n, plural, =1{Every {days}} other{Every {n} weeks on {days}}}",
+  "@recurWeeklyOn": {
+    "description": "Recurrence chip: weekly on given days. {days} is a comma-separated list of CLDR short weekday names.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "1"
+      },
+      "days": {
+        "type": "String",
+        "example": "Mon, Wed, Fri"
+      }
+    }
+  },
+  "recurEveryNMonths": "{n, plural, =1{Every month} other{Every {n} months}}",
+  "@recurEveryNMonths": {
+    "description": "Recurrence chip: monthly rule.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "recurMonthlyOnDay": "Monthly on day {day}",
+  "@recurMonthlyOnDay": {
+    "description": "Recurrence chip: monthly on a day of month (1-31, or -1 for last day handled elsewhere).",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "recurEveryNYears": "{n, plural, =1{Every year} other{Every {n} years}}",
+  "@recurEveryNYears": {
+    "description": "Recurrence chip: yearly rule.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "recurLunarMonthly": "Lunar day {day}, every month",
+  "@recurLunarMonthly": {
+    "description": "Recurrence chip: every lunar month on lunar day {day} (e.g. 15 = full moon).",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+  "recurLunarYearly": "Every year, lunar month {month} day {day}",
+  "@recurLunarYearly": {
+    "description": "Recurrence chip: yearly on a lunar date (e.g. a death anniversary).",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "example": "10"
+      },
+      "month": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "recurCustom": "Repeats",
+  "@recurCustom": {
+    "description": "Recurrence chip when the rule cannot be summarized."
+  },
+  "quickAddFoundN": "{count, plural, =1{Found 1 item} other{Found {count} items}}",
+  "@quickAddFoundN": {
+    "description": "Quick Add: one sentence contained several items.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "quickAddSaveAll": "Save all",
+  "@quickAddSaveAll": {
+    "description": "Quick Add button saving every detected item."
+  },
+  "quickAddDidYouMean": "Did you mean",
+  "@quickAddDidYouMean": {
+    "description": "Label before alternative chips when the date or time was ambiguous."
   }
 }

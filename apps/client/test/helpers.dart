@@ -12,7 +12,7 @@ final testNow = DateTime(2026, 12, 1, 10);
 
 /// App với DB in-memory. Trả container để test đọc repo/DB.
 Future<ProviderContainer> pumpApp(WidgetTester tester,
-    {required Size size, Locale? locale, double textScale = 1.0, Future<void> Function(ItemsRepository repo)? seed}) async {
+    {required Size size, Locale? locale, double textScale = 1.0, String? region = 'US', Future<void> Function(ItemsRepository repo)? seed}) async {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
@@ -24,6 +24,8 @@ Future<ProviderContainer> pumpApp(WidgetTester tester,
   final container = ProviderContainer(overrides: [
     appDatabaseProvider.overrideWithValue(db),
     deviceIdProvider.overrideWithValue('test-device'),
+    deviceTimeZoneProvider.overrideWithValue('Asia/Ho_Chi_Minh'),
+    deviceRegionProvider.overrideWithValue(region),
     nowProvider.overrideWithValue(() => testNow),
   ]);
   addTearDown(() async {

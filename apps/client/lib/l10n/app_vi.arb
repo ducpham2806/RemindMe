@@ -51,5 +51,18 @@
   "itemAllDay": "Cả ngày",
   "itemDateAllDay": "{date} · Cả ngày",
   "itemDateTime": "{date} · {time}",
-  "loadError": "Không tải được dữ liệu"
+  "loadError": "Không tải được dữ liệu",
+  "recurEveryNDays": "{n, plural, =1{Hằng ngày} other{Mỗi {n} ngày}}",
+  "recurEveryNHours": "{n, plural, =1{Mỗi giờ} other{Mỗi {n} giờ}}",
+  "recurEveryNWeeks": "{n, plural, =1{Hằng tuần} other{Mỗi {n} tuần}}",
+  "recurWeeklyOn": "{n, plural, =1{{days} hằng tuần} other{{days}, mỗi {n} tuần}}",
+  "recurEveryNMonths": "{n, plural, =1{Hằng tháng} other{Mỗi {n} tháng}}",
+  "recurMonthlyOnDay": "Ngày {day} hằng tháng",
+  "recurEveryNYears": "{n, plural, =1{Hằng năm} other{Mỗi {n} năm}}",
+  "recurLunarMonthly": "Ngày {day} âm lịch hằng tháng",
+  "recurLunarYearly": "Ngày {day} tháng {month} âm lịch hằng năm",
+  "recurCustom": "Lặp lại",
+  "quickAddFoundN": "{count, plural, other{Tìm thấy {count} mục}}",
+  "quickAddSaveAll": "Lưu tất cả",
+  "quickAddDidYouMean": "Ý bạn là"
 }

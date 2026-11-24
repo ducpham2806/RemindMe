@@ -159,6 +159,23 @@ class ItemsRepository {
     return q.watch().map((rows) => TodaySections.partition(rows.map(ItemView.fromRow), day));
   }
 
+  /// id các item có lặp (để hiện biểu tượng 🔁).
+  Stream<Set<String>> watchRecurringIds() {
+    final q = _db.select(_db.recurrences)..where((t) => t.deletedAt.isNull());
+    return q.watch().map((rows) => {for (final r in rows) r.itemId});
+  }
+
+  Future<Map<String, Object?>?> recurrenceOf(String itemId) async {
+    final r = await (_db.select(_db.recurrences)..where((t) => t.itemId.equals(itemId) & t.deletedAt.isNull())).getSingleOrNull();
+    if (r == null) return null;
+    return {
+      'kind': r.kind,
+      'rrule': r.rrule,
+      'calendar': r.calendar == null ? null : jsonDecode(r.calendar!),
+      'interval_days': r.intervalDays,
+    };
+  }
+
   Stream<ItemView?> watchItem(String id) {
     final q = _db.select(_db.items)..where((t) => t.id.equals(id) & t.deletedAt.isNull());
     return q.watchSingleOrNull().map((r) => r == null ? null : ItemView.fromRow(r));
@@ -176,10 +193,13 @@ class ItemsRepository {
     List<String> tags = const [],
     String source = 'manual',
     String? notes,
+    Map<String, Object?>? recurrence,
+    DateTime? recurrenceStart,
   }) async {
     final trimmed = title.trim();
     if (trimmed.isEmpty) throw ArgumentError.value(title, 'title', 'không được rỗng');
     if (startsAt != null && tz == null) throw ArgumentError('startsAt cần tz IANA đi kèm');
+    if (recurrence != null && recurrenceStart == null) throw ArgumentError('recurrence cần recurrenceStart (dtstart)');
     final id = uuidV7(nowMillis: _now().millisecondsSinceEpoch);
     await engine.edit(SyncTable.items, id, {
       'kind': kind,
@@ -194,7 +214,15 @@ class ItemsRepository {
       'tz': ?tz,
       'start_date': ?startDate,
       'notes': ?notes,
+      // Việc lặp "8h sáng mỗi ngày" kêu theo giờ nơi đang đứng (reminder-engine.md §5).
+      if (recurrence != null) 'time_mode': kind == 'task' || kind == 'habit' ? 'floating' : 'fixed',
     });
+    if (recurrence != null) {
+      await engine.edit(SyncTable.recurrences, id, {
+        ...recurrence,
+        'dtstart': recurrenceStart!.toUtc().toIso8601String(),
+      });
+    }
     return id;
   }
 

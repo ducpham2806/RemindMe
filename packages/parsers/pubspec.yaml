@@ -9,3 +9,9 @@ dependencies:
   yaml: ^3.1.2
 dev_dependencies:
   test: ^1.25.0
+
+# Gói ngữ pháp đóng sẵn trong app (bản cập nhật tải qua CDN có chữ ký sau này). App đọc: packages/remindme_parsers/nlu/packs/<lang>.yaml
+flutter:
+  assets:
+    - nlu/packs/en.yaml
+    - nlu/packs/vi.yaml

@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:remindme_core/remindme_core.dart';
 import 'package:remindme_data/remindme_data.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -38,5 +39,16 @@ class Fmt {
     if (s == null) return null;
     final sameDay = !s.isBefore(today.startUtc) && s.isBefore(today.endUtc);
     return sameDay ? time(s) : l.itemDateTime(date(s.toLocal()), time(s));
+  }
+
+  /// Thời điểm giờ tường từ NLU (chip Quick Add): "Cả ngày" / giờ nếu là hôm nay, kèm ngày nếu khác hôm nay.
+  String civil(CivilDateTime w, {required CivilDate today}) {
+    final l = AppLocalizations.of(_context);
+    final d = DateTime(w.date.year, w.date.month, w.date.day, w.time?.hour ?? 0, w.time?.minute ?? 0);
+    final isToday = w.date == today;
+    if (w.time == null) return isToday ? l.itemAllDay : l.itemDateAllDay(date(d));
+    final t = MaterialLocalizations.of(_context).formatTimeOfDay(TimeOfDay(hour: d.hour, minute: d.minute),
+        alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(_context));
+    return isToday ? t : l.itemDateTime(date(d), t);
   }
 }

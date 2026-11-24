@@ -32,6 +32,7 @@ Paywall và store listing đọc remote config `desktop_client_available` (mặc
 |---|---|---|---|---|
 | DB local, sync, auth | Drift (sqlite3), `supabase_flutter` | Như mobile | Như mobile | Drift wasm (thử nghiệm) |
 | Đăng nhập | Google, Apple, email OTP | Như mobile; OAuth qua trình duyệt + URL scheme | Email OTP ưu tiên; OAuth qua trình duyệt + protocol MSIX | Như web |
+| Múi giờ IANA của máy | `flutter_timezone` | Như mobile | Như mobile | Như mobile (Intl API) |
 | Nhắc local | `flutter_local_notifications` (AlarmManager / UNNotification) | Có (UNUserNotification) | Có từ 19.5 ([changelog](https://pub.dev/packages/flutter_local_notifications/changelog)); không có lặp sẵn, nhưng rolling window đã lập lịch từng lần; **cần test giờ kêu trên máy thật** | Không lập lịch được |
 | Push | FCM / APNs | APNs qua FCM | Không có FCM: sync khi mở app + Realtime; WNS để sau | FCM web |
 | OCR | ML Kit / Vision | Vision (dùng chung code Swift với iOS) | `Windows.Media.Ocr` (cần package identity → phát hành MSIX, ngôn ngữ theo language pack cài trên máy, [docs](https://learn.microsoft.com/uwp/api/windows.media.ocr.ocrengine)); thiếu ngôn ngữ thì PP-OCRv5 qua `onnxruntime` | Không (chỉ PDF có text) |
