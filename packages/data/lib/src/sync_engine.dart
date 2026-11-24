@@ -13,6 +13,9 @@ class SyncReport {
   final List<MutationResult> issues = [];
   SyncErrorCode? error;
 
+  /// Server phải kẹp clock của máy này: đồng hồ máy chạy nhanh quá 1 ngày. App nên nhắc người dùng chỉnh giờ.
+  bool clockSkewDetected = false;
+
   /// Server báo phiên đã bị đá (ADR-013): app phải hủy thông báo đã lập lịch và đăng xuất.
   bool get sessionRevoked => error == SyncErrorCode.sessionRevoked;
 }
@@ -110,9 +113,10 @@ class SyncEngine {
         await _bumpAttempts(batch);
         rethrow;
       }
+      final pendingAfter = await _pendingFields(afterSeq: batch.last.seq);
       await db.transaction(() async {
         for (var i = 0; i < results.length; i++) {
-          await _applyResult(mutations[i], results[i], report);
+          await _applyResult(mutations[i], results[i], report, pendingAfter);
         }
         await (db.delete(db.outbox)..where((o) => o.seq.isIn(batch.map((e) => e.seq)))).go();
       });
@@ -120,9 +124,16 @@ class SyncEngine {
     }
   }
 
-  Future<void> _applyResult(Mutation m, MutationResult r, SyncReport report) async {
+  Future<void> _applyResult(Mutation m, MutationResult r, SyncReport report, Set<String> pendingAfter) async {
     final row = r.serverRow;
-    if (row != null) await _applyServerRow(m.table, row);
+    // Trường bị kẹp: clock local (ở tương lai) phải nhường clock server, nếu không bản sửa đúng giờ từ máy khác
+    // sẽ không bao giờ thắng ở máy này. Bỏ qua trường còn bản sửa mới hơn đang chờ trong outbox.
+    final force = {
+      for (final f in r.clampedFields)
+        if (!pendingAfter.contains('${m.table.wire}/${m.id}/$f')) f,
+    };
+    if (r.clampedFields.isNotEmpty) report.clockSkewDetected = true;
+    if (row != null) await _applyServerRow(m.table, row, forceFields: force);
     if (r.status == MutationStatus.ok) return;
     report.issues.add(r);
     await db.into(db.syncIssues).insert(SyncIssuesCompanion.insert(
@@ -154,18 +165,18 @@ class SyncEngine {
 
   // ------------------------------------------------------------------ merge
 
-  Future<void> _applyServerRow(SyncTable t, Map<String, Object?> row) async {
+  Future<void> _applyServerRow(SyncTable t, Map<String, Object?> row, {Set<String> forceFields = const {}}) async {
     final serverClocks = ((row['field_clock'] as Map<String, Object?>?) ?? const {}).cast<String, String>();
     for (final c in serverClocks.values) {
       clock.receive(Hlc.parse(c));
     }
-    await _mergeIntoLocal(t, row, serverClocks, fromServer: true);
+    await _mergeIntoLocal(t, row, serverClocks, fromServer: true, forceFields: forceFields);
   }
 
   /// Ghi [values] vào hàng local: trường nào có clock ≥ clock local thì lấy (server thắng khi bằng nhau,
   /// vì server là nơi đã quyết LWW). Cột đồng bộ: version lấy max, tombstone không bị gỡ.
   Future<void> _mergeIntoLocal(SyncTable t, Map<String, Object?> values, Map<String, String> clocks,
-      {required bool fromServer}) async {
+      {required bool fromServer, Set<String> forceFields = const {}}) async {
     final codec = _codecs[t]!;
     final keys = RowCodec.keyColumns(t);
     final where = keys.map((k) => '$k = ?').join(' AND ');
@@ -181,7 +192,7 @@ class SyncEngine {
       if (!values.containsKey(c)) continue;
       final incoming = clocks[c] ?? '';
       final local = localClocks[c] ?? '';
-      final wins = existing == null || keys.contains(c) || (fromServer ? incoming.compareTo(local) >= 0 : incoming.compareTo(local) > 0);
+      final wins = existing == null || keys.contains(c) || forceFields.contains(c) || (fromServer ? incoming.compareTo(local) >= 0 : incoming.compareTo(local) > 0);
       if (!wins) continue;
       out[c] = codec.toLocal(c, values[c]);
       if (clocks.containsKey(c)) mergedClocks[c] = incoming;
@@ -234,6 +245,19 @@ class SyncEngine {
 
   Future<void> _setState(String key, String value) =>
       db.into(db.syncState).insertOnConflictUpdate(SyncStateCompanion.insert(key: key, value: value));
+
+  /// `table/id/field` của các mutation trong outbox có seq > [afterSeq] (sửa trong lúc đang push).
+  Future<Set<String>> _pendingFields({required int afterSeq}) async {
+    final rows = await (db.select(db.outbox)..where((o) => o.seq.isBiggerThanValue(afterSeq))).get();
+    final out = <String>{};
+    for (final e in rows) {
+      final m = Mutation.fromJson(jsonDecode(e.mutation) as Map<String, Object?>);
+      for (final f in m.payload.keys) {
+        out.add('${m.table.wire}/${m.id}/$f');
+      }
+    }
+    return out;
+  }
 
   Future<int> pendingCount() async => (await db.select(db.outbox).get()).length;
 

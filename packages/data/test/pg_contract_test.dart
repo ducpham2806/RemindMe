@@ -5,6 +5,7 @@
 @TestOn('vm')
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
@@ -79,7 +80,8 @@ void main() {
   });
 
   /// Tạo user + profile; trả hàm đăng nhập 1 thiết bị (tạo phiên + session_claim) → SyncEngine.
-  Future<Future<(SyncEngine, AppDatabase)> Function(String device, String platform, String cls)> newUser({bool plus = false}) async {
+  Future<Future<(SyncEngine, AppDatabase)> Function(String device, String platform, String cls, {int Function()? now})> newUser(
+      {bool plus = false}) async {
     final uid = uuidV7();
     await conn.execute(Sql.named('insert into auth.users (id) values (@u::uuid)'), parameters: {'u': uid});
     final bootstrap = PgSyncApi(conn, uid, uuidV7());
@@ -90,7 +92,7 @@ void main() {
               "values (@u::uuid, 'plus', 'active', now() + interval '30 days')"),
           parameters: {'u': uid});
     }
-    return (String device, String platform, String cls) async {
+    return (String device, String platform, String cls, {int Function()? now}) async {
       final sid = uuidV7();
       await conn.execute(Sql.named('insert into auth.sessions (id, user_id) values (@s::uuid, @u::uuid)'),
           parameters: {'s': sid, 'u': uid});
@@ -100,7 +102,7 @@ void main() {
         'i': TypedValue(Type.jsonb, {'platform': platform, 'device_class': cls}),
       });
       final db = AppDatabase(NativeDatabase.memory());
-      return (SyncEngine(db: db, api: api, clock: HlcClock(device), deviceId: device), db);
+      return (SyncEngine(db: db, api: api, clock: HlcClock(device, now: now), deviceId: device), db);
     };
   }
 
@@ -154,5 +156,26 @@ void main() {
     final r = await phone.sync();
     expect(r.sessionRevoked, isTrue);
     expect(await phone.pendingCount(), 1);
+  }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
+
+  test('Máy đặt sai giờ (năm 2030): server kẹp clock, bản sửa sau từ máy đúng giờ vẫn thắng ở cả 2 máy', () async {
+    final login = await newUser(plus: true);
+    final skewedNow = DateTime.utc(2030, 1, 1).millisecondsSinceEpoch;
+    final (phone, phoneDb) = await login('phone-1', 'android', 'phone', now: () => skewedNow);
+    final (tablet, tabletDb) = await login('tab-1', 'android', 'tablet');
+    final id = uuidV7();
+    await phone.edit(SyncTable.items, id, {'kind': 'task', 'title': 'from 2030'});
+    final r1 = await phone.sync();
+    expect(r1.clockSkewDetected, isTrue);
+    final clocks = jsonDecode((await row(phoneDb, id))['field_clock'] as String) as Map<String, Object?>;
+    expect((clocks['title']! as String).startsWith('$skewedNow'), isFalse, reason: 'clock title nhận giờ server');
+
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+    await tablet.sync();
+    await tablet.edit(SyncTable.items, id, {'title': 'fixed'});
+    await tablet.sync();
+    await phone.sync();
+    expect((await row(phoneDb, id))['title'], 'fixed');
+    expect((await row(tabletDb, id))['title'], 'fixed');
   }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
 }

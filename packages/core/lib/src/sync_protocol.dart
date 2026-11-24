@@ -89,6 +89,7 @@ class MutationResult {
     this.serverRow,
     this.error,
     this.details,
+    this.clampedFields = const [],
   });
 
   factory MutationResult.fromJson(Map<String, Object?> json) => MutationResult(
@@ -99,6 +100,7 @@ class MutationResult {
         serverRow: json['server_row'] as Map<String, Object?>?,
         error: json['error'] as String?,
         details: json['details'] as Map<String, Object?>?,
+        clampedFields: ((json['clamped'] as List<Object?>?) ?? const []).cast<String>(),
       );
 
   final SyncTable table;
@@ -108,6 +110,9 @@ class MutationResult {
   final Map<String, Object?>? serverRow;
   final String? error;
   final Map<String, Object?>? details;
+
+  /// Trường có clock ở tương lai quá xa bị server kẹp về giờ server (máy đặt sai giờ).
+  final List<String> clampedFields;
 
   bool get isNotesConflict => status == MutationStatus.conflict && error == 'notes_conflict';
   bool get isDeletedOnServer => status == MutationStatus.conflict && error == 'deleted';

@@ -5,7 +5,7 @@
 ## Đã có
 - Bộ docs v2 (`docs/INDEX.md`) + 14 ADR (ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
 - DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
-  + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói) + 102 test pgTAP.
+  + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói, chặn/kẹp `field_clock` sai) + 109 test pgTAP.
 - Khung repo: CI `.github/workflows/ci.yml` (3 job docs-and-lint, db + contract test, flutter đều pass trên GitHub, run #10), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
 - Workspace Dart/Flutter 3.50.1 (`pubspec.yaml` gốc): `packages/core` (HLC khớp server, UUIDv7, id Inbox, loại thiết bị, entitlement, giao thức sync),
   `packages/platform` (interface + `PlatformCapabilities`), `packages/data` (Drift mirror bảng server, outbox, `SyncEngine` merge HLC; contract test với RPC Postgres thật),
@@ -30,7 +30,6 @@
 - Đăng nhập theo thị trường (Zalo/LINE/Kakao) ở Phase 1? Bán qua web? Chấp nhận CASA cho Gmail nếu Google yêu cầu? Đội ngũ thực tế.
 
 ## Việc kỹ thuật còn nợ
-- Server chưa chặn `field_clock` ở tương lai xa (máy sai giờ năm 2030 sẽ luôn thắng LWW): kẹp clock > now()+1 ngày trong `sync_push`. Client đã báo lệch qua `HlcClock.receive`.
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).
