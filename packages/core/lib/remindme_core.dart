@@ -2,6 +2,7 @@
 /// (architecture/multi-platform.md §2).
 library;
 
+export 'src/civil.dart';
 export 'src/device.dart';
 export 'src/entitlements.dart';
 export 'src/hlc.dart';

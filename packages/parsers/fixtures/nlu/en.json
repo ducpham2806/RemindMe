@@ -1,0 +1,653 @@
+{
+ "lang": "en",
+ "note": "Câu tổng hợp do nhóm viết (không phải dữ liệu người dùng), now = thứ Ba 2026-12-01 10:00. Bộ thật ≥ 300 câu/gói thu theo §7.",
+ "cases": [
+  {
+   "text": "Dentist next Tue 3pm",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Dentist",
+    "when": "2026-12-08 15:00"
+   },
+   "id": "en-synth-0001"
+  },
+  {
+   "text": "remind me to call mom tomorrow at 7pm",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Call mom",
+    "when": "2026-12-02 19:00"
+   },
+   "id": "en-synth-0002"
+  },
+  {
+   "text": "half seven dinner with Sam",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Dinner with Sam",
+    "when": "2026-12-01 19:30",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "id": "en-synth-0003"
+  },
+  {
+   "text": "quarter to 4 pick up kids",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Pick up kids",
+    "when": "2026-12-01 15:45",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "id": "en-synth-0004"
+  },
+  {
+   "text": "take pills every morning",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Take pills",
+    "when": "2026-12-02 09:00",
+    "rec": "FREQ=DAILY"
+   },
+   "id": "en-synth-0005"
+  },
+  {
+   "text": "gym every Monday and Wednesday at 6am",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Gym",
+    "when": "2026-12-02 06:00",
+    "rec": "FREQ=WEEKLY;BYDAY=MO,WE"
+   },
+   "id": "en-synth-0006"
+  },
+  {
+   "text": "pay rent on the 5th of every month",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Pay rent",
+    "when": "2026-12-05",
+    "rec": "FREQ=MONTHLY;BYMONTHDAY=5"
+   },
+   "id": "en-synth-0007"
+  },
+  {
+   "text": "team sync every other Tuesday 10am",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Team sync",
+    "when": "2026-12-08 10:00",
+    "rec": "FREQ=WEEKLY;INTERVAL=2;BYDAY=TU"
+   },
+   "id": "en-synth-0008"
+  },
+  {
+   "text": "submit report Friday next week",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Submit report",
+    "when": "2026-12-11"
+   },
+   "id": "en-synth-0009"
+  },
+  {
+   "text": "meeting 03/04",
+   "now": "2026-12-01T10:00",
+   "region": null,
+   "expect": {
+    "title": "Meeting",
+    "when": null,
+    "ambiguous": [
+     "dateOrder"
+    ],
+    "when_any": [
+     "2027-03-04",
+     "2027-04-03"
+    ]
+   },
+   "id": "en-synth-0010"
+  },
+  {
+   "text": "meeting 03/04",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Meeting",
+    "when": "2027-03-04"
+   },
+   "id": "en-synth-0011"
+  },
+  {
+   "text": "meeting 03/04",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Meeting",
+    "when": "2027-04-03"
+   },
+   "id": "en-synth-0012"
+  },
+  {
+   "text": "buy milk and eggs",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Buy milk and eggs",
+    "when": null
+   },
+   "id": "en-synth-0013"
+  },
+  {
+   "text": "call John at 3 and then email Sara at 5",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": [
+    {
+     "title": "Call John",
+     "when": "2026-12-01 15:00"
+    },
+    {
+     "title": "Email Sara",
+     "when": "2026-12-01 17:00"
+    }
+   ],
+   "id": "en-synth-0014"
+  },
+  {
+   "text": "in 2 hours check oven",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Check oven",
+    "when": "2026-12-01 12:00"
+   },
+   "id": "en-synth-0015"
+  },
+  {
+   "text": "lunch at noon",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Lunch",
+    "when": "2026-12-01 12:00"
+   },
+   "id": "en-synth-0016"
+  },
+  {
+   "text": "weigh 1.5 kg flour",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Weigh 1.5 kg flour",
+    "when": null
+   },
+   "id": "en-synth-0017"
+  },
+  {
+   "text": "dec 25 buy gifts",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Buy gifts",
+    "when": "2026-12-25"
+   },
+   "id": "en-synth-0018"
+  },
+  {
+   "text": "tonight watch movie",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Watch movie",
+    "when": "2026-12-01 20:00"
+   },
+   "id": "en-synth-0019"
+  },
+  {
+   "text": "this evening run",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Run",
+    "when": "2026-12-01 19:00"
+   },
+   "id": "en-synth-0020"
+  },
+  {
+   "text": "pick up dry cleaning Thursday",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Pick up dry cleaning",
+    "when": "2026-12-03"
+   },
+   "id": "en-synth-0021"
+  },
+  {
+   "text": "dinner Saturday 7:30pm",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Dinner",
+    "when": "2026-12-05 19:30"
+   },
+   "id": "en-synth-0022"
+  },
+  {
+   "text": "call the bank tomorrow morning",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Call the bank",
+    "when": "2026-12-02 09:00"
+   },
+   "id": "en-synth-0023"
+  },
+  {
+   "text": "flight check-in on December 5th at 6:15 am",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Flight check-in",
+    "when": "2026-12-05 06:15"
+   },
+   "id": "en-synth-0024"
+  },
+  {
+   "text": "renew passport 5 January 2027",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Renew passport",
+    "when": "2027-01-05"
+   },
+   "id": "en-synth-0025"
+  },
+  {
+   "text": "project review on 2026-12-15 at 14:00",
+   "now": "2026-12-01T10:00",
+   "region": "IN",
+   "expect": {
+    "title": "Project review",
+    "when": "2026-12-15 14:00"
+   },
+   "id": "en-synth-0026"
+  },
+  {
+   "text": "water plants every 3 days",
+   "now": "2026-12-01T10:00",
+   "region": "AU",
+   "expect": {
+    "title": "Water plants",
+    "when": "2026-12-01",
+    "rec": "FREQ=DAILY;INTERVAL=3"
+   },
+   "id": "en-synth-0027"
+  },
+  {
+   "text": "stand-up every weekday at 9:30",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Stand-up",
+    "when": "2026-12-02 09:30",
+    "rec": "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "id": "en-synth-0028"
+  },
+  {
+   "text": "mow the lawn every Saturday afternoon",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Mow the lawn",
+    "when": "2026-12-05 15:00",
+    "rec": "FREQ=WEEKLY;BYDAY=SA"
+   },
+   "id": "en-synth-0029"
+  },
+  {
+   "text": "pay credit card monthly on the 20th",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Pay credit card",
+    "when": "2026-12-20",
+    "rec": "FREQ=MONTHLY;BYMONTHDAY=20"
+   },
+   "id": "en-synth-0030"
+  },
+  {
+   "text": "mom's birthday every year on March 3",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Mom's birthday",
+    "when": "2027-03-03",
+    "rec": "FREQ=YEARLY"
+   },
+   "id": "en-synth-0031"
+  },
+  {
+   "text": "doctor appointment next Monday at 11am",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Doctor appointment",
+    "when": "2026-12-07 11:00"
+   },
+   "id": "en-synth-0032"
+  },
+  {
+   "text": "next Friday drinks with team",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Drinks with team",
+    "when": null,
+    "ambiguous": [
+     "nextWeekday"
+    ],
+    "when_any": [
+     "2026-12-04",
+     "2026-12-11"
+    ]
+   },
+   "id": "en-synth-0033"
+  },
+  {
+   "text": "call grandma this Friday",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Call grandma",
+    "when": "2026-12-04"
+   },
+   "id": "en-synth-0034"
+  },
+  {
+   "text": "tmrw 8am gym",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Gym",
+    "when": "2026-12-02 08:00"
+   },
+   "id": "en-synth-0035"
+  },
+  {
+   "text": "in 30 minutes take out the trash",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Take out the trash",
+    "when": "2026-12-01 10:30"
+   },
+   "id": "en-synth-0036"
+  },
+  {
+   "text": "in a week follow up with client",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Follow up with client",
+    "when": "2026-12-08"
+   },
+   "id": "en-synth-0037"
+  },
+  {
+   "text": "in a fortnight dentist",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Dentist",
+    "when": "2026-12-15"
+   },
+   "id": "en-synth-0038"
+  },
+  {
+   "text": "bin day every fortnight",
+   "now": "2026-12-01T10:00",
+   "region": "AU",
+   "expect": {
+    "title": "Bin day",
+    "when": "2026-12-01",
+    "rec": "FREQ=WEEKLY;INTERVAL=2"
+   },
+   "id": "en-synth-0039"
+  },
+  {
+   "text": "quarter past 5 call Tom",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Call Tom",
+    "when": "2026-12-01 17:15",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "id": "en-synth-0040"
+  },
+  {
+   "text": "20 past 4 in the afternoon meeting",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Meeting",
+    "when": "2026-12-01 16:20"
+   },
+   "id": "en-synth-0041"
+  },
+  {
+   "text": "pick up Mia at 3:15 pm",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Pick up Mia",
+    "when": "2026-12-01 15:15"
+   },
+   "id": "en-synth-0042"
+  },
+  {
+   "text": "send invoice by Friday",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Send invoice",
+    "when": "2026-12-04"
+   },
+   "id": "en-synth-0043"
+  },
+  {
+   "text": "the day after tomorrow car service",
+   "now": "2026-12-01T10:00",
+   "region": "GB",
+   "expect": {
+    "title": "Car service",
+    "when": "2026-12-03"
+   },
+   "id": "en-synth-0044"
+  },
+  {
+   "text": "remind me to stretch every hour",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Stretch",
+    "when": "2026-12-01",
+    "rec": "FREQ=HOURLY"
+   },
+   "id": "en-synth-0045"
+  },
+  {
+   "text": "Buy flowers for May",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Buy flowers for May",
+    "when": null
+   },
+   "id": "en-synth-0046"
+  },
+  {
+   "text": "arvo coffee with Jess",
+   "now": "2026-12-01T10:00",
+   "region": "AU",
+   "expect": {
+    "title": "Coffee with Jess",
+    "when": "2026-12-01 15:00"
+   },
+   "id": "en-synth-0047"
+  },
+  {
+   "text": "at 11 call support",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Call support",
+    "when": "2026-12-01 11:00",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "id": "en-synth-0048"
+  },
+  {
+   "text": "midnight renew domain",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Renew domain",
+    "when": "2026-12-02 00:00"
+   },
+   "id": "en-synth-0049"
+  },
+  {
+   "text": "dentist 12/15",
+   "now": "2026-12-01T10:00",
+   "region": null,
+   "expect": {
+    "title": "Dentist",
+    "when": "2026-12-15"
+   },
+   "id": "en-synth-0050"
+  },
+  {
+   "text": "Thanksgiving dinner Nov 26 2026",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Thanksgiving dinner",
+    "when": "2026-11-26"
+   },
+   "id": "en-synth-0051"
+  },
+  {
+   "text": "book tickets this weekend",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Book tickets",
+    "when": "2026-12-05"
+   },
+   "id": "en-synth-0052"
+  },
+  {
+   "text": "every Tuesday and Thursday at 7pm yoga",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Yoga",
+    "when": "2026-12-01 19:00",
+    "rec": "FREQ=WEEKLY;BYDAY=TU,TH"
+   },
+   "id": "en-synth-0053"
+  },
+  {
+   "text": "call dad Sunday at 5",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Call dad",
+    "when": "2026-12-06 17:00",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "id": "en-synth-0054"
+  },
+  {
+   "text": "Pay electricity bill !!!",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Pay electricity bill",
+    "when": null,
+    "priority": 3
+   },
+   "id": "en-synth-0055"
+  },
+  {
+   "text": "#work prepare slides tomorrow",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Prepare slides",
+    "when": "2026-12-02",
+    "tags": [
+     "work"
+    ]
+   },
+   "id": "en-synth-0056"
+  },
+  {
+   "text": "lunch with Alex at 12:30",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Lunch with Alex",
+    "when": "2026-12-01 12:30"
+   },
+   "id": "en-synth-0057"
+  },
+  {
+   "text": "remind me at 6 to leave for airport",
+   "now": "2026-12-01T10:00",
+   "region": "US",
+   "expect": {
+    "title": "Leave for airport",
+    "when": "2026-12-01 18:00",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "id": "en-synth-0058"
+  },
+  {
+   "text": "call Rahul at 4.30 pm",
+   "now": "2026-12-01T10:00",
+   "region": "IN",
+   "expect": {
+    "title": "Call Rahul",
+    "when": "2026-12-01 16:30"
+   },
+   "id": "en-synth-0059"
+  }
+ ]
+}

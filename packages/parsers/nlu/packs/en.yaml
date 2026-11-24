@@ -1,0 +1,169 @@
+# English grammar pack (tier A): US, UK, AU, IN. Format: README.md in this folder.
+# Patterns run in order: recurrence → times → dates → parts; within a section, longer/more specific patterns first.
+lang: en
+ordinal_suffix: '(?:st|nd|rd|th)'
+date_order:
+  default: null          # unknown region: ask when 03/04 is ambiguous
+  regions: {US: mdy, PH: mdy, CA: mdy, FM: mdy, MH: mdy, PW: mdy, GB: dmy, IE: dmy, AU: dmy, NZ: dmy, IN: dmy, SG: dmy, ZA: dmy}
+
+fillers: [remind me to, remind me, don't forget to, dont forget to, don't forget, remember to, i need to, i have to]
+filler_tails: [to]
+prepositions: [at, on, by]
+conjunctions: [and then, then, and]
+list_separators: [',', and, '&', or]
+this_words: [this coming, this, coming]
+
+numbers:
+  one: 1
+  two: 2
+  three: 3
+  four: 4
+  five: 5
+  six: 6
+  seven: 7
+  eight: 8
+  nine: 9
+  ten: 10
+  eleven: 11
+  twelve: 12
+  fifteen: 15
+  twenty: 20
+  twenty-five: 25
+  thirty: 30
+  forty-five: 45
+  quarter: 15
+
+relative_days:
+  today: 0
+  tomorrow: 1
+  tmrw: 1
+  tmr: 1
+  the day after tomorrow: 2
+  day after tomorrow: 2
+
+weekdays:
+  monday: 1
+  mon: 1
+  tuesday: 2
+  tue: 2
+  tues: 2
+  wednesday: 3
+  wed: 3
+  thursday: 4
+  thu: 4
+  thur: 4
+  thurs: 4
+  friday: 5
+  fri: 5
+  saturday: 6
+  sunday: 7
+  weekend: 6
+
+months:
+  january: 1
+  jan: 1
+  february: 2
+  feb: 2
+  march: 3
+  mar: 3
+  april: 4
+  apr: 4
+  may: 5
+  june: 6
+  jun: 6
+  july: 7
+  jul: 7
+  august: 8
+  aug: 8
+  september: 9
+  sep: 9
+  sept: 9
+  october: 10
+  oct: 10
+  november: 11
+  nov: 11
+  december: 12
+  dec: 12
+
+next_modifiers:
+  next week: next_week
+  next: next_ambiguous
+
+day_parts:
+  morning: {range: [5, 11], default: '09:00'}
+  afternoon: {range: [12, 17], default: '15:00'}
+  arvo: {range: [12, 17], default: '15:00'}
+  evening: {range: [17, 22], default: '19:00'}
+  night: {range: [20, 4], default: '21:00'}
+  tonight: {range: [17, 23], default: '20:00', rel: 0}
+
+meridiem:
+  am: am
+  a.m.: am
+  pm: pm
+  p.m.: pm
+
+units:
+  minute: minute
+  minutes: minute
+  min: minute
+  mins: minute
+  hour: hour
+  hours: hour
+  hr: hour
+  hrs: hour
+  day: day
+  days: day
+  week: week
+  weeks: week
+  fortnight: fortnight
+  month: month
+  months: month
+  year: year
+  years: year
+
+recurrence:
+  - {type: weekdays, re: 'every\s+(?:week|work)\s*day|on\s+weekdays|weekdays'}
+  - {type: everyN, value: 2, re: 'every\s+other\s+{weekday:w}'}
+  - {type: everyN, value: 2, re: 'every\s+other\s+{unit:u}'}
+  - {type: everyN, re: 'every\s+{num:n}\s+{unit:u}'}
+  - {type: everyN, value: {n: 2, u: week}, re: 'biweekly|fortnightly|every\s+fortnight'}
+  - {type: weeklyDays, re: '(?:every|each|on)\s+{wdlist:list}'}
+  - {type: weekly, re: '(?:every|each)\s+{weekday:w}|on\s+{weekday:w}s'}
+  - {type: monthlyDay, re: '(?:on\s+)?the\s+{num:d}(?:{ord})?\s+of\s+(?:every|each)\s+month|(?:every\s+month|monthly)\s+on\s+the\s+{num:d}(?:{ord})?'}
+  - {type: dailyPart, re: '(?:every|each)\s+{daypart:part}'}
+  - {type: daily, re: 'every\s*day|each\s+day|daily'}
+  - {type: weekly, re: 'every\s+week|each\s+week|weekly'}
+  - {type: monthly, re: 'every\s+month|each\s+month|monthly'}
+  - {type: yearly, re: 'every\s+year|each\s+year|yearly|annually'}
+  - {type: everyN, value: 1, re: '(?:every|each)\s+{unit:u}'}
+
+times:
+  # "in 2 hours" before clock times.
+  - {type: inDuration, value: {n: 30, u: minute}, re: 'in\s+half\s+an\s+hour'}
+  - {type: inDuration, re: 'in\s+{num:n}\s+{unit:u}'}
+  - {type: inDuration, value: 1, re: 'in\s+an?\s+{unit:u}'}
+  - {type: half, re: 'half\s+past\s+{num:h}(?:\s*{ap:ap})?(?:\s+(?:in\s+the\s+)?{daypart:part})?(?:\s+{relday:rel})?'}
+  # en-GB "half seven" = 7:30.
+  - {type: half, re: 'half\s+{num:h}(?:\s*{ap:ap})?(?:\s+(?:in\s+the\s+)?{daypart:part})?(?:\s+{relday:rel})?'}
+  - {type: past, re: '(?:a\s+)?(?<m>quarter|5|10|20|25|five|ten|twenty|twenty-five)\s+(?:minutes\s+)?past\s+{num:h}(?:\s*{ap:ap})?(?:\s+(?:in\s+the\s+)?{daypart:part})?(?:\s+{relday:rel})?'}
+  - {type: minus, re: '(?:a\s+)?(?<m>quarter|5|10|20|25|five|ten|twenty|twenty-five)\s+(?:minutes\s+)?(?:to|till|before)\s+{num:h}(?:\s*{ap:ap})?(?:\s+(?:in\s+the\s+)?{daypart:part})?(?:\s+{relday:rel})?'}
+  - {type: hm, re: '{num:h}[:.](?<m>\d{2})(?:\s*{ap:ap})?(?:\s+(?:in\s+the\s+)?{daypart:part})?(?:\s+{relday:rel})?'}
+  - {type: hm, re: '{num:h}\s*{ap:ap}(?:\s+{relday:rel})?'}
+  - {type: hm, re: '{num:h}\s+o''?clock(?:\s+(?:in\s+the\s+)?{daypart:part})?(?:\s+{relday:rel})?'}
+  - {type: hm, re: '(?:at|@)\s*{num:h}(?:\s+(?:in\s+the\s+)?{daypart:part})?(?:\s+{relday:rel})?'}
+  - {type: fixedTime, value: '12:00', re: 'noon|midday'}
+  - {type: fixedTime, value: '00:00', re: 'midnight'}
+
+dates:
+  - {type: dayMonth, re: '{year:y}-(?<mo>\d{2})-(?<d>\d{2})'}
+  - {type: dayMonth, re: '(?:the\s+)?{num:d}(?:{ord})?\s+(?:of\s+)?{month:mo}(?:,?\s+{year:y})?'}
+  - {type: dayMonth, re: '{month:mo}\s+(?:the\s+)?{num:d}(?:{ord})?(?:,?\s+{year:y})?'}
+  - {type: numericDate, re: '(?<a>\d{1,2})/(?<b>\d{1,2})(?:/(?<y>\d{4}|\d{2}))?'}
+  - {type: weekday, re: '{weekday:w}\s+{next:next}'}
+  - {type: weekday, re: '(?:{next:next}\s+|{this:this}\s+)?{weekday:w}'}
+  - {type: relday, re: '{relday:rel}(?:\s+(?:in\s+the\s+)?{daypart:part})?'}
+  - {type: inDuration, value: 1, re: 'next\s+{unit:u}'}
+
+parts:
+  - {type: part, re: '(?:{this:this}\s+|in\s+the\s+)?{daypart:part}'}

@@ -48,7 +48,7 @@ từ khóa miền (vi: "tái khám", "rằm", "mùng", "giỗ", "check-in"; en: 
 - Chỉ bật mặc định cho locale nào eval cho thấy tốt hơn OS rõ rệt (mục 7).
 
 ## 5. NLU luật: gói ngữ pháp theo ngôn ngữ
-Engine Dart duy nhất (`packages/parsers/nlu/`). Mỗi ngôn ngữ là một **gói dữ liệu** `nlu/packs/<lang>.yaml`:
+Engine Dart duy nhất (`packages/parsers/lib/src/nlu/`). Mỗi ngôn ngữ là một **gói dữ liệu** `packages/parsers/nlu/packs/<lang>.yaml` (định dạng: README cùng thư mục):
 | Phần của gói | Ví dụ (vi) | Ví dụ (en) |
 |---|---|---|
 | Từ đệm cần bỏ | "nhắc tôi", "nhớ", "đặt lịch" | "remind me to", "don't forget" |

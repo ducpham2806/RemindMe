@@ -1,0 +1,908 @@
+{
+ "lang": "vi",
+ "note": "Câu tổng hợp do nhóm viết (không phải dữ liệu người dùng), now = thứ Ba 2026-12-01 10:00. Bộ thật ≥ 300 câu/gói thu theo §7.",
+ "cases": [
+  {
+   "text": "Mai 8h sáng họp khách #congviec",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp khách",
+    "when": "2026-12-02 08:00",
+    "tags": [
+     "congviec"
+    ]
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0001"
+  },
+  {
+   "text": "nhắc tôi 3 giờ chiều gọi mẹ",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Gọi mẹ",
+    "when": "2026-12-01 15:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0002"
+  },
+  {
+   "text": "thứ 6 tuần sau nộp báo cáo !!",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Nộp báo cáo",
+    "when": "2026-12-11",
+    "priority": 2
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0003"
+  },
+  {
+   "text": "uống thuốc 8h tối mỗi ngày",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Uống thuốc",
+    "when": "2026-12-01 20:00",
+    "rec": "FREQ=DAILY"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0004"
+  },
+  {
+   "text": "đi chùa rằm",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi chùa",
+    "when": null,
+    "rec": {
+     "system": "lunar_vi",
+     "day": 15
+    }
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0005"
+  },
+  {
+   "text": "3 giờ kém 15 đón con",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đón con",
+    "when": "2026-12-01 14:45",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "dialect": "bac",
+   "id": "vi-synth-0006"
+  },
+  {
+   "text": "Gọi cho Mai",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Gọi cho Mai",
+    "when": null
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0007"
+  },
+  {
+   "text": "Ăn sáng với Lan",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Ăn sáng với Lan",
+    "when": null
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0008"
+  },
+  {
+   "text": "họp 10:30",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp",
+    "when": "2026-12-01 10:30",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0009"
+  },
+  {
+   "text": "giỗ ông 10/3 âm lịch",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Giỗ ông",
+    "when": null,
+    "rec": {
+     "system": "lunar_vi",
+     "day": 10,
+     "month": 3
+    }
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0010"
+  },
+  {
+   "text": "2 tiếng nữa tắt bếp",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Tắt bếp",
+    "when": "2026-12-01 12:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0011"
+  },
+  {
+   "text": "tối nay xem phim",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Xem phim",
+    "when": "2026-12-01 19:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0012"
+  },
+  {
+   "text": "thứ 2,4,6 tập gym 6h sáng",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Tập gym",
+    "when": "2026-12-02 06:00",
+    "rec": "FREQ=WEEKLY;BYDAY=MO,WE,FR"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0013"
+  },
+  {
+   "text": "25/12 mua quà",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Mua quà",
+    "when": "2026-12-25"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0014"
+  },
+  {
+   "text": "Mua sữa và bánh",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Mua sữa và bánh",
+    "when": null
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0015"
+  },
+  {
+   "text": "3 giờ họp",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp",
+    "when": "2026-12-01 15:00",
+    "ambiguous": [
+     "meridiem"
+    ]
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0016"
+  },
+  {
+   "text": "thứ 3 nộp đơn",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Nộp đơn",
+    "when": "2026-12-08",
+    "ambiguous": [
+     "sameWeekday"
+    ]
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0017"
+  },
+  {
+   "text": "mốt đi khám răng",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi khám răng",
+    "when": "2026-12-03"
+   },
+   "dialect": "nam",
+   "id": "vi-synth-0018"
+  },
+  {
+   "text": "ngày mốt 9 giờ sáng phỏng vấn",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Phỏng vấn",
+    "when": "2026-12-03 09:00"
+   },
+   "dialect": "nam",
+   "id": "vi-synth-0019"
+  },
+  {
+   "text": "tối ni 7 giờ họp lớp",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp lớp",
+    "when": "2026-12-01 19:00"
+   },
+   "dialect": "trung",
+   "id": "vi-synth-0020"
+  },
+  {
+   "text": "mai ni đi Huế",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi Huế",
+    "when": "2026-12-02"
+   },
+   "dialect": "trung",
+   "id": "vi-synth-0021"
+  },
+  {
+   "text": "bữa nay 5 giờ chiều đá banh",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đá banh",
+    "when": "2026-12-01 17:00"
+   },
+   "dialect": "nam",
+   "id": "vi-synth-0022"
+  },
+  {
+   "text": "chủ nhật đi siêu thị",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi siêu thị",
+    "when": "2026-12-06"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0023"
+  },
+  {
+   "text": "chúa nhật này đi lễ",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi lễ",
+    "when": "2026-12-06"
+   },
+   "dialect": "nam",
+   "id": "vi-synth-0024"
+  },
+  {
+   "text": "thứ bảy tuần tới đi Đà Lạt",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi Đà Lạt",
+    "when": "2026-12-12"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0025"
+  },
+  {
+   "text": "nhớ mua hoa ngày 8 tháng 3",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Mua hoa",
+    "when": "2027-03-08"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0026"
+  },
+  {
+   "text": "10h30 sáng mai gặp anh Nam",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Gặp anh Nam",
+    "when": "2026-12-02 10:30"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0027"
+  },
+  {
+   "text": "sáng mai đi chợ",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi chợ",
+    "when": "2026-12-02 08:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0028"
+  },
+  {
+   "text": "chiều mai 2 giờ rưỡi khám bệnh",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Khám bệnh",
+    "when": "2026-12-02 14:30"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0029"
+  },
+  {
+   "text": "30 phút nữa gọi lại cho khách",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Gọi lại cho khách",
+    "when": "2026-12-01 10:30"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0030"
+  },
+  {
+   "text": "3 ngày nữa hết hạn bảo hiểm",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Hết hạn bảo hiểm",
+    "when": "2026-12-04"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0031"
+  },
+  {
+   "text": "hằng tháng ngày 5 đóng tiền nhà",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đóng tiền nhà",
+    "when": "2026-12-05",
+    "rec": "FREQ=MONTHLY;BYMONTHDAY=5"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0032"
+  },
+  {
+   "text": "đóng tiền điện ngày 20 hàng tháng",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đóng tiền điện",
+    "when": "2026-12-20",
+    "rec": "FREQ=MONTHLY;BYMONTHDAY=20"
+   },
+   "dialect": "nam",
+   "id": "vi-synth-0033"
+  },
+  {
+   "text": "mùng 1 thắp hương",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Thắp hương",
+    "when": null,
+    "rec": {
+     "system": "lunar_vi",
+     "day": 1
+    }
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0034"
+  },
+  {
+   "text": "mồng 1 đi chùa",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi chùa",
+    "when": null,
+    "rec": {
+     "system": "lunar_vi",
+     "day": 1
+    }
+   },
+   "dialect": "bac",
+   "id": "vi-synth-0035"
+  },
+  {
+   "text": "rằm tháng giêng đi chùa",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi chùa",
+    "when": null,
+    "rec": {
+     "system": "lunar_vi",
+     "day": 15,
+     "month": 1
+    }
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0036"
+  },
+  {
+   "text": "mùng 1 tháng chạp dọn nhà",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Dọn nhà",
+    "when": null,
+    "rec": {
+     "system": "lunar_vi",
+     "day": 1,
+     "month": 12
+    }
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0037"
+  },
+  {
+   "text": "mỗi sáng 6h chạy bộ",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Chạy bộ",
+    "when": "2026-12-02 06:00",
+    "rec": "FREQ=DAILY"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0038"
+  },
+  {
+   "text": "tập thể dục mỗi sáng",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Tập thể dục",
+    "when": "2026-12-02 08:00",
+    "rec": "FREQ=DAILY"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0039"
+  },
+  {
+   "text": "các ngày trong tuần 7h đi làm",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi làm",
+    "when": "2026-12-02 07:00",
+    "rec": "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0040"
+  },
+  {
+   "text": "mỗi thứ 2 họp giao ban 8h",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp giao ban",
+    "when": "2026-12-07 08:00",
+    "rec": "FREQ=WEEKLY;BYDAY=MO"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0041"
+  },
+  {
+   "text": "thứ 5 hằng tuần học tiếng Anh 7 giờ tối",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Học tiếng Anh",
+    "when": "2026-12-03 19:00",
+    "rec": "FREQ=WEEKLY;BYDAY=TH"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0042"
+  },
+  {
+   "text": "cứ mỗi 3 ngày tưới cây",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Tưới cây",
+    "when": "2026-12-01",
+    "rec": "FREQ=DAILY;INTERVAL=3"
+   },
+   "dialect": "nam",
+   "id": "vi-synth-0043"
+  },
+  {
+   "text": "2 tuần một lần cắt tóc",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Cắt tóc",
+    "when": "2026-12-01",
+    "rec": "FREQ=WEEKLY;INTERVAL=2"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0044"
+  },
+  {
+   "text": "hằng năm 20/11 tặng quà cô giáo",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Tặng quà cô giáo",
+    "when": "2027-11-20",
+    "rec": "FREQ=YEARLY"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0045"
+  },
+  {
+   "text": "khuya 11 giờ tắt máy",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Tắt máy",
+    "when": "2026-12-01 23:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0046"
+  },
+  {
+   "text": "2 giờ đêm xem bóng đá",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Xem bóng đá",
+    "when": "2026-12-02 02:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0047"
+  },
+  {
+   "text": "12 giờ trưa ăn cơm với khách",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Ăn cơm với khách",
+    "when": "2026-12-01 12:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0048"
+  },
+  {
+   "text": "lúc 9 giờ tối gọi bố",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Gọi bố",
+    "when": "2026-12-01 21:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0049"
+  },
+  {
+   "text": "vào lúc 4 giờ chiều mai họp",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp",
+    "when": "2026-12-02 16:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0050"
+  },
+  {
+   "text": "5/1/2027 gia hạn hộ chiếu",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Gia hạn hộ chiếu",
+    "when": "2027-01-05"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0051"
+  },
+  {
+   "text": "Gọi Mai lúc 3 giờ chiều",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Gọi Mai",
+    "when": "2026-12-01 15:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0052"
+  },
+  {
+   "text": "nộp thuế trước ngày 31 tháng 12",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Nộp thuế",
+    "when": "2026-12-31"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0053"
+  },
+  {
+   "text": "tuần sau đi công tác",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi công tác",
+    "when": "2026-12-08"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0054"
+  },
+  {
+   "text": "đặt lịch cắt tóc thứ 7",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Cắt tóc",
+    "when": "2026-12-05"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0055"
+  },
+  {
+   "text": "t6 nộp bài",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Nộp bài",
+    "when": "2026-12-04"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0056"
+  },
+  {
+   "text": "8 giờ sáng ngày 15 tháng 12 khám thai",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Khám thai",
+    "when": "2026-12-15 08:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0057"
+  },
+  {
+   "text": "họp phụ huynh 19h",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp phụ huynh",
+    "when": "2026-12-01 19:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0058"
+  },
+  {
+   "text": "chiều nay đón con",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đón con",
+    "when": "2026-12-01 15:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0059"
+  },
+  {
+   "text": "trưa mai ăn trưa với sếp",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Ăn trưa với sếp",
+    "when": "2026-12-02 12:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0060"
+  },
+  {
+   "text": "nhắc mình uống nước mỗi 2 tiếng",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Uống nước",
+    "when": "2026-12-01",
+    "rec": "FREQ=HOURLY;INTERVAL=2"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0061"
+  },
+  {
+   "text": "thứ tư tuần sau 3 giờ chiều họp dự án",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp dự án",
+    "when": "2026-12-09 15:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0062"
+  },
+  {
+   "text": "bốn giờ chiều mai đi đón mẹ",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi đón mẹ",
+    "when": "2026-12-02 16:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0063"
+  },
+  {
+   "text": "ba giờ rưỡi chiều nay họp",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp",
+    "when": "2026-12-01 15:30"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0064"
+  },
+  {
+   "text": "mười giờ sáng thứ hai họp",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp",
+    "when": "2026-12-07 10:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0065"
+  },
+  {
+   "text": "Hôm nay 5h chiều đi bơi rồi 7h tối học bài",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": [
+    {
+     "title": "Đi bơi",
+     "when": "2026-12-01 17:00"
+    },
+    {
+     "title": "Học bài",
+     "when": "2026-12-01 19:00"
+    }
+   ],
+   "dialect": "chung",
+   "id": "vi-synth-0066"
+  },
+  {
+   "text": "mua vé tàu và đặt khách sạn",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Mua vé tàu và đặt khách sạn",
+    "when": null
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0067"
+  },
+  {
+   "text": "sinh nhật vợ 14/2",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Sinh nhật vợ",
+    "when": "2027-02-14"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0068"
+  },
+  {
+   "text": "đi khám lúc 7g30 sáng thứ 6",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi khám",
+    "when": "2026-12-04 07:30"
+   },
+   "dialect": "nam",
+   "id": "vi-synth-0069"
+  },
+  {
+   "text": "20h họp online",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp online",
+    "when": "2026-12-01 20:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0070"
+  },
+  {
+   "text": "chiều thứ 7 đi cà phê",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi cà phê",
+    "when": "2026-12-05 15:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0071"
+  },
+  {
+   "text": "sáng thứ 2 tuần sau đi họp",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi họp",
+    "when": "2026-12-07 08:00"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0072"
+  },
+  {
+   "text": "Họp team 9h !!!",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Họp team",
+    "when": "2026-12-02 09:00",
+    "ambiguous": [
+     "meridiem"
+    ],
+    "priority": 3
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0073"
+  },
+  {
+   "text": "cuối tuần này về quê",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Về quê",
+    "when": "2026-12-05"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0074"
+  },
+  {
+   "text": "nhắc tôi là mai đóng học phí",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đóng học phí",
+    "when": "2026-12-02"
+   },
+   "dialect": "chung",
+   "id": "vi-synth-0075"
+  },
+  {
+   "text": "chiều ni đi đón cháu",
+   "now": "2026-12-01T10:00",
+   "region": "VN",
+   "expect": {
+    "title": "Đi đón cháu",
+    "when": "2026-12-01 15:00"
+   },
+   "dialect": "trung",
+   "id": "vi-synth-0076"
+  }
+ ]
+}

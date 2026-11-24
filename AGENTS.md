@@ -33,7 +33,7 @@ supabase/           migrations/ (schema, RLS, sync_push/pull, quota, seed gói),
 packages/core/      Dart thuần: HLC, id, thiết bị, entitlement, giao thức sync (sau: thời gian/DST, recurrence, hệ lịch)
 packages/data/      Drift (mirror bảng server), outbox, SyncEngine; test với server giả + contract test Postgres
 packages/platform/  interface + PlatformCapabilities; adapter theo nền tảng nằm trong apps/*/lib/platform/
-packages/parsers/   Dart thuần*: decoder, luật + mẫu, NLU; fixtures/ (bộ mẫu eval, đã có schema)
+packages/parsers/   Dart thuần: NLU luật + gói en/vi (nlu/packs/), bộ câu eval; decoder, mẫu tài liệu* ; fixtures/
 docs/               tài liệu (bản đồ: docs/INDEX.md)
 tools/              script cho AI tooling (graphify, unslop)
 ```
@@ -70,7 +70,7 @@ PGHOST=localhost PGUSER=postgres tools/db-test.sh   # migrations + pgTAP trên P
 python3 tools/check-docs.py && python3 tools/validate-fixtures.py && python3 tools/lint-hardcoded-strings.py
 python3 tools/check-arb.py && python3 tools/pseudo-arb.py && python3 tools/lint-platform-checks.py   # ARB, pseudo-locale en_XA, quy tắc nền tảng
 flutter pub get && (cd apps/client && flutter gen-l10n) && flutter analyze      # Flutter 3.50.1, pub workspace ở gốc
-for p in core platform data; do (cd packages/$p && dart test); done; (cd apps/client && flutter test)
+for p in core platform data parsers; do (cd packages/$p && dart test); done; (cd apps/client && flutter test)
 (cd packages/data && dart run build_runner build)   # sau khi sửa bảng Drift
 REMINDME_PG=1 PGHOST=localhost PGUSER=postgres (cd packages/data && dart test test/pg_contract_test.dart)  # sau db-test.sh
 ```

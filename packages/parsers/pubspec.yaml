@@ -1,0 +1,11 @@
+name: remindme_parsers
+description: Đọc câu tự nhiên và tài liệu trên máy (NLU luật, decoder, mẫu nhà cung cấp). Dart thuần, không gọi AI API (ADR-010).
+publish_to: none
+resolution: workspace
+environment:
+  sdk: ^3.10.0
+dependencies:
+  remindme_core: any
+  yaml: ^3.1.2
+dev_dependencies:
+  test: ^1.25.0

@@ -1,0 +1,137 @@
+# Gói ngữ pháp tiếng Việt (cấp A): Bắc, Trung, Nam. Định dạng: README.md cùng thư mục.
+# Mẫu chạy theo thứ tự: recurrence → times → dates → parts; trong mỗi phần, mẫu dài/cụ thể đặt trước.
+lang: vi
+lunar_system: lunar_vi
+date_order: {default: dmy}
+
+fillers: [nhắc tôi là, nhắc tôi, nhắc mình, nhắc em, nhắc anh, nhắc chị, nhắc nhở, đặt nhắc, đặt lịch, nhớ là, nhớ, nhắc]
+filler_tails: [là, rằng]
+prepositions: [vào lúc, lúc, vào ngày, vào, trước, hạn]
+conjunctions: [sau đó, rồi, và]
+list_separators: [',', và, '&']
+this_words: [nay, này, nầy, ni]
+# "Mai" là tên người: viết hoa giữa câu ("Gọi cho Mai") thì không hiểu là ngày mai.
+proper_noun_guard: [mai]
+
+numbers:
+  một: 1
+  hai: 2
+  ba: 3
+  bốn: 4
+  tư: 4
+  năm: 5
+  sáu: 6
+  bảy: 7
+  bẩy: 7
+  tám: 8
+  chín: 9
+  mười: 10
+  mười một: 11
+  mười hai: 12
+  mười lăm: 15
+  hai mươi: 20
+  ba mươi: 30
+  bốn lăm: 45
+  bốn mươi lăm: 45
+
+relative_days:
+  hôm nay: 0
+  bữa nay: 0
+  ngày mai: 1
+  mai: 1
+  mai ni: 1
+  ngày kia: 2
+  ngày mốt: 2
+  mốt: 2
+
+weekdays:
+  thứ hai: 1
+  thứ 2: 1
+  t2: 1
+  thứ ba: 2
+  thứ 3: 2
+  t3: 2
+  thứ tư: 3
+  thứ 4: 3
+  t4: 3
+  thứ năm: 4
+  thứ 5: 4
+  t5: 4
+  thứ sáu: 5
+  thứ 6: 5
+  t6: 5
+  thứ bảy: 6
+  thứ 7: 6
+  t7: 6
+  chủ nhật: 7
+  chúa nhật: 7
+  cn: 7
+  cuối tuần: 6
+# Danh sách "thứ 2, 4, 6": số sau chữ "thứ".
+weekday_list_tokens: {'2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6}
+
+months: {giêng: 1, chạp: 12}
+
+next_modifiers:
+  tuần sau: next_week
+  tuần tới: next_week
+
+day_parts:
+  sáng: {range: [4, 11], default: '08:00'}
+  trưa: {range: [11, 13], default: '12:00'}
+  chiều: {range: [12, 18], default: '15:00'}
+  tối: {range: [18, 23], default: '19:00'}
+  đêm: {range: [21, 4], default: '22:00'}
+  khuya: {range: [22, 4], default: '23:00'}
+
+meridiem: {am: am, pm: pm}
+
+units:
+  phút: minute
+  tiếng: hour
+  giờ: hour
+  ngày: day
+  tuần: week
+  tháng: month
+  năm: year
+
+recurrence:
+  # Âm lịch hằng năm: "rằm tháng giêng", "mùng 1 tháng chạp", "10/3 âm lịch".
+  - {type: lunarYearly, value: 15, re: 'rằm\s*tháng\s*{mon:mo}(?:\s*âm(?:\s*lịch)?)?'}
+  - {type: lunarYearly, re: '(?:mùng|mồng)\s*{num:d}\s*tháng\s*{mon:mo}(?:\s*âm(?:\s*lịch)?)?'}
+  - {type: lunarYearly, re: '(?:ngày\s*)?{num:d}\s*(?:/|tháng)\s*{mon:mo}\s*âm(?:\s*lịch)?'}
+  # Âm lịch hằng tháng: "rằm", "mùng 1", "15 âm lịch hằng tháng".
+  - {type: lunarMonthly, value: 15, re: '(?:(?:mỗi|các)\s*)?(?:ngày\s*)?rằm(?:\s*(?:hằng|hàng)\s*tháng)?'}
+  - {type: lunarMonthly, re: '(?:(?:mỗi|các)\s*)?(?:mùng|mồng)\s*{num:d}(?:\s*âm(?:\s*lịch)?)?(?:\s*(?:hằng|hàng)\s*tháng)?'}
+  - {type: lunarMonthly, re: '(?:ngày\s*)?{num:d}\s*âm(?:\s*lịch)?\s*(?:hằng|hàng|mỗi)\s*tháng'}
+  - {type: weekdays, re: '(?:các\s*)?ngày\s*(?:thường|trong\s*tuần)|thứ\s*2\s*(?:đến|tới|-)\s*thứ\s*6'}
+  - {type: weeklyDays, re: '(?:(?:mỗi|các)\s*)?thứ\s*{wdlist:list}(?:\s*(?:hằng|hàng)\s*tuần)?'}
+  - {type: weekly, re: '(?:mỗi|các|hằng|hàng)\s*{weekday:w}(?:\s*(?:hằng|hàng)\s*tuần)?|{weekday:w}\s*(?:hằng|hàng)\s*tuần'}
+  - {type: everyN, re: '(?:cứ\s*)?mỗi\s*{num:n}\s*{unit:u}(?:\s*(?:một|1)\s*lần)?|{num:n}\s*{unit:u}\s*(?:một|1)\s*lần'}
+  - {type: monthlyDay, re: '(?:ngày\s*)?{num:d}\s*(?:hằng|hàng|mỗi)\s*tháng|(?:hằng|hàng|mỗi)\s*tháng\s*(?:vào\s*)?ngày\s*{num:d}'}
+  - {type: dailyPart, re: '(?:mỗi|hằng|hàng)\s*{daypart:part}'}
+  - {type: daily, re: '(?:hằng|hàng|mỗi)\s*ngày|ngày\s*nào\s*cũng'}
+  - {type: weekly, re: '(?:hằng|hàng|mỗi)\s*tuần'}
+  - {type: monthly, re: '(?:hằng|hàng|mỗi)\s*tháng'}
+  - {type: yearly, re: '(?:hằng|hàng|mỗi)\s*năm'}
+
+times:
+  # Khoảng thời gian từ bây giờ đặt trước giờ: "2 giờ nữa" không phải 2:00.
+  - {type: inDuration, re: '(?:sau\s*)?{num:n}\s*{unit:u}\s*nữa'}
+  - {type: minus, re: '{num:h}\s*(?:giờ|h|g)\s*kém\s*{num:m}(?:\s*phút)?(?:\s*{daypart:part})?(?:\s*(?:{this:this}|{relday:rel}))?'}
+  - {type: half, re: '{num:h}\s*(?:giờ|h|g)?\s*rưỡi(?:\s*{daypart:part})?(?:\s*(?:{this:this}|{relday:rel}))?'}
+  - {type: hm, re: '{num:h}:(?<m>\d{2})(?:\s*{ap:ap})?(?:\s*{daypart:part})?(?:\s*(?:{this:this}|{relday:rel}))?'}
+  - {type: hm, re: '{num:h}\s*(?:giờ|h|g)\s*{num:m}(?:\s*phút)?(?:\s*{ap:ap})?(?:\s*{daypart:part})?(?:\s*(?:{this:this}|{relday:rel}))?'}
+  - {type: hm, re: '{num:h}\s*(?:giờ|h|g)(?:\s*{ap:ap})?(?:\s*{daypart:part})?(?:\s*(?:{this:this}|{relday:rel}))?'}
+  - {type: hm, re: '{num:h}\s*{ap:ap}'}
+
+dates:
+  - {type: dayMonth, re: '(?:ngày\s*)?{num:d}\s*tháng\s*{mon:mo}(?:\s*(?:năm\s*)?{year:y})?'}
+  - {type: numericDate, re: '(?<a>\d{1,2})[/.-](?<b>\d{1,2})(?:[/.-](?<y>\d{4}|\d{2}))?'}
+  - {type: weekday, re: '{weekday:w}(?:\s*(?:{next:next}|{this:this}))?'}
+  - {type: relday, re: '(?:(?<!ăn\s)(?<!bữa\s){daypart:part}\s*)?{relday:rel}'}
+  - {type: nextWeek, re: '{next}'}
+
+parts:
+  # "ăn sáng", "bữa tối" là bữa ăn, không phải buổi.
+  - {type: part, re: '(?:buổi\s*)?(?<!ăn\s)(?<!bữa\s){daypart:part}(?:\s*(?:{this:this}|{relday:rel}))?'}
