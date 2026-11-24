@@ -5,8 +5,8 @@
 ## Đã có
 - Bộ docs v2 (`docs/INDEX.md`) + 14 ADR (ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
 - DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
-  + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói) + 102 test pgTAP; CI GitHub chạy job DB pass.
-- Khung repo: CI `.github/workflows/ci.yml` (job DB pass trên GitHub; job docs vừa sửa lỗi jsonschema), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
+  + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói) + 102 test pgTAP.
+- Khung repo: CI `.github/workflows/ci.yml` (3 job docs-and-lint, db + contract test, flutter đều pass trên GitHub, run #10), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
 - Workspace Dart/Flutter 3.50.1 (`pubspec.yaml` gốc): `packages/core` (HLC khớp server, UUIDv7, id Inbox, loại thiết bị, entitlement, giao thức sync),
   `packages/platform` (interface + `PlatformCapabilities`), `packages/data` (Drift mirror bảng server, outbox, `SyncEngine` merge HLC; contract test với RPC Postgres thật),
   `apps/client` (theme token, go_router + shell thích ứng 3 cỡ, ARB en/vi + pseudo `en_XA`, Ctrl/Cmd+N Quick Add). CI thêm job `flutter` + contract test.
