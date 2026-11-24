@@ -4,6 +4,8 @@ import 'package:drift/drift.dart';
 import 'package:remindme_core/remindme_core.dart';
 
 import 'database.dart';
+import 'reminders/planner.dart';
+import 'reminders/scheduler.dart' show plannerItemOf;
 import 'sync_engine.dart';
 
 /// Ngày đang xem theo giờ trên máy: [start, end) theo UTC và ngày lịch 'YYYY-MM-DD' (cho item cả ngày).
@@ -45,6 +47,7 @@ class ItemView {
     this.tz,
     this.tags = const [],
     this.completedAt,
+    this.occurrenceAt,
   });
 
   factory ItemView.fromRow(Item r) => ItemView(
@@ -78,6 +81,12 @@ class ItemView {
   final String? tz;
   final List<String> tags;
   final DateTime? completedAt;
+  /// Khác null: dòng này là 1 lần của chuỗi lặp (khóa `occurrence_log`); Xong chỉ đóng lần này.
+  final DateTime? occurrenceAt;
+
+  bool get isOccurrence => occurrenceAt != null;
+  /// Khóa duy nhất trên danh sách (1 item lặp có thể có nhiều lần trong ngày).
+  String get rowKey => occurrenceAt == null ? id : '$id@${occurrenceAt!.millisecondsSinceEpoch}';
 
   bool get isDone => status == 'done';
   bool get hasTime => startsAt != null && !allDay;
@@ -149,14 +158,78 @@ class ItemsRepository {
   final DateTime Function() _now;
   AppDatabase get _db => engine.db;
 
-  /// Item chưa xóa còn liên quan tới ngày [day]: đang mở (mọi thời điểm, lọc ở [TodaySections.partition]) hoặc xong trong ngày.
-  Stream<TodaySections> watchToday(DayWindow day) {
-    final q = _db.select(_db.items)
-      ..where((t) =>
-          t.deletedAt.isNull() &
-          (t.status.isIn(const ['open', 'pending_quota']) |
-              (t.status.equals('done') & t.completedAt.isBiggerOrEqualValue(day.startUtc.millisecondsSinceEpoch))));
-    return q.watch().map((rows) => TodaySections.partition(rows.map(ItemView.fromRow), day));
+  /// Màn Hôm nay cho ngày [day]: item 1 lần (mở, hoặc xong trong ngày) + **từng lần** của chuỗi lặp rơi vào ngày đó
+  /// (trạng thái lấy từ `occurrence_log`). Lần lặp đã qua của ngày trước không dồn vào Quá hạn.
+  /// [deviceTz]: múi giờ nơi máy đang ở (item floating và cả ngày).
+  Stream<TodaySections> watchToday(DayWindow day, {required String deviceTz}) async* {
+    final changes = _db.tableUpdates(TableUpdateQuery.onAllTables([_db.items, _db.recurrences, _db.occurrenceLog]));
+    yield await _today(day, deviceTz);
+    await for (final _ in changes) {
+      yield await _today(day, deviceTz);
+    }
+  }
+
+  Future<TodaySections> _today(DayWindow day, String deviceTz) async {
+    final rows = await (_db.select(_db.items)
+          ..where((t) =>
+              t.deletedAt.isNull() &
+              (t.status.isIn(const ['open', 'pending_quota']) |
+                  (t.status.equals('done') & t.completedAt.isBiggerOrEqualValue(day.startUtc.millisecondsSinceEpoch)))))
+        .get();
+    final recs = {for (final r in await (_db.select(_db.recurrences)..where((t) => t.deletedAt.isNull())).get()) r.itemId: r};
+    final views = <ItemView>[];
+    final recurring = <Item>[];
+    for (final r in rows) {
+      if (recs.containsKey(r.id) && r.status != 'done') {
+        recurring.add(r);
+      } else if (!recs.containsKey(r.id)) {
+        views.add(ItemView.fromRow(r));
+      }
+    }
+    if (recurring.isNotEmpty) {
+      final log = {
+        for (final o in await (_db.select(_db.occurrenceLog)
+              ..where((t) =>
+                  t.deletedAt.isNull() &
+                  t.itemId.isIn(recurring.map((r) => r.id)) &
+                  t.occurrenceAt.isBetweenValues(
+                      day.startUtc.subtract(const Duration(days: 1)).millisecondsSinceEpoch, day.endUtc.millisecondsSinceEpoch)))
+            .get())
+          (o.itemId, o.occurrenceAt): o.status,
+      };
+      for (final r in recurring) {
+        final base = ItemView.fromRow(r);
+        final pi = plannerItemOf(r, recs[r.id], deviceTz: deviceTz);
+        // Cả ngày: lần có ngày = ngày đang xem; có giờ: lần trong [start, end).
+        final occs = expandOccurrences(pi, day.startUtc.subtract(const Duration(days: 1)), day.endUtc.add(const Duration(days: 1)),
+            deviceTz: deviceTz, allDayTime: CivilTime(0));
+        for (final o in occs) {
+          final inDay = o.allDay
+              ? o.date.toIso() == day.localDate
+              : !o.at.isBefore(day.startUtc) && o.at.isBefore(day.endUtc);
+          if (!inDay) continue;
+          final status = log[(r.id, o.at.millisecondsSinceEpoch)];
+          if (status == 'skipped') continue;
+          views.add(ItemView(
+            id: base.id,
+            title: base.title,
+            kind: base.kind,
+            status: status == 'done' ? 'done' : 'open',
+            notes: base.notes,
+            listId: base.listId,
+            priority: base.priority,
+            startsAt: o.allDay ? null : o.at,
+            allDay: o.allDay,
+            startDate: o.allDay ? o.date.toIso() : null,
+            tz: base.tz,
+            tags: base.tags,
+            completedAt: status == 'done' ? (o.at.isBefore(day.startUtc) ? day.startUtc : o.at) : null,
+            occurrenceAt: o.at,
+          ));
+        }
+      }
+    }
+    return TodaySections.partition(views, day);
   }
 
   /// id các item có lặp (để hiện biểu tượng 🔁).

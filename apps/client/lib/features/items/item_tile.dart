@@ -20,13 +20,18 @@ class ItemTile extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.maybeOf(context);
     final done = !item.isDone;
-    await repo.setDone(item.id, done: done);
+    final occ = item.occurrenceAt;
+    // Lần của chuỗi lặp: chỉ đóng/mở lần này (occurrence_log), không đóng cả chuỗi.
+    Future<void> set(bool value) => occ == null
+        ? repo.setDone(item.id, done: value)
+        : (value ? repo.completeOccurrence(item.id, occ) : repo.reopenOccurrence(item.id, occ));
+    await set(done);
     if (done && messenger != null) {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(
           content: Text(l.itemMarkedDone),
-          action: SnackBarAction(label: l.undo, onPressed: () => repo.setDone(item.id, done: false)),
+          action: SnackBarAction(label: l.undo, onPressed: () => set(false)),
         ));
     }
   }
@@ -34,7 +39,7 @@ class ItemTile extends ConsumerWidget {
   Widget? _trailing(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final recurring = ref.watch(recurringIdsProvider).value?.contains(item.id) ?? false;
+    final recurring = item.isOccurrence || (ref.watch(recurringIdsProvider).value?.contains(item.id) ?? false);
     final icons = [
       if (recurring) Icon(Icons.repeat, size: 18, color: theme.colorScheme.onSurfaceVariant, semanticLabel: l.recurCustom),
       if (item.priority >= 3) Icon(Icons.priority_high, color: theme.colorScheme.error, semanticLabel: l.priorityHigh),
@@ -48,7 +53,7 @@ class ItemTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final when = Fmt.of(context).when(item, today: ref.watch(todayWindowProvider));
     final tile = ListTile(
-      key: Key('item-${item.id}'),
+      key: Key('item-${item.rowKey}'),
       contentPadding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.screenMargin),
       leading: Checkbox(
         value: item.isDone,
@@ -70,7 +75,7 @@ class ItemTile extends ConsumerWidget {
     );
     if (item.isDone) return tile;
     return Dismissible(
-      key: ValueKey('dismiss-${item.id}'),
+      key: ValueKey('dismiss-${item.rowKey}'),
       direction: DismissDirection.startToEnd,
       background: Container(
         color: theme.colorScheme.primaryContainer,

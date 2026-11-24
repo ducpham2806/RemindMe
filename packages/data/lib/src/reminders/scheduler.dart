@@ -98,38 +98,7 @@ class ReminderScheduler {
     final recRows = {
       for (final r in await (db.select(db.recurrences)..where((t) => t.deletedAt.isNull())).get()) r.itemId: r,
     };
-    final items = <PlannerItem>[];
-    for (final i in itemRows) {
-      final rec = recRows[i.id];
-      Recurrence? recurrence;
-      if (rec != null) {
-        try {
-          recurrence = Recurrence.fromRow({
-            'kind': rec.kind,
-            'rrule': rec.rrule,
-            'calendar': rec.calendar == null ? null : jsonDecode(rec.calendar!),
-            'interval_days': rec.intervalDays,
-          });
-        } on Object {
-          recurrence = null; // quy tắc hỏng/không hỗ trợ (hijri ở Phase 2): coi như không lặp
-        }
-      }
-      final zone = i.timeMode == 'floating' || i.tz == null ? planner.deviceTz : i.tz!;
-      items.add(PlannerItem(
-        id: i.id,
-        title: i.title ?? '',
-        kind: i.kind ?? 'task',
-        startsAt: i.startsAt == null ? null : DateTime.fromMillisecondsSinceEpoch(i.startsAt!, isUtc: true),
-        startDate: i.startDate,
-        allDay: i.allDay ?? false,
-        tz: i.tz,
-        timeMode: i.timeMode ?? 'fixed',
-        recurrence: recurrence,
-        exdates: {
-          for (final x in _exdates(rec?.exdates)) TimeZones.toWall(x, zone),
-        },
-      ));
-    }
+    final items = [for (final i in itemRows) plannerItemOf(i, recRows[i.id], deviceTz: planner.deviceTz)];
     final ids = {for (final i in items) i.id};
     final reminders = [
       for (final r in await (db.select(db.reminders)..where((t) => t.deletedAt.isNull())).get())
@@ -153,12 +122,43 @@ class ReminderScheduler {
     return (items, reminders, handled);
   }
 
-  /// `recurrences.exdates` (timestamptz[] lưu JSON): ISO 8601 hoặc epoch ms.
-  static List<DateTime> _exdates(String? json) {
-    if (json == null) return const [];
-    return [
-      for (final v in jsonDecode(json) as List<Object?>)
-        if (v is String) DateTime.parse(v).toUtc() else if (v is int) DateTime.fromMillisecondsSinceEpoch(v, isUtc: true),
-    ];
+}
+
+/// Hàng `items` (+ `recurrences`) của DB local → [PlannerItem]. Dùng chung cho lập lịch nhắc và màn Hôm nay.
+PlannerItem plannerItemOf(Item i, RecurrenceRow? rec, {required String deviceTz}) {
+  Recurrence? recurrence;
+  if (rec != null) {
+    try {
+      recurrence = Recurrence.fromRow({
+        'kind': rec.kind,
+        'rrule': rec.rrule,
+        'calendar': rec.calendar == null ? null : jsonDecode(rec.calendar!),
+        'interval_days': rec.intervalDays,
+      });
+    } on Object {
+      recurrence = null; // quy tắc hỏng/chưa hỗ trợ (hijri ở Phase 2): coi như không lặp
+    }
   }
+  final zone = i.timeMode == 'floating' || i.tz == null ? deviceTz : i.tz!;
+  return PlannerItem(
+    id: i.id,
+    title: i.title ?? '',
+    kind: i.kind ?? 'task',
+    startsAt: i.startsAt == null ? null : DateTime.fromMillisecondsSinceEpoch(i.startsAt!, isUtc: true),
+    startDate: i.startDate,
+    allDay: i.allDay ?? false,
+    tz: i.tz,
+    timeMode: i.timeMode ?? 'fixed',
+    recurrence: recurrence,
+    exdates: {for (final x in _exdates(rec?.exdates)) TimeZones.toWall(x, zone)},
+  );
+}
+
+/// `recurrences.exdates` (timestamptz[] lưu JSON): ISO 8601 hoặc epoch ms.
+List<DateTime> _exdates(String? json) {
+  if (json == null) return const [];
+  return [
+    for (final v in jsonDecode(json) as List<Object?>)
+      if (v is String) DateTime.parse(v).toUtc() else if (v is int) DateTime.fromMillisecondsSinceEpoch(v, isUtc: true),
+  ];
 }

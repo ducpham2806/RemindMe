@@ -65,7 +65,9 @@ final itemsRepositoryProvider =
 final todayWindowProvider = Provider<DayWindow>((ref) => DayWindow.ofLocal(ref.watch(nowProvider)()));
 
 final todaySectionsProvider =
-    StreamProvider<TodaySections>((ref) => ref.watch(itemsRepositoryProvider).watchToday(ref.watch(todayWindowProvider)));
+    StreamProvider<TodaySections>((ref) => ref
+        .watch(itemsRepositoryProvider)
+        .watchToday(ref.watch(todayWindowProvider), deviceTz: ref.watch(deviceTimeZoneProvider)));
 
 final itemProvider = StreamProvider.family<ItemView?, String>((ref, id) => ref.watch(itemsRepositoryProvider).watchItem(id));
 

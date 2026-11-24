@@ -174,12 +174,12 @@ class ReminderPlanner {
           // Lần có giờ kêu trong cửa sổ: lần nằm trong [now + offset, end + offset] (offset âm = sau giờ đó).
           final from = off.isNegative ? now.add(off) : now;
           final to = off.isNegative ? end : end.add(off);
-          for (final (occ, dst) in occurrences(item, from, to)) {
-            if (handledOccurrences.contains((item.id, occ.millisecondsSinceEpoch))) continue;
-            final t = texts.forOccurrence(item, occ, r.offsetMinutes ?? 0);
+          for (final o in occurrences(item, from, to)) {
+            if (handledOccurrences.contains((item.id, o.at.millisecondsSinceEpoch))) continue;
+            final t = texts.forOccurrence(item, o.at, r.offsetMinutes ?? 0);
             add(PlannedNotification(
-                notificationId: notificationIdFor(r.id, occ), reminderId: r.id, itemId: item.id, occurrenceAt: occ,
-                fireAt: occ.subtract(off), title: t.title, body: t.body, isAlarm: r.isAlarm, dstAdjusted: dst));
+                notificationId: notificationIdFor(r.id, o.at), reminderId: r.id, itemId: item.id, occurrenceAt: o.at,
+                fireAt: o.base.subtract(off), title: t.title, body: t.body, isAlarm: r.isAlarm, dstAdjusted: o.dstAdjusted));
           }
         default:
           continue; // location: Phase 2
@@ -206,40 +206,9 @@ class ReminderPlanner {
     return PlanResult(keep, truncated: true, horizonEnd: end, dropped: sorted.length - (strict ? maxPending - 1 : maxPending));
   }
 
-  /// Các lần của [item] có thời điểm trong [from, to] (UTC), kèm cờ đã áp quy tắc DST.
-  List<(DateTime, bool)> occurrences(PlannerItem item, DateTime from, DateTime to) {
-    final zone = item.timeMode == 'floating' || item.tz == null ? deviceTz : item.tz!;
-    final CivilDateTime start;
-    if (item.startsAt != null && !item.allDay) {
-      if (item.recurrence == null && item.timeMode != 'floating') {
-        final s = item.startsAt!;
-        return !s.isBefore(from) && !s.isAfter(to) ? [(s, false)] : const [];
-      }
-      start = TimeZones.toWall(item.startsAt!, item.tz ?? deviceTz);
-    } else if (item.startDate != null) {
-      start = CivilDateTime(CivilDate.parse(item.startDate!));
-    } else {
-      return const [];
-    }
-
-    (DateTime, bool) resolve(CivilDateTime w) {
-      final r = TimeZones.toUtc(CivilDateTime(w.date, w.time ?? allDayTime), zone);
-      return (r.utc, r.dstAdjusted);
-    }
-
-    final rec = item.recurrence;
-    if (rec == null) {
-      final r = resolve(start);
-      return !r.$1.isBefore(from) && !r.$1.isAfter(to) ? [r] : const [];
-    }
-    // Ngày tường quanh [from, to] (±1 ngày cho chênh múi giờ).
-    final fromDate = TimeZones.toWall(from, zone).date.addDays(-1);
-    final toDate = TimeZones.toWall(to, zone).date.addDays(1);
-    return [
-      for (final w in rec.between(start, fromDate, toDate, exdates: item.exdates))
-        if (resolve(w) case final r when !r.$1.isBefore(from) && !r.$1.isAfter(to)) r,
-    ];
-  }
+  /// Các lần của [item] có giờ kêu gốc trong [from, to] (UTC). Dùng chung với màn Hôm nay ([expandOccurrences]).
+  List<Occurrence> occurrences(PlannerItem item, DateTime from, DateTime to) =>
+      expandOccurrences(item, from, to, deviceTz: deviceTz, allDayTime: allDayTime);
 
   /// ID thông báo xác định: FNV-1a 32 bit của (reminder, lần), dương 31 bit (Android dùng int32).
   static int notificationIdFor(String reminderId, DateTime occurrence, {bool snooze = false}) {
@@ -250,4 +219,60 @@ class ReminderPlanner {
     }
     return h & 0x7fffffff;
   }
+}
+
+/// Một lần của item.
+class Occurrence {
+  const Occurrence({required this.at, required this.base, required this.date, required this.allDay, this.dstAdjusted = false});
+  /// Khóa của lần (UTC): giờ bắt đầu, hoặc 00:00 của ngày với item cả ngày. Ghi vào `occurrence_log.occurrence_at`.
+  final DateTime at;
+  /// Giờ kêu của nhắc "đúng giờ" (offset 0): bằng [at], hoặc giờ mặc định của item cả ngày.
+  final DateTime base;
+  /// Ngày tường của lần theo múi giờ của item.
+  final CivilDate date;
+  final bool allDay;
+  final bool dstAdjusted;
+}
+
+/// Các lần của [item] có [Occurrence.base] trong [from, to] (UTC).
+/// Múi giờ: `tz` của item nếu `fixed`, [deviceTz] nếu `floating` hoặc item cả ngày (reminder-engine.md §5).
+List<Occurrence> expandOccurrences(PlannerItem item, DateTime from, DateTime to, {required String deviceTz, required CivilTime allDayTime}) {
+  final allDay = item.allDay || item.startsAt == null;
+  final zone = allDay || item.timeMode == 'floating' || item.tz == null ? deviceTz : item.tz!;
+  final CivilDateTime start;
+  if (!allDay) {
+    if (item.recurrence == null && item.timeMode != 'floating') {
+      final s = item.startsAt!;
+      final o = Occurrence(at: s, base: s, date: TimeZones.toWall(s, item.tz ?? deviceTz).date, allDay: false);
+      return !s.isBefore(from) && !s.isAfter(to) ? [o] : const [];
+    }
+    start = TimeZones.toWall(item.startsAt!, item.tz ?? deviceTz);
+  } else if (item.startDate != null) {
+    start = CivilDateTime(CivilDate.parse(item.startDate!));
+  } else {
+    return const [];
+  }
+
+  Occurrence make(CivilDateTime w) {
+    if (allDay || w.time == null) {
+      final at = TimeZones.toUtc(CivilDateTime(w.date, CivilTime(0)), zone);
+      final base = TimeZones.toUtc(CivilDateTime(w.date, allDayTime), zone);
+      return Occurrence(at: at.utc, base: base.utc, date: w.date, allDay: true, dstAdjusted: base.dstAdjusted);
+    }
+    final r = TimeZones.toUtc(w, zone);
+    return Occurrence(at: r.utc, base: r.utc, date: w.date, allDay: false, dstAdjusted: r.dstAdjusted);
+  }
+
+  bool inRange(Occurrence o) => !o.base.isBefore(from) && !o.base.isAfter(to);
+  final rec = item.recurrence;
+  if (rec == null) {
+    final o = make(start);
+    return inRange(o) ? [o] : const [];
+  }
+  final fromDate = TimeZones.toWall(from, zone).date.addDays(-1);
+  final toDate = TimeZones.toWall(to, zone).date.addDays(1);
+  return [
+    for (final w in rec.between(allDay ? CivilDateTime(start.date) : start, fromDate, toDate, exdates: item.exdates))
+      if (make(w) case final o when inRange(o)) o,
+  ];
 }

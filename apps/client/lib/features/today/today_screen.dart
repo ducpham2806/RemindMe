@@ -71,7 +71,7 @@ class _SectionList extends StatelessWidget {
                   color: overdue ? theme.colorScheme.error : theme.colorScheme.onSurfaceVariant)),
         ),
       ),
-      for (final i in items) ItemTile(item: i, overdue: overdue),
+      for (final i in items) ItemTile(key: ValueKey(i.rowKey), item: i, overdue: overdue),
     ];
   }
 }

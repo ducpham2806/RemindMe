@@ -61,18 +61,18 @@ void main() {
 
     test('tạo, hoàn thành, mở lại: stream Hôm nay cập nhật, mỗi thay đổi vào outbox', () async {
       final id = await repo.create(title: '  Gửi báo giá  ', startsAt: DateTime.utc(2026, 12, 1, 9), tz: 'Asia/Ho_Chi_Minh');
-      var s = await repo.watchToday(day).first;
+      var s = await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first;
       expect(s.today.single.title, 'Gửi báo giá');
       expect(s.today.single.tz, 'Asia/Ho_Chi_Minh');
 
       wall = wall.add(const Duration(minutes: 5));
       await repo.setDone(id, done: true);
-      s = await repo.watchToday(day).first;
+      s = await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first;
       expect(s.today, isEmpty);
       expect(s.doneToday.single.completedAt, wall);
 
       await repo.setDone(id, done: false);
-      s = await repo.watchToday(day).first;
+      s = await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first;
       expect(s.today.single.isDone, isFalse);
       expect(s.today.single.completedAt, isNull);
       expect(await repo.engine.pendingCount(), 3);
@@ -91,7 +91,7 @@ void main() {
 
       await repo.delete(id);
       expect(await repo.watchItem(id).first, isNull);
-      expect((await repo.watchToday(day).first).isEmpty, isTrue);
+      expect((await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first).isEmpty, isTrue);
     });
 
     test('kiểm tra đầu vào: tiêu đề rỗng, có giờ mà thiếu tz, ưu tiên ngoài 0-3', () async {
@@ -106,7 +106,7 @@ void main() {
       final v = (await repo.watchItem(id).first)!;
       expect(v.allDay, isTrue);
       expect(v.startDate, '2026-12-01');
-      expect((await repo.watchToday(day).first).today.single.id, id);
+      expect((await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first).today.single.id, id);
     });
 
     test('việc lặp: tạo hàng recurrences cùng outbox, time_mode floating; âm lịch lưu calendar', () async {
@@ -123,6 +123,31 @@ void main() {
           recurrence: {'kind': 'calendar', 'calendar': {'system': 'lunar_vi', 'day': 15}}, recurrenceStart: DateTime.utc(2026, 12, 23, 17));
       expect((await repo.recurrenceOf(lunar))!['calendar'], {'system': 'lunar_vi', 'day': 15});
       expect(() => repo.create(title: 'x', recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY'}), throwsArgumentError);
+    });
+
+    test('Hôm nay trải từng lần của chuỗi lặp; Xong 1 lần chỉ đóng lần đó; hoàn tác mở lại', () async {
+      // 07:00 và 19:00 giờ VN mỗi ngày (FREQ=DAILY;BYHOUR=7,19), bắt đầu từ hôm qua.
+      final id = await repo.create(title: 'Pills', startsAt: DateTime.utc(2026, 11, 30), tz: 'Asia/Ho_Chi_Minh',
+          recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY;BYHOUR=7,19;BYMINUTE=0'}, recurrenceStart: DateTime.utc(2026, 11, 30));
+      final ram = await repo.create(title: 'Temple', startDate: '2026-11-24',
+          recurrence: {'kind': 'calendar', 'calendar': {'system': 'lunar_vi', 'day': 15}}, recurrenceStart: DateTime.utc(2026, 11, 23, 17));
+      // Ngày 23/12/2026 là rằm tháng 11 âm.
+      final dec23 = DayWindow(startUtc: DateTime.utc(2026, 12, 22, 17), endUtc: DateTime.utc(2026, 12, 23, 17), localDate: '2026-12-23');
+      final s = await repo.watchToday(dec23, deviceTz: 'Asia/Ho_Chi_Minh').first;
+      expect(s.today.map((i) => (i.title, i.startsAt?.hour)), [('Temple', null), ('Pills', 0), ('Pills', 12)]);
+      expect(s.overdue, isEmpty, reason: 'lần lặp đã qua không dồn vào Quá hạn');
+
+      var t = await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first;
+      expect(t.today.where((i) => i.isOccurrence).map((i) => i.rowKey).toSet(), hasLength(2));
+      final morning = t.today.firstWhere((i) => i.title == 'Pills');
+      await repo.completeOccurrence(id, morning.occurrenceAt!);
+      t = await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first;
+      expect(t.today.where((i) => i.title == 'Pills'), hasLength(1));
+      expect(t.doneToday.single.occurrenceAt, morning.occurrenceAt);
+      await repo.reopenOccurrence(id, morning.occurrenceAt!);
+      t = await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first;
+      expect(t.today.where((i) => i.title == 'Pills'), hasLength(2));
+      expect(ram, isNotEmpty);
     });
 
     test('device_id sinh 1 lần cho mỗi DB (mỗi lần cài)', () async {
