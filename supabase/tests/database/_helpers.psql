@@ -14,14 +14,16 @@ begin
 end $$;
 
 -- Đăng nhập thiết bị n: tạo phiên GoTrue + session_claim. Trả kết quả claim.
-create function pg_temp.login(p_uid uuid, p_n int default 1, p_device text default null)
+create function pg_temp.login(p_uid uuid, p_n int default 1, p_device text default null,
+                               p_platform text default 'ios', p_class text default 'phone')
 returns jsonb language plpgsql as $$
 declare r jsonb;
 begin
   insert into auth.sessions (id, user_id) values (pg_temp.sid(p_uid, p_n), p_uid) on conflict do nothing;
   perform pg_temp.claims(p_uid, pg_temp.sid(p_uid, p_n));
   perform set_config('role', 'authenticated', true);
-  r := public.session_claim(coalesce(p_device, 'device-' || p_n), '{"platform":"ios","device_model":"iPhone 15"}');
+  r := public.session_claim(coalesce(p_device, 'device-' || p_n), jsonb_build_object('platform', p_platform,
+    'device_class', p_class, 'device_model', case p_class when 'tablet' then 'iPad Air' when 'computer' then 'MacBook' else 'iPhone 15' end));
   perform set_config('role', 'postgres', true);
   return r;
 end $$;

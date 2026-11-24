@@ -107,7 +107,7 @@ Thông báo local có action: **Xong**, **Hoãn 10 phút**, **Hoãn 1 giờ**, *
   từ cùng một bản gốc thì giữ cả 2 và hiện màn "Chọn bản ghi chú" (`uiux/ux-flows-and-screens.md` §3.6).
 - **Tài khoản ẩn danh → tài khoản thật:** nếu tài khoản đích chưa có dữ liệu thì chuyển nguyên; nếu đã có thì gộp (union), dedupe theo `source_ref`
   và `(title, starts_at)`, quota tính sau khi gộp (phần vượt thành `archived_reason='quota'`), hiện tóm tắt cho người dùng.
-- **1 thiết bị mỗi tài khoản** (ADR-013): sau đăng nhập gọi `profile_init` → `session_claim`; phiên cũ bị kết thúc, mọi đọc/ghi của nó trả `session_revoked`.
+- **Giới hạn thiết bị** (ADR-013: Free 1; Plus 1 điện thoại + 1 tablet + 1 máy tính): sau đăng nhập gọi `profile_init` → `session_claim`; phiên cũ bị kết thúc, mọi đọc/ghi của nó trả `session_revoked`.
 - Realtime (Supabase Realtime) chỉ bật khi app đang mở để giảm pin.
 - Nhiều thiết bị cùng kêu nhắc: `reminder-engine.md` §8.
 

@@ -3,9 +3,9 @@
 **Cập nhật:** 2026-11-24 · **Phase:** 0, tài liệu và nền móng · **Nhánh:** `ccr-7a85f116-dswwig`
 
 ## Đã có
-- Bộ docs v2 (`docs/INDEX.md`) + 13 ADR (mới: ADR-013 một tài khoản một thiết bị). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
-- DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, phiên 1 thiết bị `session_claim`/`session_status`/`session_end`
-  + lịch sử đăng nhập, seed gói) + 88 test pgTAP; CI GitHub chạy job DB pass.
+- Bộ docs v2 (`docs/INDEX.md`) + 13 ADR (ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính, đã duyệt). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
+- DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
+  + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói) + 102 test pgTAP; CI GitHub chạy job DB pass.
 - Khung repo: CI `.github/workflows/ci.yml` (job DB pass trên GitHub; job docs vừa sửa lỗi jsonschema), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
 - Chưa có: app Flutter, worker, package Dart.
 
@@ -23,7 +23,7 @@
 - Đợt locale 1, region, nhóm giá: xem Tiếp theo mục 1.
 - l10n: giữ tên gói "Free" không dịch ở mọi locale? Đổi tên list mặc định "Inbox/Hộp thư" (trùng nghĩa hộp thư email, đề xuất "Chưa phân loại")?
   Một file `en` hay thêm `en_GB`; tách `es-ES`/`es-419` ở đợt 1? Ngân sách dịch giả cấp B.
-- Giữ `max_active_devices` = 1 cho cả Plus, hay Plus 2 thiết bị (điện thoại + tablet) như đòn bẩy bán hàng?
+- Plus hứa "máy tính" nhưng web app đang ở Phase 4: kéo web app (Flutter web, đọc/sửa) lên sớm hơn, hay ghi rõ trên paywall là "sắp có"?
 - Đăng nhập theo thị trường (Zalo/LINE/Kakao) ở Phase 1? Bán qua web? Chấp nhận CASA cho Gmail nếu Google yêu cầu? Đội ngũ thực tế.
 
 ## Việc kỹ thuật còn nợ

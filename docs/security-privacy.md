@@ -25,7 +25,7 @@
   Khóa ký nằm trong Cloud KMS, chỉ CI phát hành ký được. App nhúng 2 public key (hiện tại + kế tiếp) để xoay khóa; `manifest.json` có danh sách `revoked`.
 - **"Gửi mẫu để cải thiện"**: chỉ gửi bản đã che (chữ → X, số → 9), người dùng xem trước bản che.
 - **Email inbound**: kiểm SPF/DKIM/DMARC; người gửi lạ chỉ tạo đề xuất.
-- **Phiên**: 1 thiết bị hoạt động mỗi tài khoản (ADR-013); RLS + RPC kiểm `session_id` của JWT còn `active`, phiên bị đá mất quyền ngay; phiên GoTrue cũ bị xóa để refresh token chết.
+- **Phiên**: giới hạn thiết bị hoạt động theo gói (ADR-013); RLS + RPC kiểm `session_id` của JWT còn `active`, phiên bị đá mất quyền ngay; phiên GoTrue cũ bị xóa để refresh token chết.
 - **Mobile**: token trong Keychain/Keystore (`flutter_secure_storage`); token Gmail (Phase 3) chỉ nằm trên máy; tùy chọn khóa app bằng sinh trắc học.
 - **Logging/analytics**: không log tiêu đề/ghi chú/nội dung import; Sentry scrub PII (`beforeSend`); analytics theo consent (`docs/product/analytics-events.md`).
 - **Threat model** (STRIDE rút gọn) viết trước S5 cho: sync RPC, hộp thư email, CDN mẫu, OAuth. Pen-test bên ngoài trước production.

@@ -139,15 +139,16 @@ Khi 2 thiết bị sửa cùng ghi chú lúc offline (`system-architecture.md` �
 (thiết bị + thời gian sửa), nút "Giữ bản này", "Giữ bản kia", "Gộp cả hai" (nối 2 đoạn).
 
 ### 3.7 Đăng nhập trên thiết bị khác (ADR-013)
-- **Máy mới, trước khi vào:** sau đăng nhập, app gọi `session_status()`. Nếu `active_elsewhere` có máy: hộp thoại
+- **Máy mới, trước khi vào:** sau đăng nhập, app gọi `session_status(device_id, platform, device_class)`. Nếu `will_replace` có máy: hộp thoại
   "Tài khoản đang dùng trên {device_model} (hoạt động {relative_time}). Tiếp tục sẽ đăng xuất thiết bị đó." [Tiếp tục] [Hủy].
+  Gói Free thêm dòng `paywall_devices` + nút [Nâng cấp Plus] (Plus: điện thoại + tablet + máy tính cùng lúc). Plus chỉ thấy hộp thoại khi đăng nhập máy thứ 2 cùng loại.
   Hủy thì đăng xuất ngay trên máy mới (phiên chưa claim không đọc được dữ liệu).
 - **Máy cũ, khi nhận `session.revoked` hoặc lỗi `session_revoked`:** hủy mọi thông báo đã lập lịch, rồi màn toàn trang
   "Bạn đã được đăng xuất vì tài khoản vừa đăng nhập trên {device_model} lúc {time}." Nếu không phải bạn: nút "Đổi mật khẩu / bảo mật tài khoản".
   Có thay đổi chưa đồng bộ: "Còn {count} thay đổi chưa đồng bộ, sẽ được đồng bộ khi bạn đăng nhập lại tài khoản này." [Đăng nhập lại].
 - **Đăng nhập tài khoản khác trên máy có dữ liệu chưa đồng bộ:** cảnh báo "{count} thay đổi của tài khoản trước sẽ bị xóa khỏi máy này" [Xuất trước] [Tiếp tục].
 - **Cài đặt → Tài khoản & thiết bị:** thiết bị đang dùng; lịch sử đăng nhập (mẫu máy, nền tảng, quốc gia, thời điểm đăng nhập/kết thúc, lý do:
-  "Đăng nhập ở máy khác", "Đã đăng xuất"); nút Đăng xuất. Không hiện IP đầy đủ, chỉ quốc gia.
+  "Đăng nhập ở máy khác", "Đã đăng xuất", "Hết gói Plus"); Plus thấy danh sách máy đang hoạt động theo loại, nút Đăng xuất từng máy. Không hiện IP đầy đủ, chỉ quốc gia.
 
 ## 4. Đồng hồ (Phase 2)
 - watchOS: màn chính danh sách "Tiếp theo" (5 item), chạm → chi tiết + Xong/Hoãn; nút mic thêm nhanh; complication: item tiếp theo + giờ.

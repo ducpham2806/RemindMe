@@ -18,7 +18,7 @@ select throws_ok($$ select public.sync_pull(0, 10) $$, 'PT403', 'session_not_cla
 select is((select count(*) from public.items), 0::bigint, 'phiên chưa claim không đọc được bảng (RLS)');
 reset role;
 select is((select res->>'state' from r where n = 1), 'unclaimed', 'session_status: unclaimed');
-select is((select res->'active_elsewhere'->0->>'device_id' from r where n = 1), 'device-1', 'session_status cho biết thiết bị đang hoạt động');
+select is((select res->'will_replace'->0->>'device_id' from r where n = 1), 'device-1', 'session_status cho biết thiết bị sẽ bị đăng xuất');
 
 -- Claim trên thiết bị 2: thiết bị 1 bị đá.
 insert into r select 2, pg_temp.login(pg_temp.u('alice'), 2);
@@ -69,7 +69,7 @@ select is((select end_reason from public.user_sessions where id = pg_temp.sid(pg
 -- Giới hạn số thiết bị lấy từ plan_entitlements (đổi được, không hard-code).
 update public.plan_entitlements set value = 2 where plan_id = 'free' and key = 'max_active_devices';
 select pg_temp.mk_user(pg_temp.u('bob'));
-select pg_temp.login(pg_temp.u('bob'), 2, 'tablet');
+select pg_temp.login(pg_temp.u('bob'), 2, 'tablet', 'ios', 'tablet');
 select is((select count(*) from public.user_sessions where user_id = pg_temp.u('bob') and status = 'active'), 2::bigint,
   'max_active_devices = 2 thì giữ 2 phiên');
 

@@ -182,12 +182,12 @@ create table devices (
 create table user_sessions (                  -- phiên đăng nhập + lịch sử (ADR-013), không đồng bộ qua sync_push
   id uuid primary key,                        -- = claim session_id trong JWT Supabase
   user_id uuid not null references profiles on delete cascade,
-  device_id text not null, platform text, device_model text, os_version text, app_version text, locale text, tz text,
+  device_id text not null, platform text, device_class text, device_model text,  -- device_class: phone|tablet|computer os_version text, app_version text, locale text, tz text,
   ip inet, country text,                      -- IP xóa sau 90 ngày; country từ header CDN
   status text not null default 'active',      -- active|ended; số phiên active ≤ entitlement max_active_devices
   created_at timestamptz default now(),       -- thời điểm đăng nhập
   last_seen_at timestamptz, ended_at timestamptz,
-  end_reason text,                            -- replaced|same_device_relogin|signed_out|revoked_by_user
+  end_reason text,                            -- replaced|same_device_relogin|signed_out|revoked_by_user|plan_limit
   replaced_by uuid references user_sessions, revoke_notified_at timestamptz
 );
 
@@ -225,7 +225,7 @@ thì item thành `archived` + `archived_reason='quota'`; vượt ở trường h
 | `max_lists` | Số list chưa xóa, **không tính Inbox** |
 | `smart_imports_per_month` | Đếm từ bảng `imports` (đồng bộ lên): `kind in (image, pdf, xlsx, email)`, `status <> 'failed'`, trong tháng theo `home_tz`, tính cả bản ghi đã xóa. Không tính `.ics`, `.pkpass`, `.md`, boarding pass. Sửa `failed` → `committed` cũng bị kiểm |
 | `max_originals_mb` | Tổng dung lượng bản gốc đã lưu trên cloud |
-| `max_active_devices` | Số `user_sessions` `active`; kiểm trong RPC `session_claim`. Vượt thì phiên có `last_seen_at` cũ nhất bị kết thúc (không chặn thiết bị mới) |
+| `max_active_devices`, `max_devices_per_class` | Số `user_sessions` `active` (tổng và theo `device_class`); kiểm trong `session_claim` và trigger trên `subscriptions` (hạ gói). Vượt thì giữ phiên mới + phiên `last_seen_at` gần nhất, kết thúc phần còn lại (không chặn thiết bị mới) |
 
 ## 5. Bảng chỉ có ở client (Drift)
 - `outbox(id, table, row_id, op, payload, field_clock, created_at, attempts)`: hàng đợi gửi `sync_push`.

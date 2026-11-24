@@ -12,6 +12,16 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · Plus đăng nhập nhiều loại thiết bị (ADR-013 sửa đổi 1) · Claude Code
+- **Làm:** chủ dự án duyệt: Plus dùng đồng thời điện thoại, tablet, laptop. Migration `20261124000007_plus_multi_device.sql`: entitlement
+  `max_devices_per_class` (Free 1, Plus 1) + `max_active_devices` Plus 3; cột `device_class` (web/desktop luôn `computer`, `ipados` luôn `tablet`);
+  `app.pick_evictions` (giữ máy mới + máy hoạt động gần nhất); trigger trên `subscriptions` cắt thiết bị khi hạ gói (`end_reason='plan_limit'`);
+  `session_status(device_id, platform, device_class)` trả `will_replace` cho màn xác nhận. Test `006_plus_multi_device.sql` (14 test).
+- **Quyết định:** Plus = 1 điện thoại + 1 tablet + 1 máy tính; đổi được bằng `plan_entitlements` (`max_devices_per_class = -1` cho nhiều máy cùng loại).
+  Free đăng nhập máy thứ 2 thấy paywall `paywall_devices` trong hộp xác nhận.
+- **Kiểm chứng:** `tools/db-test.sh` 6 file, 102 test PASS; `check-docs` 0 lỗi.
+- **Dở dang / tiếp theo:** "máy tính" cần web app (đang Phase 4): chờ chủ dự án quyết thời điểm; xem `docs/STATE.md`.
+
 ## 2026-11-24 · Một tài khoản một thiết bị + lịch sử đăng nhập; sửa CI · Claude Code
 - **Làm:**
   - Yêu cầu chủ dự án: đăng nhập máy mới thì máy cũ bị đá, lưu lịch sử đăng nhập. ADR-013 + migration `20261124000006_single_device_sessions.sql`:

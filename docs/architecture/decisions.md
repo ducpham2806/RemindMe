@@ -166,7 +166,14 @@ phiên `active`. Đăng nhập mới gọi `session_claim` để kết thúc phi
 Lịch sử đăng nhập lưu ở cùng bảng: thiết bị, nền tảng, phiên bản, IP, quốc gia, thời điểm đăng nhập/hoạt động cuối/kết thúc, lý do kết thúc.
 SQL: `supabase/migrations/20261124000006_single_device_sessions.sql`. Spec: `api-spec.md` §1.
 
-**Hệ quả.** Mất tính năng dùng song song điện thoại + tablet. Nâng `max_active_devices` của Plus lên 2 là đòn bẩy bán hàng sẵn có, không cần code.
+**Sửa đổi 1 (24/11/2026, chủ dự án duyệt).** Plus đăng nhập đồng thời trên nhiều loại thiết bị: thêm entitlement `max_devices_per_class`
+và cột `device_class` (`phone`|`tablet`|`computer`; web/desktop luôn là `computer`). Free 1 thiết bị; Plus tổng 3, mỗi loại 1. Khi vượt: giữ máy mới +
+các máy hoạt động gần nhất, kết thúc phần còn lại. Hạ gói thì trigger trên `subscriptions` cắt về giới hạn mới (`end_reason='plan_limit'`).
+SQL: `supabase/migrations/20261124000007_plus_multi_device.sql`.
+
+**Hệ quả.** Free mất tính năng dùng song song điện thoại + tablet; đây là lý do nâng cấp Plus (paywall `paywall_devices`).
+Loại thiết bị do app báo (trừ web/desktop), nên người dùng có thể khai tablet thành điện thoại: chấp nhận, giới hạn tổng vẫn giữ.
+Plus "máy tính" cần web app hoặc desktop app, hiện ở Phase 4 (`plan/implementation-plan.md`).
 Thiết bị bị đá có thể còn thay đổi chưa đồng bộ: giữ trong outbox, đẩy lên khi đăng nhập lại đúng tài khoản; tài khoản khác đăng nhập vào máy đó thì
 cảnh báo trước khi xóa dữ liệu local (`uiux/ux-flows-and-screens.md` §3.7). Thiết bị offline vẫn có thể kêu nhắc đã lập lịch cho tới khi online lại.
 IP là dữ liệu cá nhân: lưu 90 ngày, lịch sử 12 tháng (`security-privacy.md` §6).
