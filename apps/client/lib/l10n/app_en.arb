@@ -735,5 +735,25 @@
         "example": "Home"
       }
     }
+  },
+  "importIssuePastDate": "This date has already passed",
+  "@importIssuePastDate": {
+    "description": "Review screen warning: the booking or appointment date read from the document is before today. Not an error; the user may be importing an old ticket."
+  },
+  "importIssueNextDay": "Arrives the next day",
+  "@importIssueNextDay": {
+    "description": "Review screen warning: the ticket shows an arrival time earlier than departure without a date, so the app assumed arrival on the next day."
+  },
+  "importIssueDateOrder": "Check the date: day and month may be swapped",
+  "@importIssueDateOrder": {
+    "description": "Review screen warning: a date like 03/04 could be 3 April or March 4 and the document did not say which."
+  },
+  "importIssueCheckOut": "Check-out date not read, add it yourself",
+  "@importIssueCheckOut": {
+    "description": "Review screen warning: the hotel check-out date read was before check-in, so it was dropped. Glossary trip_checkout_hotel."
+  },
+  "importCheckFields": "Read from the text, check the details",
+  "@importCheckFields": {
+    "description": "Review screen hint: some fields were found by on-device text rules with lower confidence; the user should check them before saving."
   }
 }

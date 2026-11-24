@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,6 +48,13 @@ final nluPackSourcesProvider = FutureProvider.family<Map<String, String>, String
   return {
     for (final lang in order) lang: await rootBundle.loadString('packages/remindme_parsers/nlu/packs/$lang.yaml', cache: false),
   };
+});
+
+/// Từ điển sân bay IATA → múi giờ cho tầng luật T2 (packages/parsers/data/airports.tsv, ~260 KB), gửi sang isolate giải mã dạng chuỗi.
+/// `load` + `utf8.decode` thay vì `loadString`: tệp > 50 KB thì `loadString` mở thêm 1 isolate chỉ để giải mã UTF-8.
+final airportsTsvProvider = FutureProvider<String>((ref) async {
+  final data = await rootBundle.load('packages/remindme_parsers/data/airports.tsv');
+  return utf8.decode(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
 });
 
 final importsRepositoryProvider = Provider<ImportsRepository>((ref) => ImportsRepository(

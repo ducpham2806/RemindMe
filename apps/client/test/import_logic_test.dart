@@ -9,11 +9,13 @@ import 'package:remindme_parsers/remindme_parsers.dart';
 
 const docs = '../../packages/parsers/fixtures/docs';
 final packs = {for (final l in ['vi', 'en']) l: File('../../packages/parsers/nlu/packs/$l.yaml').readAsStringSync()};
+final airportsTsv = File('../../packages/parsers/data/airports.tsv').readAsStringSync();
 
 ImportRequest req(String path, {String? name, String? region = 'VN', String? dateOrder}) => ImportRequest(
       name: name ?? path.split('/').last,
       bytes: File(path).readAsBytesSync(),
       packSources: packs,
+      airportsTsv: airportsTsv,
       now: DateTime(2026, 11, 24, 9),
       region: region,
       dateOrder: dateOrder,
@@ -114,6 +116,24 @@ void main() {
       expect(txt.candidates.map((c) => (c.fields.title, c.fields.due?.local)), [('Mua sữa', null), ('Họp nhóm', '2026-11-25T09:00')]);
       File('${dir.path}/c.pdf').writeAsBytesSync([0x25, 0x50, 0x44, 0x46]);
       expect(decodeImport(req('${dir.path}/c.pdf')).format, ImportFormat.unsupported);
+    });
+
+    test('tầng luật T2: vé dạng chữ (.txt), email không có JSON-LD; giờ theo múi giờ sân bay', () {
+      final txt = decodeImport(req('$docs/synthetic-flight-0001/input.txt'));
+      expect((txt.docType, txt.recordKind), (DocType.flight, 'text'));
+      final c = txt.candidates.single;
+      expect(fallbackTitle(c), 'ZZ 245 · SGN → HAN');
+      expect(c.fieldConfidence['starts_at'], lessThan(0.7));
+      final i = toImportedItem(c, title: 'ZZ 245', deviceTz: 'Europe/London', confirmationLine: code);
+      expect((i.startsAt, i.tz, i.endsAt), (DateTime.utc(2026, 12, 21, 3, 30), 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 21, 5, 40)));
+
+      final email = decodeImport(req('$docs/synthetic-email-flight-text-0001/input.eml', region: 'US'));
+      expect((email.docType, email.subject), (DocType.flight, 'Your trip confirmation - ref K7PQ2W'));
+      expect([for (final c in email.candidates) fallbackTitle(c)], ['ZY 1208 · JFK → LHR', 'ZY 1213 · LHR → JFK']);
+      expect(email.candidates.first.fields.endsAt.toString(), '2027-01-10T12:05[Europe/London]');
+
+      final hotel = decodeImport(req('$docs/synthetic-hotel-text-0001/input.txt'));
+      expect((hotel.docType, hotel.candidates.single.fields.title), (DocType.hotel, 'Khách sạn Hoa Sen Hội An'));
     });
   });
 }

@@ -41,10 +41,12 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     });
     try {
       final packs = await ref.read(nluPackSourcesProvider(lang).future);
+      final airports = await ref.read(airportsTsvProvider.future);
       final req = ImportRequest(
         name: file.name,
         bytes: file.bytes,
         packSources: packs,
+        airportsTsv: airports,
         now: ref.read(nowProvider)(),
         region: ref.read(deviceRegionProvider),
       );
@@ -240,6 +242,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       if (c.listName != null) l.importListName(c.listName!),
       if (c.checklist.isNotEmpty) l.importChecklistCount(c.checklist.length),
       if (f.confirmationCode != null && c.kind != CandidateKind.task) l.importBookingCode(f.confirmationCode!),
+      for (final issue in c.issues) ?_issueText(l, issue),
+      // Tầng luật T2: trường đọc theo nhãn/mẫu chung (độ tin cậy < 0,7) cần người dùng xem lại (E5.1).
+      if (c.fieldConfidence.values.any((v) => v < 0.7)) l.importCheckFields,
     ];
     return ListTile(
       key: Key('importItem-$i'),
@@ -268,6 +273,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       },
     );
   }
+
+  static String? _issueText(AppLocalizations l, String issue) => switch (issue) {
+        'past_date' => l.importIssuePastDate,
+        'arrival_next_day' => l.importIssueNextDay,
+        'date_order_ambiguous' => l.importIssueDateOrder,
+        'check_out_before_check_in' => l.importIssueCheckOut,
+        _ => null,
+      };
 
   static IconData _icon(Candidate c) => switch (c.bookingType) {
         BookingType.flight => Icons.flight,

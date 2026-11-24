@@ -130,5 +130,10 @@
   "importPendingAttachments": "[{count, plural, =1{1 àţţàçĥɱéñţ çàñ’ţ ƀé ŕéàđ ýéţ: ~~~~~~~~~{names}} other{{count} àţţàçĥɱéñţš çàñ’ţ ƀé ŕéàđ ýéţ: ~~~~~~~~~~{names}}}]",
   "importChecklistCount": "[{count, plural, =1{Çĥéçķļîšţ: 1~~~~} other{Çĥéçķļîšţ: ~~~~{count}}}]",
   "importBookingCode": "[Ɓööķîñĝ çöđé: ~~~~{code}]",
-  "importListName": "[Ļîšţ: ~~{name}]"
+  "importListName": "[Ļîšţ: ~~{name}]",
+  "importIssuePastDate": "[Ţĥîš đàţé ĥàš àļŕéàđý þàššéđ~~~~~~~~~~]",
+  "importIssueNextDay": "[Àŕŕîṽéš ţĥé ñéẋţ đàý~~~~~~~]",
+  "importIssueDateOrder": "[Çĥéçķ ţĥé đàţé: đàý àñđ ɱöñţĥ ɱàý ƀé šŵàþþéđ~~~~~~~~~~~~~~]",
+  "importIssueCheckOut": "[Çĥéçķ-öûţ đàţé ñöţ ŕéàđ, àđđ îţ ýöûŕšéļƒ~~~~~~~~~~~~~]",
+  "importCheckFields": "[Ŕéàđ ƒŕöɱ ţĥé ţéẋţ, çĥéçķ ţĥé đéţàîļš~~~~~~~~~~~~]"
 }

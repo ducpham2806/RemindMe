@@ -130,5 +130,10 @@
   "importPendingAttachments": "{count, plural, other{{count} tệp đính kèm chưa đọc được: {names}}}",
   "importChecklistCount": "{count, plural, other{Danh sách kiểm tra: {count}}}",
   "importBookingCode": "Mã đặt chỗ: {code}",
-  "importListName": "Danh sách: {name}"
+  "importListName": "Danh sách: {name}",
+  "importIssuePastDate": "Ngày này đã qua",
+  "importIssueNextDay": "Đến vào hôm sau",
+  "importIssueDateOrder": "Kiểm tra lại ngày: ngày và tháng có thể bị đảo",
+  "importIssueCheckOut": "Chưa đọc được ngày trả phòng, hãy tự thêm",
+  "importCheckFields": "Đọc từ chữ trên tài liệu, hãy kiểm tra lại"
 }

@@ -101,6 +101,22 @@ void main() {
     expect(reminders.single.offsetMinutes, 0, reason: 'nhắc đúng giờ bay (ngoài cửa sổ 14 ngày nên OS chưa có)');
   });
 
+  testWidgets('vi: vé dạng chữ đọc bằng luật T2 → gợi ý kiểm tra lại, cảnh báo ngày đã qua', (tester) async {
+    final past = File('$docs/synthetic-flight-0001/input.txt').readAsStringSync().replaceAll('21/12/2026', '21/10/2026');
+    await pumpApp(tester, size: phone, locale: const Locale('vi'), region: 'VN', overrides: [
+      syncDecoder,
+      filePickerProvider.overrideWithValue(picker([(name: 've.txt', bytes: Uint8List.fromList(utf8.encode(past)))])),
+    ]);
+    await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
+    await tester.tap(find.byKey(const Key('importPick')));
+    await tester.pumpAndSettle();
+    expect(find.text('ZZ 245 · SGN → HAN'), findsOneWidget);
+    expect(find.textContaining('Mã đặt chỗ: XQ7K2M'), findsOneWidget);
+    expect(find.textContaining('Ngày này đã qua'), findsOneWidget);
+    expect(find.textContaining('Đọc từ chữ trên tài liệu, hãy kiểm tra lại'), findsOneWidget);
+    expect(find.byIcon(Icons.flight), findsOneWidget);
+  });
+
   testWidgets('bảng mơ hồ 03/04 khi không biết vùng: hỏi thứ tự ngày, chọn lại thì đọc lại tệp', (tester) async {
     await pumpApp(tester, size: phone, region: null, overrides: [
       syncDecoder,
