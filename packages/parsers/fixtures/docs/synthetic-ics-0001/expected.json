@@ -1,0 +1,19 @@
+{
+  "doc_type": "medical",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "event",
+      "required": {
+        "title": "Khám răng định kỳ",
+        "starts_at": { "local": "2026-12-12T09:00", "tz": "Asia/Ho_Chi_Minh" }
+      },
+      "optional": {
+        "ends_at": { "local": "2026-12-12T09:30", "tz": "Asia/Ho_Chi_Minh" },
+        "location_text": "Phòng khám mẫu, tầng 2"
+      },
+      "must_not_fill": ["confirmation_code", "seat"]
+    }
+  ]
+}

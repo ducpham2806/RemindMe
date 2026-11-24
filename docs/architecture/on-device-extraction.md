@@ -42,6 +42,11 @@ flowchart TD
 | Barcode boarding pass | ML Kit Barcode (Android/iOS, offline) hoặc Vision `DetectBarcodesRequest`; parser **IATA BCBP (Resolution 792)** | Tên, PNR, sân bay đi/đến, hãng, số chuyến, ngày (Julian), hạng, ghế. Chính xác 100% nếu quét được |
 | QR khác | Phân loại theo tiền tố: URL (mở/đọc tham số booking id), VietQR (bỏ qua: là mã thanh toán), text | |
 
+**Đã có (S5 kéo sớm):** `packages/parsers/lib/src/decoders/` (`ics.dart`, `bcbp.dart`, `jsonld.dart`, `pkpass.dart`) trả `Candidate`
+(`lib/src/extract/candidate.dart`, cùng dạng `fixtures/schema/expected.schema.json`); harness `lib/src/extract/eval.dart` + `test/extract_eval_test.dart`
+chấm mọi mẫu trong `fixtures/docs/` (loại chưa có tầng xử lý thì bỏ qua). Giờ giữ như in trên vé + offset nếu nguồn có; `tz` IANA suy sau theo sân bay/ga (T2).
+Tên hành khách trong BCBP/JSON-LD không được lấy ra. Chưa có: MIME `.eml` nhiều phần/quoted-printable (`enough_mail`), PDF, xlsx/csv, md.
+
 ## 3. T1: OCR trên thiết bị
 | Nền tảng | Engine | Hệ chữ |
 |---|---|---|

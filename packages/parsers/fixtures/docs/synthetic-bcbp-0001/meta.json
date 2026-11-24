@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-bcbp-0001",
+  "source_kind": "boarding_pass_barcode",
+  "market": "VN",
+  "doc_language": "en",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Chuỗi mã vạch IATA BCBP tổng hợp (đã giải mã từ PDF417). Tên hành khách giả. Ngày Julian 355 = 21/12."
+}

@@ -12,6 +12,14 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · S5 E1: decoder .ics, BCBP, JSON-LD, .pkpass + harness eval · Claude Code
+- **Làm:** `packages/parsers`: `Candidate`/`CandidateFields`/`LocalTime` theo `expected.schema.json`; 4 decoder T0 (`IcsDecoder`, `BcbpDecoder`, `JsonLdDecoder`,
+  `PkpassDecoder` qua `archive`); `scoreDocument` (% trường bắt buộc đúng, điền sai, `must_not_fill`) + `test/extract_eval_test.dart` chạy trên `fixtures/docs/`.
+  Fixtures tổng hợp mới: `synthetic-ics-0001`, `synthetic-jsonld-flight-0001` (.eml), `synthetic-bcbp-0001`.
+- **Quyết định:** không trả tên hành khách (BCBP, JSON-LD `underName`); giờ giữ như in + offset, `tz` để T2 suy theo IATA/ga; TZID kiểu Windows giữ nguyên chờ ánh xạ.
+- **Kiểm chứng:** parsers 28 test (10 decoder, eval 3 mẫu: 100% trường bắt buộc, 0 điền sai); `validate-fixtures` 4 mẫu 0 lỗi; analyze 0.
+- **Tiếp theo:** MIME `.eml` (`enough_mail`), xlsx/csv (E1.5), md; T2 (E3) cần ảnh OCR thật từ spike E0; nối import vào app (share extension + màn Xem lại E5).
+
 ## 2026-11-24 · CI Android, S2 list + tìm kiếm, S4 sửa ngày/giờ + chọn lặp · Claude Code
 - **Làm:**
   - CI run #20 `android-build` lỗi (chủ dự án gửi ảnh): `flutter_local_notifications` 23 + `androidx.core` 1.19 cần compileSdk ≥ 37 → `compileSdk = 37`; run #21 pass.

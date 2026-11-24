@@ -21,7 +21,9 @@
 - S2 còn lại đã xong: Tôi → Danh sách (Hộp thư + list người dùng, tạo/đổi tên/xóa, việc về Hộp thư), chọn list ở chi tiết, Quick Add `#tag` khớp tên list,
   tìm kiếm không dấu (`foldForSearch`). S4 phần UI: sửa ngày/giờ ở chi tiết, chọn lặp (hằng ngày, ngày thường, hằng tuần, hằng tháng, hằng năm, âm lịch theo ngôn ngữ).
   Chi tiết item và tìm kiếm là route gốc `/item/:id`, `/search`. CI `android-build` pass (compileSdk 37).
-- Chưa có: worker, decoder/mẫu tài liệu, auth/flavors, `SupabaseSyncApi`.
+- S5 E1 phần đầu: decoder `.ics` (TZID, cả ngày, RRULE, VALARM, VTODO), IATA BCBP (nhiều chặng, suy năm từ ngày Julian), JSON-LD schema.org
+  trong email (Flight/Lodging/Train/Bus/Event/Restaurant/RentalCar), `.pkpass` (ưu tiên BCBP); harness eval E3.5 trên `fixtures/docs/` (3 mẫu tổng hợp mới).
+- Chưa có: worker, MIME/PDF/xlsx/csv/md decoder, bộ máy luật T2 + mẫu nhà cung cấp, màn Xem lại (E5), auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;

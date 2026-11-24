@@ -1,0 +1,20 @@
+From: "ZZ Air" <no-reply@example.com>
+To: traveler@example.org
+Subject: Booking confirmation XQ7K2M
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FlightReservation","reservationNumber":"XQ7K2M",
+ "reservationStatus":"https://schema.org/ReservationConfirmed",
+ "underName":{"@type":"Person","name":"Traveler Example"},
+ "reservationFor":{"@type":"Flight","flightNumber":"245",
+  "airline":{"@type":"Airline","name":"ZZ Air","iataCode":"ZZ"},
+  "departureAirport":{"@type":"Airport","name":"Tan Son Nhat","iataCode":"SGN"},"departureTerminal":"1",
+  "arrivalAirport":{"@type":"Airport","name":"Noi Bai","iataCode":"HAN"},
+  "departureTime":"2026-12-21T10:30:00+07:00","arrivalTime":"2026-12-21T12:40:00+07:00"},
+ "airplaneSeat":"14C","airplaneSeatClass":"Economy"}
+</script></head>
+<body><p>Your flight ZZ 245 from SGN to HAN is confirmed.</p></body></html>

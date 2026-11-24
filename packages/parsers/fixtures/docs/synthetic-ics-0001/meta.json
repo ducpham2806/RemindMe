@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-ics-0001",
+  "source_kind": "ics",
+  "market": "VN",
+  "doc_language": "vi",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Mẫu tổng hợp cho decoder .ics (T0)."
+}

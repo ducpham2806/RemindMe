@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-jsonld-flight-0001",
+  "source_kind": "email",
+  "market": "VN",
+  "doc_language": "en",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Email tổng hợp có JSON-LD schema.org FlightReservation (decoder T0). Hãng 'ZZ' là giả."
+}
