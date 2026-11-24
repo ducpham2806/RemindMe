@@ -45,6 +45,7 @@ Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Pha
 - [x] (Kéo sớm S2/S4) List + tìm kiếm không dấu; sửa ngày/giờ và chọn lặp (RRULE + âm lịch) ở chi tiết item
 - [x] (Kéo sớm S5) E1.1 `.ics`/`.pkpass`, E1.4 BCBP, E1.2 (MIME + JSON-LD, chưa Microdata), E1.5 xlsx/csv, Markdown (§7); khung harness E3.5 trên fixtures.
   Còn của E1: E1.3 PDF (`pdfrx`, cần plugin native), Microdata; AC theo số mẫu thật (30 email, 15 file bảng) chờ bộ mẫu
+- [x] (Kéo sớm S6) Bản đầu E5: Tôi → Nhập từ tệp → màn Xem lại → `imports` + item. Còn: share extension, đổi cột + nhớ mapping, hạn mức, trips
 - **Gate:** PRD chốt sau phỏng vấn; prototype pass (≥ 4/5 người hoàn thành tác vụ chính); spike có kết luận engine OCR/STT cho từng nền tảng.
 
 ## Phase 1: MVP (16 tuần = 8 sprint)

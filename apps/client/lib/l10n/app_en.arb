@@ -593,5 +593,147 @@
   "searchNoResults": "No matching items",
   "@searchNoResults": {
     "description": "Shown when a search finds nothing."
+  },
+  "meImportFile": "Import from file",
+  "@meImportFile": {
+    "description": "Row in Me that opens file import. Glossary input_import + input_file: always name the source."
+  },
+  "importTitle": "Import from file",
+  "@importTitle": {
+    "description": "App bar title of the import screen."
+  },
+  "importIntro": "Pick a calendar file, Wallet pass, email, spreadsheet or note. The file is read on this device and never uploaded.",
+  "@importIntro": {
+    "description": "Empty state of the import screen."
+  },
+  "importFormats": ".ics · .pkpass · .eml · .csv · .xlsx · .md · .txt",
+  "@importFormats": {
+    "description": "List of supported file extensions. Keep the extensions as is."
+  },
+  "importPickFile": "Choose file",
+  "@importPickFile": {
+    "description": "Button that opens the system file picker."
+  },
+  "importPickAnother": "Choose another file",
+  "@importPickAnother": {
+    "description": "Button shown after a file could not be used."
+  },
+  "importUnsupported": "This file type can’t be read yet. Import from PDF and photos is coming.",
+  "@importUnsupported": {
+    "description": "Shown when the picked file is a PDF, photo or unknown type."
+  },
+  "importNothingFound": "No tasks or events were found in this file.",
+  "@importNothingFound": {
+    "description": "Shown when the file was read but nothing could be extracted."
+  },
+  "importFailed": "Couldn’t read this file.",
+  "@importFailed": {
+    "description": "Shown when reading the file threw an error."
+  },
+  "importReviewTitle": "Review",
+  "@importReviewTitle": {
+    "description": "App bar title once items are found. Glossary input_review."
+  },
+  "importNoTitle": "Untitled, tap to name",
+  "@importNoTitle": {
+    "description": "Placeholder for a found item without a title."
+  },
+  "importItemName": "Name",
+  "@importItemName": {
+    "description": "Title of the dialog that renames a found item."
+  },
+  "importDateOrderQuestion": "How are dates written in this file?",
+  "@importDateOrderQuestion": {
+    "description": "Asked when dates like 03/04 could be read either way."
+  },
+  "importDateOrderDmy": "Day first (31/12)",
+  "@importDateOrderDmy": {
+    "description": "Choice: dates are day/month. Keep the example digits."
+  },
+  "importDateOrderMdy": "Month first (12/31)",
+  "@importDateOrderMdy": {
+    "description": "Choice: dates are month/day. Keep the example digits."
+  },
+  "importSheet": "Sheet",
+  "@importSheet": {
+    "description": "Label of the spreadsheet sheet picker."
+  },
+  "importDoneTag": "Done",
+  "@importDoneTag": {
+    "description": "Chip on a found item that is already completed in the file."
+  },
+  "importFound": "{count, plural, =1{Found 1 item} other{Found {count} items}}",
+  "@importFound": {
+    "description": "Header of the review list. Glossary input_found_n.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "importAdd": "{count, plural, =0{Add} =1{Add 1 item} other{Add {count} items}}",
+  "@importAdd": {
+    "description": "Button that saves the selected items.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "importAdded": "{count, plural, =1{Added 1 item} other{Added {count} items}}",
+  "@importAdded": {
+    "description": "Snackbar after saving.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "importPendingAttachments": "{count, plural, =1{1 attachment can’t be read yet: {names}} other{{count} attachments can’t be read yet: {names}}}",
+  "@importPendingAttachments": {
+    "description": "Email import: attachments (PDF, photos) skipped for now.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      },
+      "names": {
+        "type": "String",
+        "example": "invoice.pdf, ticket.jpg"
+      }
+    }
+  },
+  "importChecklistCount": "{count, plural, =1{Checklist: 1} other{Checklist: {count}}}",
+  "@importChecklistCount": {
+    "description": "Found item has sub-steps. Glossary item_checklist.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "importBookingCode": "Booking code: {code}",
+  "@importBookingCode": {
+    "description": "Line added to the item notes. Glossary trip_booking_code: never change the code.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "XQ7K2M"
+      }
+    }
+  },
+  "importListName": "List: {name}",
+  "@importListName": {
+    "description": "Which list a found item goes to.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Home"
+      }
+    }
   }
 }

@@ -306,6 +306,13 @@ class ItemsRepository {
     Map<String, Object?>? recurrence,
     DateTime? recurrenceStart,
     List<int> reminderOffsets = const [],
+    DateTime? endsAt,
+    String? endTz,
+    String? endDate,
+    Map<String, Object?>? location,
+    List<Map<String, Object?>> checklist = const [],
+    String status = 'open',
+    String? importId,
   }) async {
     final trimmed = title.trim();
     if (trimmed.isEmpty) throw ArgumentError.value(title, 'title', 'không được rỗng');
@@ -315,7 +322,8 @@ class ItemsRepository {
     await engine.edit(SyncTable.items, id, {
       'kind': kind,
       'title': trimmed,
-      'status': 'open',
+      'status': status,
+      if (status == 'done') 'completed_at': _now().toUtc().toIso8601String(),
       'priority': priority,
       'tags': tags,
       'source': source,
@@ -325,6 +333,12 @@ class ItemsRepository {
       'tz': ?tz,
       'start_date': ?startDate,
       'notes': ?notes,
+      if (endsAt != null) 'ends_at': endsAt.toUtc().toIso8601String(),
+      'end_tz': ?endTz,
+      'end_date': ?endDate,
+      'location': ?location,
+      if (checklist.isNotEmpty) 'checklist': checklist,
+      'import_id': ?importId,
       // Việc lặp "8h sáng mỗi ngày" kêu theo giờ nơi đang đứng (reminder-engine.md §5).
       if (recurrence != null) 'time_mode': kind == 'task' || kind == 'habit' ? 'floating' : 'fixed',
     });

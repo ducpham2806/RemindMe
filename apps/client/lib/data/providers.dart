@@ -39,6 +39,22 @@ final nluEngineProvider = FutureProvider.family<NluEngine, String>((ref, key) as
         GrammarPack.fromYaml(await rootBundle.loadString('packages/remindme_parsers/nlu/packs/$lang.yaml', cache: false)),
     ]));
 
+/// Gói ngôn ngữ ở dạng YAML (để gửi sang isolate giải mã tệp): gói của ngôn ngữ giao diện trước, rồi các gói còn lại.
+/// Nhập bảng thử mọi gói để khớp tên cột (on-device-extraction.md §6).
+final nluPackSourcesProvider = FutureProvider.family<Map<String, String>, String>((ref, languageCode) async {
+  final order = [if (bundledNluPacks.contains(languageCode)) languageCode, ...bundledNluPacks.where((l) => l != languageCode)];
+  return {
+    for (final lang in order) lang: await rootBundle.loadString('packages/remindme_parsers/nlu/packs/$lang.yaml', cache: false),
+  };
+});
+
+final importsRepositoryProvider = Provider<ImportsRepository>((ref) => ImportsRepository(
+      ref.watch(syncEngineProvider),
+      ref.watch(itemsRepositoryProvider),
+      ref.watch(listsRepositoryProvider),
+      now: ref.watch(nowProvider),
+    ));
+
 final recurringIdsProvider = StreamProvider<Set<String>>((ref) => ref.watch(itemsRepositoryProvider).watchRecurringIds());
 
 /// Lập lịch thông báo của OS (`LocalNotificationScheduler` trên Android/iOS/macOS); `main()` khởi tạo rồi override.

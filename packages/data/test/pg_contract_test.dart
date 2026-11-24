@@ -196,4 +196,27 @@ void main() {
         Sql.named('select deleted_at is not null as gone from public.occurrence_log where item_id = @i::uuid'), parameters: {'i': id});
     expect(rows.single.first, isTrue);
   }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
+
+  test('nhập file: hàng imports + item có checklist/location/end_tz/import_id được RPC thật nhận', () async {
+    final login = await newUser();
+    final (phone, _) = await login('phone-1', 'android', 'phone');
+    final repo = ImportsRepository(phone, ItemsRepository(phone), ListsRepository(phone));
+    final r = await repo.commit(
+      const ImportRecord(kind: 'email', mime: 'message/rfc822', bytes: 2048, docType: 'hotel', docLanguage: 'vi'),
+      [
+        ImportedItem(title: 'Biển Xanh', kind: 'event', startsAt: DateTime.utc(2026, 12, 21, 7), tz: 'Asia/Ho_Chi_Minh',
+            endsAt: DateTime.utc(2026, 12, 23, 5), endTz: 'Asia/Ho_Chi_Minh', locationText: 'Đà Nẵng', listName: 'Du lịch', reminderOffsets: const [0]),
+        const ImportedItem(title: 'Mua sơn', startDate: '2026-12-12', done: true, checklist: [(text: 'chống gỉ', done: false)]),
+      ],
+      deviceTz: 'Asia/Ho_Chi_Minh',
+    );
+    final s = await phone.sync();
+    expect(s.issues, isEmpty, reason: '${s.issues.map((i) => '${i.table} ${i.error} ${i.id}')}');
+    final rows = await conn.execute(
+        Sql.named('select count(*) from public.items where import_id = @i::uuid and (checklist is not null or location is not null)'),
+        parameters: {'i': r.importId});
+    expect(rows.single.first, 2);
+    final imp = await conn.execute(Sql.named('select kind, status from public.imports where id = @i::uuid'), parameters: {'i': r.importId});
+    expect(imp.single.toList(), ['email', 'committed']);
+  }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
 }

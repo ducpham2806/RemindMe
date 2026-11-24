@@ -7,6 +7,7 @@ import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
+import '../common/text_prompt.dart';
 import '../items/item_tile.dart';
 
 /// Tôi → Danh sách (S2): Inbox + list người dùng, số việc đang mở; tạo, đổi tên, xóa (việc về Inbox).
@@ -80,48 +81,7 @@ class ListsScreen extends ConsumerWidget {
 
 /// Hộp thoại nhập tên list; null nếu hủy hoặc tên rỗng.
 Future<String?> askListName(BuildContext context, {required String title, String? initial}) async {
-  final name = await showDialog<String>(context: context, builder: (_) => _ListNameDialog(title: title, initial: initial));
-  final t = name?.trim();
-  return t == null || t.isEmpty ? null : t;
-}
-
-/// Dialog tự giữ controller: TextField còn được vẽ trong lúc dialog đóng (animation), nên không được dispose sớm hơn widget.
-class _ListNameDialog extends StatefulWidget {
-  const _ListNameDialog({required this.title, this.initial});
-  final String title;
-  final String? initial;
-
-  @override
-  State<_ListNameDialog> createState() => _ListNameDialogState();
-}
-
-class _ListNameDialogState extends State<_ListNameDialog> {
-  late final _controller = TextEditingController(text: widget.initial);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(widget.title),
-      content: TextField(
-        key: const Key('listName'),
-        controller: _controller,
-        autofocus: true,
-        decoration: InputDecoration(hintText: l.listsNameHint),
-        onSubmitted: (v) => Navigator.pop(context, v),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
-        TextButton(onPressed: () => Navigator.pop(context, _controller.text), child: Text(l.quickAddSave)),
-      ],
-    );
-  }
+  return askText(context, title: title, initial: initial, hint: AppLocalizations.of(context).listsNameHint, fieldKey: const Key('listName'));
 }
 
 /// Việc đang mở của 1 list.

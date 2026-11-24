@@ -26,7 +26,9 @@
 - S5 E1 tiếp: email MIME (`EmailDecoder`: HTML → JSON-LD, `.ics`, `.pkpass`, email lồng, gộp trùng, PDF/ảnh trả `pending`), csv/xlsx → việc
   (`TableTaskExtractor`: dò header theo từ điển cột trong gói, suy cột khi không header, thứ tự ngày, NLU cho ô chữ), Markdown/Obsidian Tasks (`MarkdownDecoder`).
   `Candidate` thêm `priority`, `done`, `tags`, `listName`, `checklist`. Eval 7 mẫu tổng hợp: 100% trường bắt buộc, 0 điền sai.
-- Chưa có: worker, PDF decoder, nối import vào app (chọn file/chia sẻ → màn Xem lại E5), bộ máy luật T2 + mẫu nhà cung cấp, màn Xem lại (E5), auth/flavors, `SupabaseSyncApi`.
+- Nhập từ tệp trong app (bản đầu E5): Tôi → Nhập từ tệp (`file_picker`) → giải mã trong isolate → màn Xem lại → `ImportsRepository.commit`
+  (hàng `imports` + item có `import_id`, list theo tên, checklist, địa điểm, lặp, nhắc). Đặt chỗ tạm lưu thành sự kiện; csv tính như xlsx (chủ dự án đồng ý).
+- Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước, bộ máy luật T2 + mẫu nhà cung cấp, màn Xem lại (E5), auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
@@ -51,6 +53,8 @@
   method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
   onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
   hủy thông báo khi `session_revoked` (chờ luồng sync thật), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
+- Nhập từ tệp: chưa thử `file_picker` trên máy thật; hạn mức `smart_imports_per_month` chưa kiểm khi offline (chưa có cache `quota_status`);
+  đặt chỗ chưa thành `booking_details` + chuyến đi (S6); lặp âm lịch từ dòng chữ trong tệp .txt chưa giữ (chỉ RRULE).
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).

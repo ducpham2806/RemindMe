@@ -12,6 +12,17 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · Nhập từ tệp trong app: màn Xem lại (bản đầu E5) · Claude Code
+- **Làm:** `packages/data`: `ImportsRepository` (`commit` ghi hàng `imports` + item có `import_id`, list theo tên khớp không dấu hoặc tạo mới,
+  `smartImportsThisMonth` đếm theo tháng của múi giờ máy như server, vượt hạn mức → `pending_quota`); `ItemsRepository.create` thêm `endsAt/endTz/endDate`,
+  `location`, `checklist`, `status`, `importId`. App: `features/import/` (`detectFormat`, `decodeImport` chạy trong `Isolate.run`, `toImportedItem` +
+  `resolveLocalTime`, màn `ImportScreen` ở `/import`, dòng "Nhập từ tệp" ở Tôi), `file_picker` 13.4.1, `askText` dùng chung cho dialog đặt tên; 24 key ARB.
+- **Quyết định:** (chủ dự án đồng ý) csv tính như xlsx; đặt chỗ lưu thành sự kiện tới khi có chuyến đi. Giờ chỉ có offset → múi giờ máy nếu trùng,
+  không thì `Etc/GMT∓h`; giờ Z của .ics hiển thị theo máy. Việc đã xong trong tệp mặc định không chọn. Tệp .txt: mỗi dòng 1 việc qua NLU.
+- **Kiểm chứng:** data 3 test mới + contract Postgres thật (imports + item có checklist/location/end_tz qua `sync_push`), pgTAP 109; app 52 test
+  (8 logic, 4 widget: csv vi, PDF → email vé máy bay en, thứ tự ngày mơ hồ, pseudo-locale 320dp chữ 1,3×); analyze 0.
+- **Tiếp theo:** share intent Android + share extension iOS (cần Xcode), đổi cột + nhớ mapping (E5.3), cache `quota_status` khi có server, trips + `booking_details` (S6).
+
 ## 2026-11-24 · S5 E1: email MIME, csv/xlsx → việc, Markdown · Claude Code
 - **Làm:** `packages/parsers`: `MimePart`/`MimeMessage` (multipart lồng, base64, QP, RFC 2047/2231, windows-1252, ngày RFC 5322), `htmlToText`,
   `EmailDecoder` (JSON-LD trong HTML, `text/calendar`, `.ics`/`.pkpass` đính kèm, `message/rfc822`, `dedupeCandidates`, `pending` cho PDF/ảnh, bỏ logo `Content-ID`);

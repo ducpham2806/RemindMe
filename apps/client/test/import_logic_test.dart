@@ -1,0 +1,119 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:remindme_client/features/import/import_decode.dart';
+import 'package:remindme_client/features/import/import_mapper.dart';
+import 'package:remindme_core/remindme_core.dart';
+import 'package:remindme_parsers/remindme_parsers.dart';
+
+const docs = '../../packages/parsers/fixtures/docs';
+final packs = {for (final l in ['vi', 'en']) l: File('../../packages/parsers/nlu/packs/$l.yaml').readAsStringSync()};
+
+ImportRequest req(String path, {String? name, String? region = 'VN', String? dateOrder}) => ImportRequest(
+      name: name ?? path.split('/').last,
+      bytes: File(path).readAsBytesSync(),
+      packSources: packs,
+      now: DateTime(2026, 11, 24, 9),
+      region: region,
+      dateOrder: dateOrder,
+    );
+
+String code(String c) => 'code $c';
+
+void main() {
+  setUpAll(TimeZones.ensureInitialized);
+
+  group('resolveLocalTime', () {
+    test('ngày; giờ Z của .ics đổi sang múi giờ máy; tz IANA của nguồn giữ nguyên', () {
+      expect(resolveLocalTime(const LocalTime('2026-12-08'), 'Asia/Ho_Chi_Minh')!.date, '2026-12-08');
+      final z = resolveLocalTime(const LocalTime('2026-12-05T03:30', tz: 'Etc/UTC', utcOffsetMinutes: 0), 'Asia/Ho_Chi_Minh')!;
+      expect((z.utc, z.tz), (DateTime.utc(2026, 12, 5, 3, 30), 'Asia/Ho_Chi_Minh'));
+      final ny = resolveLocalTime(const LocalTime('2026-12-05T10:30', tz: 'America/New_York'), 'Asia/Ho_Chi_Minh')!;
+      expect((ny.utc, ny.tz), (DateTime.utc(2026, 12, 5, 15, 30), 'America/New_York'));
+      expect(ny.wall(), CivilDateTime(CivilDate(2026, 12, 5), CivilTime(10, 30)));
+    });
+
+    test('chỉ có offset: trùng giờ máy thì dùng giờ máy, khác thì Etc/GMT (đảo dấu), offset lẻ phút thì giờ máy', () {
+      const t = LocalTime('2026-12-21T10:30', utcOffsetMinutes: 420);
+      final same = resolveLocalTime(t, 'Asia/Ho_Chi_Minh')!;
+      expect((same.utc, same.tz), (DateTime.utc(2026, 12, 21, 3, 30), 'Asia/Ho_Chi_Minh'));
+      final other = resolveLocalTime(t, 'America/New_York')!;
+      expect((other.utc, other.tz), (DateTime.utc(2026, 12, 21, 3, 30), 'Etc/GMT-7'));
+      expect(other.wall().time, CivilTime(10, 30));
+      final india = resolveLocalTime(const LocalTime('2026-12-21T10:30', utcOffsetMinutes: 330), 'Europe/London')!;
+      expect((india.utc, india.tz), (DateTime.utc(2026, 12, 21, 5), 'Europe/London'));
+    });
+
+    test('không có tz/offset: giờ tường theo máy; ngày sai trả null', () {
+      final r = resolveLocalTime(const LocalTime('2026-12-15T09:00'), 'Asia/Ho_Chi_Minh')!;
+      expect((r.utc, r.tz), (DateTime.utc(2026, 12, 15, 2), 'Asia/Ho_Chi_Minh'));
+      expect(resolveLocalTime(const LocalTime('2026-02-30'), 'Asia/Ho_Chi_Minh'), isNull);
+    });
+  });
+
+  group('toImportedItem', () {
+    test('vé máy bay: sự kiện, tên mặc định từ mã chuyến, mã đặt chỗ vào ghi chú, nhắc đúng giờ', () {
+      final c = decodeImport(req('$docs/synthetic-jsonld-flight-0001/input.eml')).candidates.single;
+      final title = fallbackTitle(c)!;
+      expect(title, 'ZZ 245 · SGN → HAN');
+      final i = toImportedItem(c, title: title, deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code);
+      expect((i.kind, i.startsAt, i.tz, i.endsAt, i.notes),
+          ('event', DateTime.utc(2026, 12, 21, 3, 30), 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 21, 5, 40), 'code XQ7K2M'));
+      expect(i.reminderOffsets, [0]);
+    });
+
+    test('Markdown: việc cả ngày có lặp, việc con, đã xong, list', () {
+      final cs = decodeImport(req('$docs/synthetic-md-todo-0001/input.md')).candidates;
+      final bill = toImportedItem(cs[3], title: cs[3].fields.title!, deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code);
+      expect((bill.startDate, bill.tz, bill.recurrenceStart, bill.listName), ('2026-12-05', 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 4, 17), 'Định kỳ'));
+      expect(bill.recurrence, {'kind': 'rrule', 'rrule': 'FREQ=MONTHLY;BYMONTHDAY=5'});
+      final gate = toImportedItem(cs[2], title: 'x', deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code);
+      expect(gate.checklist, [(text: 'Mua sơn chống gỉ', done: false), (text: 'Mua cọ', done: false)]);
+      expect(toImportedItem(cs[1], title: 'x', deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code).done, isTrue);
+      final none = toImportedItem(const Candidate(kind: CandidateKind.task, source: 'md', fields: CandidateFields(title: 'a')),
+          title: 'a', deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code);
+      expect((none.startsAt, none.startDate, none.tz), (null, null, null));
+      expect(none.reminderOffsets, isEmpty);
+    });
+  });
+
+  group('decodeImport', () {
+    test('nhận loại theo đuôi và theo nội dung khi mất đuôi', () {
+      final ics = File('$docs/synthetic-ics-0001/input.ics').readAsBytesSync();
+      final xlsx = File('$docs/synthetic-xlsx-todo-0001/input.xlsx').readAsBytesSync();
+      final eml = File('$docs/synthetic-email-hotel-0001/input.eml').readAsBytesSync();
+      expect(detectFormat('invite', ics), ImportFormat.ics);
+      expect(detectFormat('download', xlsx), ImportFormat.xlsx);
+      expect(detectFormat('message', eml), ImportFormat.email);
+      expect(detectFormat('scan.PDF', Uint8List(0)), ImportFormat.unsupported);
+      expect(detectFormat('notes.txt', Uint8List(0)), ImportFormat.text);
+    });
+
+    test('email: đặt phòng + PDF chưa đọc được; bảng: ngôn ngữ, thứ tự ngày; mỗi loại đúng imports.kind', () {
+      final email = decodeImport(req('$docs/synthetic-email-hotel-0001/input.eml'));
+      expect((email.recordKind, email.candidates.length, email.subject), ('email', 1, 'Xác nhận đặt phòng HB-48213'));
+      expect(email.pendingAttachments, ['invoice.pdf']);
+      final csv = decodeImport(req('$docs/synthetic-csv-todo-0001/input.csv'));
+      expect((csv.recordKind, csv.docLanguage, csv.dateOrder, csv.dateOrderAmbiguous, csv.candidates.length), ('xlsx', 'vi', 'dmy', false, 4));
+      final xlsx = decodeImport(req('$docs/synthetic-xlsx-todo-0001/input.xlsx'));
+      expect((xlsx.docLanguage, xlsx.candidates.first.fields.title), ('en', 'Renew passport'));
+      expect(xlsx.sheetNames, ['Trip prep']);
+    });
+
+    test('bảng mơ hồ: chọn lại thứ tự ngày; tệp chữ: mỗi dòng 1 việc qua NLU; PDF: chưa hỗ trợ', () {
+      final dir = Directory.systemTemp.createTempSync('imp');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      File('${dir.path}/a.csv').writeAsStringSync('Task,Due\nPay rent,03/04/2027\n');
+      final amb = decodeImport(req('${dir.path}/a.csv', region: null));
+      expect((amb.dateOrderAmbiguous, amb.candidates.single.fields.due!.local), (true, '2027-04-03'));
+      final mdy = decodeImport(req('${dir.path}/a.csv', region: null, dateOrder: 'mdy'));
+      expect(mdy.candidates.single.fields.due!.local, '2027-03-04');
+      File('${dir.path}/b.txt').writeAsStringSync('Mua sữa\nHọp nhóm 9h sáng mai\n');
+      final txt = decodeImport(req('${dir.path}/b.txt'));
+      expect(txt.candidates.map((c) => (c.fields.title, c.fields.due?.local)), [('Mua sữa', null), ('Họp nhóm', '2026-11-25T09:00')]);
+      File('${dir.path}/c.pdf').writeAsBytesSync([0x25, 0x50, 0x44, 0x46]);
+      expect(decodeImport(req('${dir.path}/c.pdf')).format, ImportFormat.unsupported);
+    });
+  });
+}
