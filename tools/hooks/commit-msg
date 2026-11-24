@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Kiểm tra message dạng `type(scope): mô tả` (AGENTS.md quy tắc 10). Cài: tools/install-hooks.sh
+first=$(head -n1 "$1")
+re='^(feat|fix|docs|chore|refactor|test|perf|build|ci|style|revert)(\([a-z0-9._/-]+\))?!?: .{3,}'
+if [[ "$first" =~ ^(Merge|Revert|fixup!|squash!) ]] || [[ "$first" =~ $re ]]; then exit 0; fi
+echo "commit-msg: dòng đầu phải dạng 'type(scope): mô tả', type ∈ feat|fix|docs|chore|refactor|test|perf|build|ci|style|revert" >&2
+echo "  nhận được: $first" >&2
+exit 1

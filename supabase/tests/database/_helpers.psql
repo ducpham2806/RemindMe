@@ -1,0 +1,63 @@
+-- Helper dùng chung cho test pgTAP (include bằng \ir; không đuôi .sql nên pg_prove không chạy như 1 test).
+-- Tất cả nằm trong pg_temp, mất khi phiên kết thúc.
+
+-- Tạo user + profile (như app gọi profile_init lúc onboarding).
+create function pg_temp.mk_user(p_uid uuid, p_tz text default 'UTC', p_region text default 'US', p_locale text default 'en-US')
+returns uuid language plpgsql as $$
+begin
+  insert into auth.users (id) values (p_uid);
+  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform public.profile_init(p_locale, p_region, p_tz);
+  return p_uid;
+end $$;
+
+-- Gọi RPC với role authenticated của user, rồi trả về postgres.
+create function pg_temp.push(p_uid uuid, p_muts jsonb, p_device text default 'dev-test')
+returns jsonb language plpgsql as $$
+declare r jsonb;
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform set_config('role', 'authenticated', true);
+  r := public.sync_push(p_device, p_muts);
+  perform set_config('role', 'postgres', true);
+  return r;
+end $$;
+
+create function pg_temp.pull(p_uid uuid, p_since bigint default 0, p_lim int default 500)
+returns jsonb language plpgsql as $$
+declare r jsonb;
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform set_config('role', 'authenticated', true);
+  r := public.sync_pull(p_since, p_lim);
+  perform set_config('role', 'postgres', true);
+  return r;
+end $$;
+
+create function pg_temp.quota(p_uid uuid)
+returns jsonb language plpgsql as $$
+declare r jsonb;
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform set_config('role', 'authenticated', true);
+  r := public.quota_status();
+  perform set_config('role', 'postgres', true);
+  return r;
+end $$;
+
+-- HLC: '<epoch_ms 13 chữ số>:<counter 4 chữ số>:<device>'
+create function pg_temp.clk(p_ms bigint, p_dev text default 'dev-test')
+returns text language sql as $$ select lpad(p_ms::text, 13, '0') || ':0000:' || p_dev $$;
+
+-- Mutation upsert với cùng 1 clock cho mọi trường trong payload.
+create function pg_temp.up(p_table text, p_id uuid, p_payload jsonb, p_ms bigint default 1764000000000, p_dev text default 'dev-test')
+returns jsonb language sql as $$
+  select jsonb_build_object('table', p_table, 'id', p_id, 'op', 'upsert', 'payload', p_payload,
+    'field_clock', (select coalesce(jsonb_object_agg(k, pg_temp.clk(p_ms, p_dev)), '{}') from jsonb_object_keys(p_payload) k))
+$$;
+
+create function pg_temp.del(p_table text, p_id uuid)
+returns jsonb language sql as $$ select jsonb_build_object('table', p_table, 'id', p_id, 'op', 'delete') $$;
+
+-- uuid xác định từ 1 chuỗi, cho dễ đọc test.
+create function pg_temp.u(p_name text) returns uuid language sql as $$ select md5(p_name)::uuid $$;

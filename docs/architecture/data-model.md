@@ -40,6 +40,10 @@ erDiagram
 `updated_at timestamptz not null, version bigint not null` (server gán từ sequence), `deleted_at timestamptz` (tombstone),
 `device_id text` (thiết bị sửa cuối), `field_clock jsonb` (HLC theo từng trường, cho Last-Writer-Wins theo trường).
 Mọi khóa `user_id` đều `references profiles on delete cascade` (xóa tài khoản xóa sạch dữ liệu).
+`field_clock` là HLC dạng chuỗi so được theo thứ tự byte: `'<epoch_ms 13 chữ số>:<counter 4 chữ số>:<device_id>'`; trường có clock lớn hơn thắng.
+**SQL thực thi:** `supabase/migrations/` (test `supabase/tests/database/`). So với bản rút gọn dưới đây, migration có thêm: khóa ngoại tới list/trip/import/item
+kèm `user_id` (không trỏ được sang dữ liệu người khác), CHECK đầy đủ, `version` do trigger gán sau khóa advisory theo user (sync_pull không sót hàng).
+`profile_init` tạo list Inbox với id xác định `md5(user_id || ':inbox')::uuid` để máy offline tự tính ra cùng id; tên Inbox hiển thị lấy từ ARB.
 
 ```sql
 create table profiles (
@@ -196,14 +200,17 @@ create table usage_counters (
 );
 ```
 
-## 4. Quy tắc đếm quota (thực thi trong RPC `sync_push` + trigger dự phòng)
+## 4. Quy tắc đếm quota (thực thi trong RPC `sync_push`, hàm `app.usage_for`)
+Chỉ chặn khi mức dùng sau thay đổi **vượt giới hạn và tăng so với trước** (hạ gói không khóa dữ liệu cũ). Vượt với item `pending_quota` (hoặc con của nó)
+thì item thành `archived` + `archived_reason='quota'`; vượt ở trường hợp khác thì mutation bị hoàn tác và trả `quota_exceeded` kèm `{key, limit, used}`.
 | Key | Cách đếm |
 |---|---|
-| `max_reminders_per_day` | Số thông báo dự kiến kêu trong 1 ngày theo `home_tz`, gồm cả lần lặp. Kiểm khi tạo/sửa reminder: mở rộng 7 ngày tới, lấy ngày nhiều nhất. Đổi `home_tz` không tính lại nhắc cũ |
+| `max_reminders_per_day` | Số thông báo dự kiến kêu trong 1 ngày theo `home_tz`, gồm cả lần lặp. Kiểm khi tạo/sửa reminder, recurrence, item: mở rộng 7 ngày tới, lấy ngày nhiều nhất. Đổi `home_tz` không tính lại nhắc cũ. Server tính xấp xỉ để chống lách (`app.rrule_fires_on`: DAILY/WEEKLY/MONTHLY/YEARLY, BYDAY, BYMONTHDAY, BYHOUR×BYMINUTE; bỏ qua hệ lịch và `after_completion`); engine trên máy chặn chính xác |
 | `max_recurring_series` | Số `recurrences` chưa xóa, item chưa `done`/`archived` |
 | `max_active_appointments` | Số item `kind in (event, appointment, booking)`, `status in ('open','pending_quota')`, chưa qua (`coalesce(ends_at, starts_at, end_date)` ≥ hôm nay). Item đã qua tự `archived_reason='past'`, không tính |
-| `max_active_trips` | Số trip có `ends_on >= today` |
-| `smart_imports_per_month` | `usage_counters` (đếm trên máy, đồng bộ lên) khi import ảnh/pdf/xlsx/email tới màn Xem lại. Không tính `.ics`, `.pkpass`, `.md`, boarding pass |
+| `max_active_trips` | Số trip có `ends_on >= today` hoặc chưa có `ends_on` |
+| `max_lists` | Số list chưa xóa, **không tính Inbox** |
+| `smart_imports_per_month` | Đếm từ bảng `imports` (đồng bộ lên): `kind in (image, pdf, xlsx, email)`, `status <> 'failed'`, trong tháng theo `home_tz`, tính cả bản ghi đã xóa. Không tính `.ics`, `.pkpass`, `.md`, boarding pass. Sửa `failed` → `committed` cũng bị kiểm |
 | `max_originals_mb` | Tổng dung lượng bản gốc đã lưu trên cloud |
 
 ## 5. Bảng chỉ có ở client (Drift)

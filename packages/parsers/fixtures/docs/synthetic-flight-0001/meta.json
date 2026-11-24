@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-flight-0001",
+  "source_kind": "email",
+  "market": "VN",
+  "doc_language": "vi",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Mẫu tổng hợp minh họa định dạng thư mục; hãng 'ZZ' và mọi dữ liệu đều giả."
+}

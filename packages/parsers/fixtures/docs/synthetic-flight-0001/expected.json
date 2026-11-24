@@ -1,0 +1,28 @@
+{
+  "doc_type": "flight",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "booking",
+      "booking_type": "flight",
+      "required": {
+        "confirmation_code": "XQ7K2M",
+        "carrier_code": "ZZ",
+        "number": "245",
+        "origin": { "code": "SGN" },
+        "destination": { "code": "HAN" },
+        "starts_at": { "local": "2026-12-21T10:30", "tz": "Asia/Ho_Chi_Minh" }
+      },
+      "optional": {
+        "ends_at": { "local": "2026-12-21T12:40", "tz": "Asia/Ho_Chi_Minh" },
+        "seat": "14C",
+        "class": "Economy",
+        "passenger_count": 1,
+        "price": { "amount": "1890000", "currency": "VND" },
+        "origin": { "code": "SGN", "terminal": "1" }
+      },
+      "must_not_fill": ["origin.gate", "carriage"]
+    }
+  ]
+}

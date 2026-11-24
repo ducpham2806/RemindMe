@@ -1,0 +1,33 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  docs-and-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tham chiếu trong docs
+        run: python3 tools/check-docs.py
+      - name: Bộ mẫu tài liệu (schema + ẩn danh)
+        run: pip install -q jsonschema && python3 tools/validate-fixtures.py
+      - name: Chuỗi hard-code trong Flutter
+        run: python3 tools/lint-hardcoded-strings.py
+
+  db:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cài Postgres 16 + pgTAP
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q postgresql-16 postgresql-16-pgtap libtap-parser-sourcehandler-pgtap-perl
+          sudo systemctl start postgresql
+          sudo -u postgres psql -q -c "alter user postgres password 'postgres'"
+      - name: Migrations + pgTAP
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: tools/db-test.sh

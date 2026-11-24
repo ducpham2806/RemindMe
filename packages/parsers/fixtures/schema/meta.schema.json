@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "remindme/fixtures/meta.schema.json",
+  "title": "Thông tin mẫu tài liệu (meta.json)",
+  "type": "object",
+  "required": ["id", "source_kind", "market", "doc_language", "collected_at", "consent", "anonymized"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$" },
+    "source_kind": { "enum": ["screenshot", "photo", "pdf_text", "pdf_scan", "email", "xlsx", "csv", "md", "pkpass", "ics", "boarding_pass_barcode"] },
+    "market": { "type": "string", "pattern": "^[A-Z]{2}$", "description": "Quốc gia phát hành tài liệu (ISO 3166-1)" },
+    "doc_language": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$" },
+    "provider": { "type": ["string", "null"] },
+    "collected_at": { "type": "string", "format": "date" },
+    "consent": { "enum": ["own_document", "donor_written_consent", "synthetic"] },
+    "anonymized": { "const": true },
+    "date_shift_days": { "type": "integer", "multipleOf": 7, "description": "Dịch ngày theo bội số 7 để giữ đúng thứ trong tuần" },
+    "ocr": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "android": { "type": "string", "description": "Engine + version, ví dụ 'mlkit-text-v2 16.0.1 latin'" },
+        "ios": { "type": "string", "description": "Ví dụ 'vision-revision3 iOS 26.1'" }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

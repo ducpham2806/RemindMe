@@ -33,9 +33,10 @@ Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Pha
 - [ ] Phỏng vấn 15-20 người dùng (VN + ≥ 2 thị trường đợt 1), xác nhận giả thuyết PRD §6
 - [ ] Prototype 6 luồng P0 (`uiux/ux-flows-and-screens.md` mục đầu), test với 5 người, có bản tiếng Anh
 - [ ] Đăng ký Apple Developer (tổ chức, D-U-N-S), Google Play Console, domain, email, Firebase, Supabase (staging/prod); chuẩn bị hồ sơ OAuth Google (nộp ở Phase 1)
-- [ ] Thu ≥ 300 mẫu tài liệu ẩn danh, ≥ 20 nhà cung cấp, **≥ 3 thị trường** (E0.4)
+- [ ] Thu ≥ 300 mẫu tài liệu ẩn danh, ≥ 20 nhà cung cấp, **≥ 3 thị trường** (E0.4). Đã có cấu trúc, schema, quy trình ẩn danh: `packages/parsers/fixtures/README.md`
 - [ ] Spike E0 (OCR), V0 (giọng nói/NLU), L0 (bản địa hóa)
-- [ ] Khung repo: monorepo, CI, lint (gồm lint chặn chuỗi hard-code), commit convention
+- [x] Khung repo: CI (`.github/workflows/ci.yml`), lint chuỗi hard-code, kiểm tham chiếu docs, hook commit-msg. Workspace Flutter/Dart làm ở S1
+- [x] (Kéo sớm từ S1-S2) Supabase migrations + RLS + RPC `sync_push`/`sync_pull`/`quota_status`/`profile_init` + 67 test pgTAP (`supabase/`)
 - **Gate:** PRD chốt sau phỏng vấn; prototype pass (≥ 4/5 người hoàn thành tác vụ chính); spike có kết luận engine OCR/STT cho từng nền tảng.
 
 ## Phase 1: MVP (16 tuần = 8 sprint)

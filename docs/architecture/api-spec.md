@@ -8,7 +8,8 @@
 ## 1. Sync (RPC Postgres, `SECURITY DEFINER`, kiểm `auth.uid()`)
 | RPC | Mô tả |
 |---|---|
-| `sync_push(device_id text, mutations jsonb)` | ≤ 200 mutation `{table, id, op, payload, field_clock}`. Áp dụng trong 1 transaction, merge LWW theo `field_clock`, kiểm quota (data-model §4). Trả `[{id, status: ok\|conflict\|quota_exceeded\|invalid, version, server_row?}]` |
+| `profile_init(ui_locale, region, home_tz, display_name?)` | Gọi 1 lần lúc onboarding (sau đăng nhập ẩn danh). Tạo profile + Inbox; gọi lại không đổi gì. `sync_push` trả lỗi `profile_missing` nếu chưa gọi |
+| `sync_push(device_id text, mutations jsonb)` | ≤ 200 mutation `{table, id, op: upsert\|delete, payload, field_clock, base_clock?}`. Mỗi mutation chạy trong subtransaction riêng (1 cái lỗi không hỏng cả batch), merge LWW theo `field_clock`, kiểm quota (data-model §4). `recurrences`/`booking_details` khóa theo `item_id`; `occurrence_log` theo `(item_id, occurrence_at)` trong payload. `base_clock.notes` = clock của notes lúc bắt đầu sửa, để phát hiện sửa đồng thời. Trả mảng cùng thứ tự `[{table, id, key, status: ok\|conflict\|quota_exceeded\|invalid, version, server_row, error?, details?}]`; `server_row` là hàng sau merge để client ghi đè bản local. `error` của conflict: `notes_conflict`, `deleted` |
 | `sync_pull(since bigint, lim int default 500)` | Trả mọi hàng có `version > since` của user, gồm tombstone; `{rows:{items:[],reminders:[],...}, next_since, has_more}` |
 | `quota_status()` | `{plan, period_end, limits:{...}, usage:{...}, features:{feature_watch_app:1,...}}` (giá trị seed ở `pricing-entitlements.md` §2) |
 Trigger trên bảng đồng bộ chặn mọi ghi không đi qua `sync_push` (trừ service role).

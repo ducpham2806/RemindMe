@@ -10,7 +10,7 @@ từ vé máy bay/tàu/xe/khách sạn/lịch khám; nhắc lặp lại (kể c�
 Thị trường: **global từ launch**, ngôn ngữ cấp A là `en` + `vi`, các locale khác theo cấp B/C (`docs/architecture/i18n-l10n.md`).
 
 ## Trạng thái
-Giai đoạn: **Phase 0, tài liệu và thiết kế** (chưa có code). Xem `docs/STATE.md`.
+Giai đoạn: **Phase 0** (docs xong; đã có Supabase migrations + test, CI; chưa có app Flutter). Xem `docs/STATE.md`.
 
 ## Stack đã chốt (lý do: `docs/architecture/decisions.md`)
 - Mobile: Flutter 3 (Dart), Riverpod, go_router, Drift (SQLite), offline-first
@@ -23,13 +23,13 @@ Giai đoạn: **Phase 0, tài liệu và thiết kế** (chưa có code). Xem `d
 - Push: FCM (Android) + APNs (iOS, qua FCM); nhắc giờ chính xác chạy **local trên máy**
 - Thanh toán: RevenueCat (StoreKit 2 + Google Play Billing)
 
-## Cấu trúc repo (dự kiến)
+## Cấu trúc repo (`*` = chưa tạo)
 ```
-apps/mobile/        Flutter app
-apps/watch-ios/     watchOS app        apps/wear-android/  Wear OS app
-services/worker/    TS worker: sync, entitlement, hộp thư email, push, OAuth, webhooks (không phân tích nội dung)
-supabase/           migrations SQL, seed, edge functions
-packages/parsers/   Dart thuần: decoder, bộ máy luật + mẫu nhà cung cấp, NLU + gói ngôn ngữ, recurrence + hệ lịch, fixtures
+apps/mobile/*       Flutter app
+apps/watch-ios/*    watchOS app        apps/wear-android/*  Wear OS app
+services/worker/*   TS worker: entitlement, hộp thư email, push, OAuth, webhooks (không phân tích nội dung, không nằm trên đường ghi)
+supabase/           migrations/ (schema, RLS, sync_push/pull, quota, seed gói), tests/database/ (pgTAP), tests/shim/
+packages/parsers/   Dart thuần*: decoder, luật + mẫu, NLU, recurrence + hệ lịch; fixtures/ (bộ mẫu eval, đã có schema)
 docs/               tài liệu (bản đồ: docs/INDEX.md)
 tools/              script cho AI tooling (graphify, unslop)
 ```
@@ -61,8 +61,10 @@ tools/graphify-docs.sh             # dựng lại knowledge graph của docs/
 .venv-tools/bin/graphify query "luồng import vé máy bay" --budget 1500
 .venv-tools/bin/graphify section "1. Rolling window scheduler"   # tên heading đầy đủ
 tools/unslop-docs.sh docs/product/PRD.md   # làm sạch văn phong AI (deterministic, không gọi API)
+tools/install-hooks.sh             # hook commit-msg (1 lần sau khi clone)
+PGHOST=localhost PGUSER=postgres tools/db-test.sh   # migrations + pgTAP trên Postgres thuần (cần pgtap, pg_prove)
+python3 tools/check-docs.py && python3 tools/validate-fixtures.py && python3 tools/lint-hardcoded-strings.py
 ```
-<!-- Khi có code: thêm lệnh build/test/lint ở đây, mỗi lệnh 1 dòng. -->
 
 ## Agency agents (persona chuyên môn)
 Gọi qua skill `agency-agents`. Bảng persona nào dùng cho phase nào: `docs/guides/ai-dev-workflow.md`.

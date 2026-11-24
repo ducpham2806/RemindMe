@@ -19,7 +19,7 @@ Device farm (Firebase Test Lab / BrowserStack / AWS Device Farm) cho integration
 |---|---|---|---|
 | Unit Dart | `dart test` / `flutter test` | NLU (fixtures theo gói ngôn ngữ), recurrence + hệ lịch, DST (`reminder-engine.md` §5), quota client, decoder, bộ máy luật | Mỗi PR |
 | Unit TS | Vitest | Worker: webhook, hộp thư, xuất ICS (fixtures recurrence chung với Dart) | Mỗi PR |
-| DB | pgTAP | RLS, `sync_push` (merge `field_clock`, quota, từ chối ghi ngoài RPC), cascade xóa tài khoản | Mỗi PR |
+| DB | pgTAP (`tools/db-test.sh`: Postgres thuần + shim Supabase; hoặc `supabase test db`) | RLS, `sync_push` (merge `field_clock`, quota, từ chối ghi ngoài RPC), `sync_pull`, cascade xóa tài khoản | Mỗi PR |
 | Eval trích xuất | Harness E3.5 | `on-device-extraction.md` §11 | Mỗi PR đụng `packages/parsers` |
 | Eval NLU | Fixtures `nlu/<lang>.json` | Ngưỡng `voice-and-text-input.md` §7 | Mỗi PR đụng gói ngôn ngữ |
 | Widget + golden | `flutter test` + golden | Màn chính × locale (en-US, vi-VN, de-DE, ja-JP, pseudo-locale; ar khi bật RTL) × sáng/tối × chữ 100%/200% | Mỗi PR |
@@ -35,6 +35,8 @@ mở mã đặt chỗ từ thông báo; đổi ngôn ngữ app. Tiêu chí: mọ
 
 ## 3. CI/CD
 - GitHub Actions: lint (gồm lint chuỗi hard-code) → unit/DB/eval → build Android (AAB) + iOS (IPA) → upload nội bộ.
+  Đã có (`.github/workflows/ci.yml`): `tools/check-docs.py` (tham chiếu hỏng trong docs), `tools/validate-fixtures.py` (bộ mẫu), `tools/lint-hardcoded-strings.py`, job DB (`tools/db-test.sh`).
+  Commit message kiểm bằng hook `tools/hooks/commit-msg` (cài: `tools/install-hooks.sh`).
 - Code signing: Android upload key trong Play App Signing, keystore trong secret CI; iOS bằng fastlane `match` (repo cert riêng, mã hóa).
 - fastlane: `beta` (TestFlight + Play internal), `release` (metadata đa ngôn ngữ từ `fastlane/metadata/<locale>/`, ảnh chụp tự động L5).
 - Version: `YYYY.MM.patch` (ví dụ `2027.04.1`), build number tăng tự động. Changelog sinh từ commit `feat/fix`, dịch qua TMS cho store.
