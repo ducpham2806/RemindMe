@@ -71,12 +71,12 @@ nhắc (nhiều mốc, kiểu báo thức), list, tag, ưu tiên, checklist, v�
 
 ### 2.4 Import → Xem lại
 ```
-Bước 1 Upload        Bước 2 Đang đọc              Bước 3 Xem lại
+Bước 1 Chọn/chụp    Bước 2 Đọc trên máy          Bước 3 Xem lại
 ┌──────────────┐    ┌──────────────────────┐    ┌──────────────────────────┐
-│ [ảnh vé]     │ →  │ Đang đọc vé…         │ →  │ Tìm thấy 2 mục            │
-│ Đang tải 80% │    │ ▓▓▓▓▓░░  ~5 giây     │    │ ☑ ✈ VN245 SGN→HAN         │
-└──────────────┘    │ Bạn có thể đóng màn  │    │   20/12 10:30 ⚠ (giờ đến?)│
-                    │ hình, sẽ báo khi xong│    │   Mã: ABC123  Ghế 12A     │
+│ [ảnh vé]     │ →  │ Đang đọc vé…  ~2 giây│ →  │ Tìm thấy 2 mục            │
+│ Cắt/xoay     │    │ ▓▓▓▓▓░░              │    │ ☑ ✈ VN245 SGN→HAN         │
+└──────────────┘    │ 🔒 Xử lý trên máy,    │    │   20/12 10:30 ⚠ (giờ đến?)│
+                    │ không gửi lên mạng   │    │   Mã: ABC123  Ghế 12A     │
                     └──────────────────────┘    │ ☑ 🏨 Mường Thanh 20-22/12 │
                                                 │ Gộp vào: [Chuyến Hà Nội ▾]│
                                                 │ Sẽ dùng 2/10 lịch hẹn Free│
@@ -84,6 +84,11 @@ Bước 1 Upload        Bước 2 Đang đọc              Bước 3 Xem lại
                                                 └──────────────────────────┘
 ```
 - Lỗi đọc: "Không đọc được ảnh này. Thử ảnh rõ hơn hoặc nhập tay" + nút "Nhập tay với ảnh làm tham chiếu".
+- **Nhập tay có ảnh làm tham chiếu**: ảnh ở nửa trên (zoom được), form ở nửa dưới; chạm 1 dòng chữ trên ảnh (từ kết quả OCR)
+  để điền vào trường đang chọn. Đây là đường cứu cho tài liệu chưa có mẫu, nên phải nhanh hơn gõ tay.
+- Có thêm nút nhỏ "Gửi mẫu để cải thiện (đã che thông tin cá nhân)" sau khi người dùng phải sửa ≥ 2 trường.
+- Trường do LLM của máy điền có nhãn nhỏ "✨ AI trên máy" và luôn tô vàng.
+- PDF scan nhiều trang: hiện tiến trình theo trang, cho phép hủy.
 - Không phải booking (ví dụ ảnh bảng công việc): hiện danh sách task trích được, cho chọn.
 
 ### 2.5 Chi tiết chuyến đi

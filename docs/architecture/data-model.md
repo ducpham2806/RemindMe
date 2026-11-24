@@ -16,7 +16,7 @@ erDiagram
   items }o--o| trips : "belongs to"
   items ||--o| booking_details : "if kind=booking"
   profiles ||--o{ imports : uploads
-  imports ||--o{ import_candidates : produces
+  profiles ||--o{ mailbox_messages : receives
   profiles ||--o{ integrations : connects
   profiles ||--o| subscriptions : has
   plans ||--o{ plan_entitlements : defines
@@ -111,22 +111,28 @@ create table booking_details (
   seat text, class text, passengers jsonb,     -- [{name, ticket_no}]  (mã hóa cột, xem security-privacy)
   check_in_at timestamptz, check_out_at timestamptz,
   price jsonb,                                 -- {amount, currency}
-  raw_extraction jsonb,                        -- kết quả AI gốc để debug (TTL 90 ngày)
+  extraction_meta jsonb,                       -- {template_id, field_confidence} (không lưu ảnh/text gốc)
   updated_at timestamptz not null, version bigint not null
 );
 
 create table imports (
   id uuid primary key, user_id uuid not null,
+  -- Metadata của 1 lần import (xử lý trên máy; đồng bộ lên để dedupe đa thiết bị và thống kê)
   kind text not null,                          -- image|pdf|xlsx|md|email|voice|text|ics|pkpass
-  storage_path text, sha256 text, mime text, bytes int,
-  status text not null default 'created',      -- created|uploaded|processing|ready|committed|failed|expired
-  ai_route text, model text, input_tokens int, output_tokens int, cost_usd numeric(10,5),
-  error text, created_at timestamptz default now(), expires_at timestamptz
+  sha256 text, mime text, bytes int,
+  status text not null default 'reviewing',    -- reviewing|committed|discarded|failed
+  doc_type text, template_id text, template_version int,
+  tier_used text,                              -- t0|t1t2|t3_apple|t3_gemini|t4
+  original_path text,                          -- chỉ khi Plus bật "Giữ bản gốc"
+  error text, created_at timestamptz default now(),
+  updated_at timestamptz not null, version bigint not null
 );
-create table import_candidates (
-  id uuid primary key, import_id uuid not null references imports on delete cascade, user_id uuid not null,
-  payload jsonb not null,                      -- item/booking đề xuất theo schema
-  confidence real, field_confidence jsonb, accepted bool, created_item_id uuid
+-- import_candidates chỉ có ở client (Drift): đề xuất chưa duyệt không cần lên server.
+
+create table mailbox_messages (               -- email forward chờ máy tải về
+  id uuid primary key, user_id uuid not null, storage_path text not null, bytes int,
+  from_addr text, spf_dkim_pass bool, received_at timestamptz default now(),
+  fetched_at timestamptz, expires_at timestamptz not null   -- TTL 7 ngày
 );
 
 create table integrations (
@@ -165,8 +171,8 @@ create table usage_counters (
 | `max_recurring_series` | Số `recurrences` chưa xóa, item chưa `done/archived` |
 | `max_active_appointments` | Số item `kind in (event, appointment, booking)`, `status='open'`, `ends_at`/`starts_at` >= now() - 1 ngày |
 | `max_active_trips` | Số trip có `ends_on >= today` |
-| `ai_imports_per_month` | `usage_counters` key `ai_import`, cộng khi import chuyển `processing` (hoàn lại nếu `failed` do lỗi hệ thống) |
-| `max_attachments_mb` | Tổng `imports.bytes` còn lưu |
+| `smart_imports_per_month` | Đếm trên máy (`usage_counters` local, đồng bộ lên) khi import ảnh/pdf/xlsx/email tới màn Xem lại. Import `.ics`, `.pkpass`, `.md`, boarding pass barcode không tính. Chỉ là giới hạn sản phẩm, không bảo vệ chi phí |
+| `max_originals_mb` | Tổng dung lượng bản gốc đã lưu (Plus) |
 
 Giá trị cụ thể: `docs/product/pricing-entitlements.md`.
 
@@ -174,4 +180,6 @@ Giá trị cụ thể: `docs/product/pricing-entitlements.md`.
 - `outbox(id, table, row_id, op, payload, created_at, attempts)`: hàng đợi đẩy lên server.
 - `scheduled_notifications(notification_id, reminder_id, occurrence_at, os_request_id)`: những gì đã đăng ký với OS.
 - `entitlement_cache(key, value, fetched_at)`.
+- `import_candidates(id, import_id, payload, field_confidence, evidence, accepted)`.
+- `template_store(id, version, json, signature)` + `column_mappings(header_hash, mapping)` (mục 4.5 của `on-device-extraction.md`).
 - `sync_state(table, last_version)`.

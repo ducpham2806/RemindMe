@@ -7,7 +7,7 @@
 ## 1. Nguyên tắc
 1. **Nhập nhanh hơn ghi giấy.** Nút "+" luôn trong tầm ngón cái; mọi phương thức nhập (gõ, nói, ảnh, file) cách 1 chạm.
 2. **Giờ là thông tin quan trọng nhất.** Giờ luôn hiển thị đậm, bên trái, dạng 24h (VN) hoặc theo locale.
-3. **AI đề xuất, người dùng quyết định.** Kết quả AI luôn qua màn Xem lại, chỗ nghi ngờ được đánh dấu rõ.
+3. **Máy đề xuất, người dùng quyết định.** Kết quả đọc tự động (luật, mẫu, AI trên máy) luôn qua màn Xem lại, chỗ nghi ngờ được đánh dấu rõ.
 4. **Bình tĩnh.** Ít màu, màu chỉ để báo trạng thái (quá hạn, chuyến bay sắp tới, ưu tiên).
 5. **Dùng được bằng 1 tay và với người lớn tuổi.** Vùng chạm ≥ 48dp, chữ tối thiểu 14sp, có chế độ "Chữ lớn".
 
@@ -22,7 +22,7 @@
 | `color.textSecondary` | `#5B6472` | `#A2AAB7` | Phụ đề, giờ phụ |
 | `color.divider` | `#E4E7EC` | `#2A2E35` | |
 | `color.danger` | `#D93A3A` | `#FF7A7A` | Quá hạn, xóa |
-| `color.warning` | `#C98A00` | `#FFC94D` | Trường AI nghi ngờ, sắp tới hạn |
+| `color.warning` | `#C98A00` | `#FFC94D` | Trường đọc tự động có độ tin cậy thấp, sắp tới hạn |
 | `color.success` | `#1E9E62` | `#5FD39A` | Hoàn thành |
 | `color.travel` | `#0E9AA7` | `#55D6E0` | Booking, chuyến đi |
 | `color.health` | `#C2410C` | `#FF9F6E` | Lịch khám, thuốc |

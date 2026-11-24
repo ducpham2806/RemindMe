@@ -16,7 +16,8 @@ Giai đoạn: **Phase 0, tài liệu và thiết kế** (chưa có code). Xem `d
 - Mobile: Flutter 3 (Dart), Riverpod, go_router, Drift (SQLite), offline-first
 - Watch: watchOS (SwiftUI) + Wear OS (Compose, Tiles), Phase 2
 - Backend: Supabase (Postgres, Auth, Storage, RLS) + `worker` TypeScript (Node 22, Fastify, pg-boss)
-- AI: Claude API qua backend (mặc định `claude-opus-5-5`, model cấu hình theo route), structured outputs
+- Đọc file/ảnh/giọng nói: **chạy trên máy, không gọi AI API trả phí** (OCR của OS/ML Kit + luật + mẫu nhà cung cấp;
+  LLM của OS như Apple Foundation Models/Gemini Nano chỉ là tùy chọn). Xem `docs/architecture/on-device-extraction.md`
 - Push: FCM (Android) + APNs (iOS, qua FCM); nhắc giờ chính xác chạy **local trên máy**
 - Thanh toán: RevenueCat (StoreKit 2 + Google Play Billing)
 
@@ -24,9 +25,9 @@ Giai đoạn: **Phase 0, tài liệu và thiết kế** (chưa có code). Xem `d
 ```
 apps/mobile/        Flutter app
 apps/watch-ios/     watchOS app        apps/wear-android/  Wear OS app
-services/worker/    TS worker: AI ingestion, email inbound, Gmail, push, webhooks
+services/worker/    TS worker: sync, entitlement, hộp thư email, push, OAuth, webhooks (không phân tích nội dung)
 supabase/           migrations SQL, seed, edge functions
-packages/parsers/   parser dùng chung (rrule, âm lịch, ngày giờ tiếng Việt) + test fixtures
+packages/parsers/   Dart thuần: decoder, bộ máy luật + mẫu nhà cung cấp, rrule, âm lịch, ngày giờ tiếng Việt, fixtures
 docs/               tài liệu (bản đồ: docs/INDEX.md)
 tools/              script cho AI tooling (graphify, unslop)
 ```
@@ -42,7 +43,8 @@ tools/              script cho AI tooling (graphify, unslop)
 5. Thời gian: lưu `timestamptz` UTC + `tz` IANA của sự kiện. Vé máy bay dùng giờ địa phương của sân bay.
 6. Dữ liệu y tế/booking là dữ liệu nhạy cảm: không log nội dung, không gửi cho bên thứ ba ngoài danh sách
    trong `docs/security-privacy.md`.
-7. Không bao giờ để API key (Claude, Google, RevenueCat secret) trong app mobile; mọi lời gọi AI đi qua worker.
+7. Không bao giờ để secret (Google, RevenueCat) trong app mobile. Không thêm lời gọi AI API trả phí theo đầu người dùng
+   (ADR-010); AI chỉ dùng ở khâu phát triển (viết mẫu, code).
 8. Văn bản viết cho người dùng hoặc tài liệu: chạy `tools/unslop-docs.sh <file>` trước khi commit.
 9. Sau khi sửa docs/code nhiều: `tools/graphify-docs.sh` để cập nhật `graphify-out/GRAPH_REPORT.md`.
 10. Commit nhỏ, message dạng `type(scope): mô tả` (feat, fix, docs, chore, refactor, test).

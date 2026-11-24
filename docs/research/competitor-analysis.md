@@ -160,6 +160,8 @@
 
 ### 6.1 Tính năng (ưu tiên theo giá trị / chi phí)
 
+> Cập nhật 24/11/2026: chủ dự án quyết định không dùng AI đám mây để đọc tài liệu. Xem ADR-010 và `docs/architecture/on-device-extraction.md`.
+
 **P0 – MVP để vào thị trường VN**
 - Todo + nhắc việc với NLP tiếng Việt ("mai 8h họp", "thứ 6 hàng tuần", "rằm tháng này"). Recurring hỗ trợ cả **âm lịch**.
 - Smart Import: ảnh/screenshot/PDF thành cuộc hẹn hoặc booking. Ưu tiên parse vé máy bay nội địa, Vexere, tàu, khách sạn và phiếu khám. Luôn có bước **review trước khi lưu** (như TripIt).

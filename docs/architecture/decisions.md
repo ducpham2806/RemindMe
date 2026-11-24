@@ -9,12 +9,13 @@
 | 001 | Flutter cho app mobile, native cho watch | Accepted |
 | 002 | Supabase + worker TypeScript thay vì backend tự dựng toàn bộ | Accepted |
 | 003 | Offline-first, nhắc nhở lập lịch local trên thiết bị | Accepted |
-| 004 | AI extraction qua Claude API phía server, structured outputs | Accepted |
+| 004 | AI extraction qua Claude API phía server, structured outputs | Superseded by 010 |
 | 005 | Email chuyển tiếp trước, Gmail API sau | Accepted |
 | 006 | RevenueCat cho subscription | Accepted |
 | 007 | Lặp lại: RFC 5545 RRULE + mở rộng âm lịch | Accepted |
 | 008 | Entitlement do server quyết định, client chỉ cache | Accepted |
 | 009 | Hàng đợi job bằng pg-boss trên Postgres | Accepted |
+| 010 | Trích xuất chạy trên thiết bị, không dùng AI API trả phí | Accepted |
 
 ---
 
@@ -64,7 +65,7 @@ cho iOS khi vượt giới hạn 64 thông báo chờ (xem `reminder-engine.md`)
 **Hệ quả.** Cần thuật toán sync và giải quyết xung đột (`system-architecture.md` mục Sync).
 Cần xử lý reboot, đổi múi giờ, đổi giờ hệ thống, app bị OEM kill.
 
-## ADR-004: AI extraction phía server
+## ADR-004: AI extraction phía server (Superseded by ADR-010)
 **Bối cảnh.** Đọc vé/booking từ ảnh, pdf, xlsx, email cần LLM đa phương thức. Key không được nằm trong app.
 
 **Phương án.** (a) On-device OCR + rule: rẻ, riêng tư, kém với layout lạ. (b) Gửi thẳng ảnh/pdf cho Claude: chính xác,
@@ -105,3 +106,27 @@ khi offline vượt giới hạn, item tạo ra ở trạng thái `pending_quota
 ## ADR-009: pg-boss
 **Phương án.** Redis + BullMQ, Cloud Tasks, pg-boss. **Quyết định.** pg-boss: không thêm hạ tầng, job transactional cùng dữ liệu.
 Chuyển sang hàng đợi chuyên dụng khi vượt ~50 job/giây ổn định.
+
+## ADR-010: Trích xuất chạy trên thiết bị, không dùng AI API trả phí
+**Trạng thái.** Accepted, supersedes ADR-004.
+
+**Bối cảnh.** Chủ dự án không muốn chi phí biến đổi theo số lần import: người dùng (hoặc bot) có thể cố tình spam ảnh/file,
+mỗi lần gọi LLM đám mây là một khoản tiền. Ngoài ra dữ liệu booking/y tế rời khỏi máy là rủi ro quyền riêng tư.
+
+**Phương án.**
+| | (a) LLM đám mây + quota chặt | (b) Server tự host OCR/model | (c) Trên thiết bị: decoder + OCR của OS + luật/mẫu, LLM của OS tùy chọn |
+|---|---|---|---|
+| Chi phí theo lượt | Có (~550đ/import) | CPU/GPU server tăng theo tải | 0 |
+| Rủi ro spam | Phải chặn bằng quota/rate limit | Vẫn tốn tài nguyên | Chỉ tốn pin máy người spam |
+| Độ chính xác với bố cục lạ | Cao | Trung bình | Trung bình (bù bằng màn Xem lại + mẫu) |
+| Độ chính xác với nhà cung cấp quen | Cao | Cao | Cao (mẫu chuyên biệt) |
+| Offline | Không | Không | Có |
+| Quyền riêng tư | Dữ liệu ra bên thứ ba | Dữ liệu lên server mình | Dữ liệu không rời máy |
+| Công sức dev | Thấp | Cao (vận hành) | Trung bình-cao (viết và bảo trì mẫu) |
+
+**Quyết định.** (c). Chi tiết: `on-device-extraction.md`. Server chỉ còn làm hộp thư email (lưu MIME, push về máy),
+phát mẫu nhà cung cấp qua CDN tĩnh có chữ ký, sync và entitlement.
+
+**Hệ quả.** Cần đầu tư bộ mẫu cho top nhà cung cấp VN và eval set ≥ 300 mẫu ngay Phase 0. Tài liệu bố cục lạ sẽ cần người dùng
+sửa nhiều hơn, nên màn Xem lại phải sửa được nhanh. Giới hạn import của gói Free giờ chỉ là đòn bẩy bán hàng, không còn để bảo vệ chi phí.
+Nếu sau này cần LLM đám mây cho một tính năng trả phí, phải có ADR mới kèm quota cứng và tính chi phí.

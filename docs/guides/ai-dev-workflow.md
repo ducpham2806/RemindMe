@@ -56,7 +56,7 @@ Cách dùng trong prompt: *"Dùng agency agent Backend Architect, thiết kế R
 | Kiến trúc, ADR | Software Architect, Backend Architect, Database Optimizer |
 | UI/UX | UX Architect, UI Designer, Accessibility Auditor, Persona Walkthrough Specialist, Whimsy Injector, Brand Guardian |
 | Flutter, watch, widget | Mobile App Builder, Senior Developer, Frontend Developer |
-| AI ingestion, prompt, eval | AI Engineer, Prompt Engineer, Voice AI Integration Engineer, PDF Engine Architect, Model QA Specialist |
+| Trích xuất on-device, OCR, mẫu nhà cung cấp, eval | AI Engineer, PDF Engine Architect, Voice AI Integration Engineer, Model QA Specialist, Test Automation Engineer |
 | Email inbound, Gmail | Email Intelligence Engineer |
 | Thanh toán, paywall | Payments & Billing Engineer, Pricing Analyst |
 | Bảo mật, pháp lý | Security Architect, Privacy Engineer, Data Privacy Officer, Legal Compliance Checker, AppSec Engineer |

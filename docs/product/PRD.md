@@ -36,11 +36,11 @@
 ### Nhập liệu
 - **US-01 (P0)** Gõ "mai 8h họp khách" thì app hiểu giờ và tạo nhắc. *AC:* fixtures `vi_datetime.json` pass ≥ 95%; chạy được offline; hiện xem trước "Thứ Năm 26/11, 08:00" trước khi lưu.
 - **US-02 (P0)** Nói thay vì gõ. *AC:* nút mic trên quick-add, widget, và watch (Phase 2); STT vi-VN on-device; câu có nhiều việc tách thành nhiều item.
-- **US-03 (P0)** Chụp/chia sẻ ảnh vé → lịch trình. *AC:* hỗ trợ vé máy bay, tàu, xe khách, khách sạn, giấy hẹn khám; màn Xem lại; p95 < 20 s; trường nghi ngờ được đánh dấu.
+- **US-03 (P0)** Chụp/chia sẻ ảnh vé → lịch trình. *AC:* xử lý hoàn toàn trên máy, chạy offline; hỗ trợ vé máy bay, tàu, xe khách, khách sạn, giấy hẹn khám; nhà cung cấp có mẫu ≥ 95% trường bắt buộc đúng; p95 < 4 s; trường nghi ngờ được đánh dấu; có chế độ "nhập tay với ảnh làm tham chiếu".
 - **US-04 (P0)** Import PDF booking/e-ticket. *AC:* PDF có text và PDF scan; ≤ 20 trang (Free).
 - **US-05 (P0)** Import xlsx/csv danh sách việc. *AC:* nhận diện cột Ngày/Giờ/Việc/Ghi chú; xem trước 10 dòng; cho phép đổi mapping cột; import ≥ 1.000 dòng.
 - **US-06 (P0)** Import `.md` (Obsidian Tasks). *AC:* `- [ ]`, `📅`, `⏰`, `🔁` được hiểu; heading → list.
-- **US-07 (P0)** Forward email booking tới địa chỉ riêng. *AC:* JSON-LD/ICS/PDF đính kèm/text đều được xử lý; kết quả vào Hộp đề xuất kèm push.
+- **US-07 (P0)** Forward email booking tới địa chỉ riêng. *AC:* server chỉ lưu và chuyển MIME về máy; máy xử lý JSON-LD/ICS/PDF/ảnh đính kèm/text; kết quả vào Hộp đề xuất kèm push.
 - **US-08 (P0)** Import từ Microsoft To Do. *AC:* list, task, due, reminder, recurrence, steps; báo cáo số mục đã nhập/lỗi.
 - **US-09 (P1)** Import Todoist/TickTick (API/CSV).
 
@@ -78,6 +78,7 @@
 - **US-52 (P0)** Xóa tài khoản và dữ liệu, xuất dữ liệu (JSON + ICS).
 
 ## 5. Phi mục tiêu (không làm ở v1)
+- Gọi AI API đám mây trả phí để đọc tài liệu (ADR-010).
 - Cộng tác nhóm / chia sẻ list nhiều người (cân nhắc v2: chia sẻ chuyến đi cho gia đình).
 - Bản web và desktop (v2; người dùng dùng feed ICS trong lúc chờ).
 - Đặt vé trong app / affiliate (v3, cân nhắc nguồn doanh thu phụ).

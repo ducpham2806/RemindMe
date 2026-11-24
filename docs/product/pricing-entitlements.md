@@ -26,10 +26,10 @@ Khuyến mãi gợi ý: giảm 40% gói năm dịp Tết, Black Friday; ưu đã
 | `max_recurring_series` | 5 | -1 | Số chuỗi lặp đang hoạt động (habit, nhắc định kỳ, âm lịch) |
 | `max_active_appointments` | 10 | -1 | Lịch hẹn/booking/sự kiện chưa qua. Đã qua thì tự lưu trữ, **không tính** |
 | `max_active_trips` | 1 | -1 | Chuyến đi đang/sắp diễn ra |
-| `ai_imports_per_month` | 10 | 300 (fair use) | Ảnh, pdf, xlsx, email cần AI. Parse deterministic (ics, pkpass, md, JSON-LD) **không tính** |
-| `voice_ai_parses_per_month` | 20 | -1 | Câu nói cần AI phân tích. Nhập giọng nói parse on-device không giới hạn |
-| `max_import_pages` | 20 | 100 | Trang PDF mỗi lần import |
-| `attachment_retention_days` | 7 | 30 (hoặc giữ vĩnh viễn nếu bật) | File gốc |
+| `smart_imports_per_month` | 10 | -1 | Import ảnh, pdf, xlsx, email forward. `.ics`, `.pkpass`, `.md`, quét boarding pass **không tính**. Xử lý trên máy nên không tốn chi phí: đây thuần là đòn bẩy bán hàng, có thể nới (ví dụ 20) nếu số liệu cho thấy giúp giữ chân |
+| `voice_input` | -1 | -1 | Nhập giọng nói dùng STT của OS + parser luật, không tốn chi phí nên không giới hạn ở mọi gói |
+| `max_import_pages` | 20 | 200 | Trang PDF mỗi lần import (giới hạn để máy yếu không treo, không phải vì chi phí) |
+| `max_originals_mb` | 0 | 1024 | "Giữ bản gốc" tài liệu trên cloud (Free: bản gốc chỉ nằm trên máy) |
 | `max_lists` | 5 | -1 | |
 | `calendar_sync_accounts` | 1 | 5 | Google/Microsoft |
 | `feature_ics_feed` | 0 | 1 | Feed webcal |
@@ -47,21 +47,21 @@ Khuyến mãi gợi ý: giảm 40% gói năm dịp Tết, Black Friday; ưu đã
 2. Đếm theo `home_tz`. Ngày mới bắt đầu lúc 00:00 giờ địa phương.
 3. Import vượt quota lịch hẹn: màn Xem lại vẫn hiện đủ candidate, người dùng chọn cái nào lưu trong phạm vi còn lại hoặc nâng cấp.
 4. Offline: dùng entitlement cache; item vượt hạn mức tạo ở `pending_quota`, server quyết định khi sync (ADR-008).
-5. Hoàn lượt AI khi import thất bại do lỗi hệ thống; không hoàn khi người dùng hủy sau khi đã xử lý xong.
-6. Fair use Plus: quá 300 import AI/tháng thì chuyển sang hàng đợi chậm (Batch API), không chặn.
+5. Import đọc thất bại (không ra trường nào) thì không tính lượt.
+6. Chi phí server còn lại (sync, hộp thư email, lưu bản gốc) có giới hạn kỹ thuật riêng (`on-device-extraction.md` mục 8), không phụ thuộc gói.
 
 ## 4. Paywall theo ngữ cảnh (không chặn cứng ngay lần đầu)
 | Điểm chạm | Thông điệp gợi ý |
 |---|---|
 | Tạo chuỗi lặp thứ 6 | "Bạn đang dùng 5/5 nhắc lặp lại của gói Free. Plus không giới hạn, 37.400đ/tháng khi trả theo năm." |
-| Import ảnh lần thứ 11 trong tháng | Hiện kết quả mờ của 1 candidate + CTA nâng cấp (người dùng thấy giá trị trước) |
+| Import ảnh lần thứ 11 trong tháng | Vẫn đọc xong trên máy, hiện kết quả mờ của 1 candidate + CTA nâng cấp (người dùng thấy giá trị trước) |
 | Chuyến đi thứ 2 | "Gói Free có 1 chuyến đi. Lưu trữ chuyến cũ hoặc nâng cấp" |
 | Ngày có 10 nhắc | Banner nhẹ trong màn Hôm nay, không popup |
 Không hiện paywall trong 3 ngày đầu sau khi cài, trừ khi người dùng chạm giới hạn.
 
 ## 5. Kinh tế đơn vị (giả định, cần đo lại)
-- Chi phí AI/import ~0,022 USD (Opus 5.5, `ai-ingestion.md` mục 3). Free tối đa 10 import + 20 voice parse ≈ 0,3 USD/tháng/người
-  nếu dùng hết, trung bình thực tế dự kiến < 0,05 USD.
+- Chi phí biến đổi theo lượt import/giọng nói: **0** (xử lý trên máy, ADR-010). Spam import chỉ tốn pin máy người spam.
+- Chi phí server theo người dùng hoạt động: DB + sync + push + hộp thư email, ước tính < 0,01 USD/tháng ở quy mô nhỏ (kiểm tra theo bảng giá Supabase/Cloud Run).
 - Phí store: 15% (Small Business Program / gói duy trì > 1 năm) đến 30%. RevenueCat: kiểm tra bảng phí hiện hành.
 - Doanh thu ròng gói năm VN ≈ 449.000 × 0,85 ≈ 381.000đ/năm.
 - Mục tiêu: tỷ lệ chuyển đổi Free→Plus 3-5% sau 30 ngày; giữ chân D30 ≥ 25%.

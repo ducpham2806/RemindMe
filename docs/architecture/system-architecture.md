@@ -1,7 +1,8 @@
 # Kiến trúc hệ thống
 
-> TL;DR: App Flutter offline-first (SQLite) tự lập lịch thông báo local. Supabase giữ dữ liệu, auth, file.
-> Worker TypeScript lo AI ingestion, email inbound, đồng bộ Google, push, webhook thanh toán.
+> TL;DR: App Flutter offline-first (SQLite) tự lập lịch thông báo local và **tự đọc ảnh/file trên máy** (không gọi AI API trả phí).
+> Supabase giữ dữ liệu và auth. Worker TypeScript lo sync có quota, hộp thư email, đồng bộ Google, push, webhook thanh toán.
+> Pipeline đọc file: `on-device-extraction.md`.
 > Quyết định và lý do: `decisions.md`. Schema: `data-model.md`. API: `api-spec.md`.
 
 ## 1. Sơ đồ thành phần
@@ -9,7 +10,7 @@
 ```mermaid
 flowchart LR
   subgraph Device["Thiết bị người dùng"]
-    App["Flutter app\nDrift SQLite\nScheduler local"]
+    App["Flutter app\nDrift SQLite\nScheduler local\nExtraction on-device\n(OCR OS + luật + mẫu)"]
     Watch["watchOS / Wear OS app"]
     Widget["Widget màn hình chính"]
     ShareExt["Share extension / Intent"]
@@ -17,13 +18,13 @@ flowchart LR
   subgraph Supabase["Supabase (ap-southeast-1)"]
     Auth["Auth\nGoogle, Apple, Email OTP"]
     PG[("Postgres\nRLS + pg-boss")]
-    Store["Storage\nimports/ (TTL 30 ngày)"]
+    Store["Storage\nmailbox/ (MIME, TTL 7 ngày)\noriginals/ (Plus, tùy chọn)"]
   end
   subgraph Worker["Worker TS (Cloud Run)"]
     API["HTTP API\n/v1/*"]
-    Jobs["Job runners\ningest, sync, push, digest"]
+    Jobs["Job runners\nmailbox, gcal sync, push, digest, cleanup"]
   end
-  Claude["Claude API"]
+  CDN["CDN tĩnh\ntemplates.json (ký Ed25519)"]
   FCM["FCM / APNs"]
   RC["RevenueCat"]
   Google["Google Calendar / Gmail API"]
@@ -36,10 +37,10 @@ flowchart LR
   App -- "PostgREST + RLS" --> PG
   App -- "JWT" --> API
   App --> Auth
-  App -- "upload signed URL" --> Store
+  App -- "tải MIME / lưu bản gốc" --> Store
+  App -- "tải mẫu nhà cung cấp" --> CDN
   API --> PG
   Jobs --> PG
-  Jobs --> Claude
   Jobs --> FCM --> App
   Jobs <--> Google
   Mail -- webhook --> API
@@ -52,48 +53,46 @@ flowchart LR
 
 | Thành phần | Trách nhiệm | Không làm |
 |---|---|---|
-| Flutter app | UI, DB local, lập lịch thông báo, STT on-device, parse nhanh câu tiếng Việt, outbox sync | Gọi Claude trực tiếp, quyết định entitlement cuối cùng |
+| Flutter app | UI, DB local, lập lịch thông báo, STT của OS, parse câu tiếng Việt, **toàn bộ trích xuất ảnh/pdf/xlsx/md/email**, outbox sync | Gọi AI API trả phí, quyết định entitlement cuối cùng |
 | Watch app | Hiển thị việc hôm nay/chuyến đi sắp tới, Done/Snooze, complication/tile, đọc chính tả để thêm nhanh | Lưu trữ lâu dài, sync trực tiếp với server (Phase 2 chỉ qua điện thoại) |
 | Supabase Postgres | Nguồn sự thật đồng bộ, RLS theo `user_id`, trigger đếm quota, hàng đợi pg-boss | Logic AI |
-| Supabase Storage | File import tạm thời (ảnh, pdf, xlsx, md). Tự xóa sau 30 ngày (Free 7 ngày) | Lưu vĩnh viễn tài liệu gốc (trừ khi user bật "Giữ bản gốc" ở gói trả phí) |
-| Worker API | Endpoint cần quyền cao: tạo job import, xác nhận import, entitlement, webhook | CRUD thông thường (đi PostgREST) |
-| Worker jobs | `ingest.*`, `email.inbound`, `gcal.sync`, `gmail.scan`, `push.fanout`, `digest.daily`, `cleanup.*` | |
+| Supabase Storage | MIME email chờ máy tải về (TTL 7 ngày); bản gốc tài liệu nếu người dùng Plus bật "Giữ bản gốc" | Nhận file để phân tích (máy tự phân tích) |
+| Worker API | Endpoint cần quyền cao: sync có quota, entitlement, hộp thư, OAuth, webhook | CRUD thông thường (đi PostgREST), đọc nội dung tài liệu |
+| Worker jobs | `mailbox.store`, `gcal.sync`, `push.fanout`, `digest.daily`, `cleanup.*` | Gọi LLM |
 
 ## 3. Luồng chính
 
 ### 3.1 Tạo nhắc nhở nhanh (offline được)
 1. Người dùng gõ/nói: "Mai 8h sáng nhắc uống thuốc, lặp mỗi ngày".
-2. `QuickParser` (Dart, on-device) tách: tiêu đề, thời điểm, lặp, mức ưu tiên. Độ tin cậy >= 0,8 thì điền form ngay.
-   Thấp hơn và đang online thì gửi `/v1/parse/text` (LLM) để hỏi lại.
+2. `QuickParser` (Dart, luật, on-device) tách: tiêu đề, thời điểm, lặp, mức ưu tiên và hiện thành chip.
+   Phần không chắc để trống cho người dùng chạm chọn; không gọi server.
 3. Kiểm tra quota local (entitlement cache). Vượt thì hiện paywall theo ngữ cảnh.
 4. Ghi Drift, thêm vào `outbox`, gọi `ReminderScheduler.reschedule(window)`.
 5. Có mạng: outbox đẩy lên server; server xác thực quota; trả `version`.
 
-### 3.2 Import booking từ ảnh/pdf/xlsx/email
+### 3.2 Import booking từ ảnh/pdf/xlsx/email (hoàn toàn trên máy)
 ```mermaid
 sequenceDiagram
   participant U as User
-  participant A as App
-  participant S as Storage
+  participant A as App (isolate)
+  participant OS as OCR / LLM của OS
   participant W as Worker
-  participant C as Claude
-  U->>A: Chia sẻ ảnh vé / chọn file
-  A->>W: POST /v1/imports (kind, mime) [kiểm tra quota AI]
-  W-->>A: import_id + signed upload URL
-  A->>S: PUT file
-  A->>W: POST /v1/imports/{id}/start
-  W->>W: Tiền xử lý (pkpass, ics, pdf text, xlsx, JSON-LD)
-  W->>C: messages.create (schema BookingExtraction)
-  C-->>W: JSON có cấu trúc + confidence
-  W->>W: Chuẩn hóa (IATA→tz, tiền tệ, ngày) + dedupe
-  W-->>A: push "import.ready" (hoặc app poll)
-  A->>U: Màn hình Xem lại (trường nghi ngờ tô vàng)
+  U->>A: Chia sẻ ảnh vé / chọn file / chụp giấy
+  A->>A: T0 decoder (pkpass, ics, JSON-LD, pdf text, xlsx, barcode BCBP)
+  A->>OS: T1 OCR (Vision / ML Kit), nếu là ảnh hoặc pdf scan
+  OS-->>A: text + tọa độ
+  A->>A: T2 phân loại → mẫu nhà cung cấp → extractor chung → kiểm tra logic
+  opt thiếu trường và máy có LLM của OS
+    A->>OS: T3 Foundation Models / Gemini Nano (schema cố định)
+    OS-->>A: JSON → cùng validator
+  end
+  A->>U: Màn Xem lại (trường nghi ngờ tô vàng)
   U->>A: Xác nhận / sửa
-  A->>W: POST /v1/imports/{id}/commit (đã sửa)
-  W->>W: Tạo trip, segments, reminders mặc định [kiểm tra quota lịch hẹn]
-  W-->>A: changes → sync → lập lịch local
+  A->>A: Tạo trip, segments, reminders mặc định [kiểm quota local]
+  A->>W: sync push [server kiểm quota lần cuối]
 ```
-Chi tiết pipeline: `ai-ingestion.md`.
+Email chuyển tiếp: server chỉ lưu MIME rồi push `inbox.new`, máy tải về và chạy đúng pipeline trên.
+Chi tiết: `on-device-extraction.md`.
 
 ### 3.3 Thông báo kêu và hành động
 Thông báo local có action: **Xong**, **Hoãn 10 phút**, **Hoãn 1 giờ**, **Mở**. Action xử lý ngay trong background
@@ -116,8 +115,9 @@ Thông báo local có action: **Xong**, **Hoãn 10 phút**, **Hoãn 1 giờ**, *
 |---|---|
 | Độ chính xác giờ kêu | 99,5% thông báo kêu trong ±60 giây (đo bằng telemetry `fired_at - due_at`) |
 | Khởi động lạnh | < 1,5 s trên máy tầm trung (Android 2022) |
-| Import AI | p50 < 8 s, p95 < 20 s từ lúc upload xong tới khi có màn Xem lại |
-| Độ chính xác trích xuất | >= 95% trường bắt buộc đúng trên eval set booking (giờ, ngày, mã đặt chỗ, địa điểm) |
+| Import (trên máy) | p95 < 4 s cho 1 ảnh tới màn Xem lại (Android tầm trung); PDF 20 trang có text < 3 s |
+| Độ chính xác trích xuất | Nhà cung cấp có mẫu: ≥ 95% trường bắt buộc đúng; tài liệu lạ ≥ 60%; điền sai ≤ 2% |
+| Chi phí theo lượt import | 0 (không gọi API trả phí) |
 | Khả dụng API | 99,9%/tháng; app vẫn dùng được 100% chức năng cơ bản khi server chết |
 | Bảo mật | RLS mọi bảng; mã hóa at-rest (Supabase mặc định); TLS 1.2+; xóa tài khoản trong 30 ngày |
 | Quan sát | Sentry (app + worker), OpenTelemetry cho worker, PostHog cho product analytics (tự host hoặc EU) |
@@ -131,6 +131,7 @@ Secrets qua Secret Manager của Cloud Run và Supabase Vault; app chỉ có `SU
 |---|---|
 | OEM Android (Xiaomi, Oppo, Vivo, Samsung) kill app, thông báo trễ | `setAlarmClock` cho nhắc quan trọng, hướng dẫn tắt tối ưu pin theo hãng, telemetry trễ |
 | iOS giới hạn 64 thông báo chờ | Rolling window + BGAppRefresh + silent push nạp lại (`reminder-engine.md`) |
-| AI đọc sai giờ bay → lỡ chuyến | Bắt buộc màn Xem lại, đối chiếu IATA tz, cảnh báo khi giờ đến < giờ đi mà không qua đêm |
-| Chi phí AI vượt doanh thu | Quota AI theo gói, tiền xử lý deterministic trước, cache theo hash file, đo cost/import |
+| Đọc sai giờ bay → lỡ chuyến | Bắt buộc màn Xem lại, đối chiếu IATA tz, cảnh báo khi giờ đến < giờ đi mà không qua đêm |
+| Bố cục tài liệu lạ đọc kém (không có LLM đám mây) | Mẫu cho top nhà cung cấp cập nhật qua CDN, LLM của OS khi có, vòng "Gửi mẫu để cải thiện" |
+| Spam qua email forward làm đầy storage | Rate limit 30 email/ngày, 50 MB/hộp thư, TTL 7 ngày |
 | Duyệt OAuth Google chậm | Bắt đầu nộp verification sớm (Phase 1), dùng email forward trong lúc chờ |

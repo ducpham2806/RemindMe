@@ -64,7 +64,8 @@ Các bước:
 1. Domain `in.remindme.app`: MX trỏ về Postmark Inbound hoặc Cloudflare Email Routing + Email Worker.
 2. Địa chỉ mỗi user: `u-<token>@in.remindme.app` (token 10 ký tự ngẫu nhiên, đổi được). Cho phép thêm alias email gốc của user
    để email từ địa chỉ đó gửi tới `trips@in.remindme.app` cũng khớp được (kiểm tra SPF/DKIM để chống giả mạo).
-3. Webhook → lưu raw MIME vào Storage → job `email.inbound` → JSON-LD / `.ics` / `.pkpass` / PDF đính kèm / text → pipeline AI.
+3. Webhook → kiểm rate limit/kích thước/SPF-DKIM → lưu MIME (mã hóa, TTL 7 ngày) → push `inbox.new` → **điện thoại** tải về và chạy pipeline trên máy
+   (JSON-LD / `.ics` / `.pkpass` / PDF / ảnh đính kèm / text), xong gọi `ack` để server xóa (`on-device-extraction.md` mục 8).
 4. Hướng dẫn trong app: tạo filter Gmail tự động forward email có "booking", "đặt chỗ", "e-ticket", "xác nhận đặt phòng"
    (Gmail cần xác minh địa chỉ forward: worker tự bấm link xác minh của Google gửi tới).
 5. Bẫy: chống spam/loop; giới hạn 10 MB/email; người lạ gửi vào địa chỉ token thì vẫn nhận nhưng chỉ tạo candidate, không tạo item.
@@ -89,7 +90,8 @@ Google Calendar refresh feed chậm (có thể vài giờ đến 1 ngày), ghi r
 ## 6. Gmail API (Phase 3, tùy số liệu)
 - Scope `gmail.readonly` (restricted) → bắt buộc CASA. Phương án ít xâm phạm hơn: chỉ đọc message khớp query
   `category:primary (booking OR reservation OR "đặt chỗ" OR itinerary)` qua `users.messages.list` + `watch` (Pub/Sub).
-- Xử lý bằng Message Batches để giảm chi phí; kết quả vào "Hộp đề xuất" chứ không tự tạo.
+- Máy tự gọi Gmail API bằng token của người dùng (OAuth trên thiết bị) và xử lý trên máy, server không đọc email; kết quả vào "Hộp đề xuất" chứ không tự tạo.
+  Lưu ý: CASA vẫn cần nếu token/dữ liệu đi qua server; nếu chỉ xử lý trên máy, kiểm tra lại yêu cầu thẩm định với Google.
 - Chỉ bật cho gói trả phí; ghi rõ dữ liệu nào được đọc. Nếu chi phí CASA không xứng đáng: giữ email forward.
 
 ## 7. Hệ thống ghi chú
@@ -130,8 +132,18 @@ Google Calendar refresh feed chậm (có thể vài giờ đến 1 ngày), ghi r
   Hợp với nhắc lịch khám, nhắc người thân. Tính như kênh trả phí.
 - Email digest hằng ngày qua Postmark/Amazon SES.
 
-## 12. Danh sách SDK/plugin dự kiến (Flutter)
+## 12. AI có sẵn trong hệ điều hành (tùy chọn, không tốn phí)
+| API | Nền tảng | Việc cần làm |
+|---|---|---|
+| Vision (OCR, barcode, `RecognizeDocumentsRequest`) | iOS | Kiểm tra `supportedRecognitionLanguages` có tiếng Việt trên iOS 26/27 ở Phase 0 |
+| VisionKit document camera | iOS | Không cần đăng ký |
+| Foundation Models (`SystemLanguageModel`) | iOS 26+ có Apple Intelligence | Capability không cần xin; kiểm `availability` lúc chạy; iOS 27 có đầu vào ảnh |
+| ML Kit Text Recognition v2, Barcode, Document Scanner | Android (+ iOS) | Thêm dependency; Document Scanner cần Google Play services |
+| ML Kit GenAI Prompt API (Gemini Nano) | Android flagship có AICore | Đang alpha/beta: theo dõi thay đổi API, kiểm `checkFeatureStatus`, chỉ chạy khi app ở foreground |
+| SpeechRecognizer / SpeechAnalyzer | Android / iOS | Xin quyền micro + speech recognition (iOS) |
+
+## 13. Danh sách SDK/plugin dự kiến (Flutter)
 `supabase_flutter`, `drift`, `riverpod`, `go_router`, `firebase_messaging`, `flutter_local_notifications`, `timezone`,
 `flutter_timezone`, `rrule`, `speech_to_text`, `google_mlkit_barcode_scanning`, `image_picker`, `file_picker`,
-`receive_sharing_intent`, `purchases_flutter`, `device_calendar`, `home_widget`, `sentry_flutter`, `posthog_flutter`,
+`receive_sharing_intent`, `google_mlkit_text_recognition`, `google_mlkit_document_scanner`, `pdfrx`, `excel`, `enough_mail`, `archive`, `purchases_flutter`, `device_calendar`, `home_widget`, `sentry_flutter`, `posthog_flutter`,
 `google_sign_in`, `sign_in_with_apple`, `intl`, `flutter_localizations`. Kiểm tra bảo trì (pub.dev score, ngày phát hành) trước khi khóa phiên bản.

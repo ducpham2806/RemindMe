@@ -1,7 +1,7 @@
 # API spec (worker `/v1`)
 
 > TL;DR: CRUD thường đi thẳng PostgREST của Supabase (RLS). Worker chỉ phục vụ những việc cần quyền cao:
-> sync có kiểm quota, import AI, entitlement, tích hợp OAuth, webhook. Auth: `Authorization: Bearer <supabase JWT>`.
+> sync có kiểm quota, entitlement, hộp thư email, tích hợp OAuth, webhook. Worker không đọc nội dung tài liệu. Auth: `Authorization: Bearer <supabase JWT>`.
 > Lỗi theo dạng `{ "error": { "code": "quota_exceeded", "message": "...", "details": {...} } }`.
 
 ## Sync
@@ -14,17 +14,18 @@
 | Method | Path | Mô tả |
 |---|---|---|
 | GET | `/v1/me/entitlements` | `{plan:"free", period_end, limits:{max_reminders_per_day:10,...}, usage:{...}, features:{watch_app:false,...}}` |
-| POST | `/v1/me/quota/check` | Body `{kind:"appointment", count:3}` → `{allowed, remaining, upsell_reason}` (dùng trước màn Xem lại) |
+| POST | `/v1/me/quota/check` | Body `{kind:"appointment", count:3}` → `{allowed, remaining, upsell_reason}` (tùy chọn khi online; offline dùng entitlement cache) |
 
-## Parse & import
+## Import (metadata) & hộp thư email
+Phân tích file chạy hoàn toàn trên máy (ADR-010), nên **không có endpoint nhận file để phân tích** và không có endpoint parse text.
+Bảng `imports` đồng bộ qua sync như bảng thường (dedupe theo `sha256` giữa các thiết bị).
+
 | Method | Path | Mô tả |
 |---|---|---|
-| POST | `/v1/parse/text` | `{text, locale, now, tz}` → `{items:[...], confidence}`. Dùng khi QuickParser không chắc. Tính 0,2 credit AI (làm tròn theo ngày) |
-| POST | `/v1/imports` | `{kind, mime, bytes, sha256}` → `{import_id, upload_url, expires_in}`. 402 `quota_exceeded` nếu hết lượt AI. Trùng `sha256` trong 30 ngày → trả kết quả cũ, không tính lượt |
-| POST | `/v1/imports/{id}/start` | Bắt đầu xử lý (enqueue `ingest.<kind>`) → `202` |
-| GET | `/v1/imports/{id}` | `{status, candidates:[...], warnings, error}` |
-| POST | `/v1/imports/{id}/commit` | `{candidates:[{id, accepted, edited_payload, trip_id?}]}` → `{created_item_ids, trip_id}`. Kiểm tra quota lịch hẹn |
-| DELETE | `/v1/imports/{id}` | Hủy, xóa file |
+| GET | `/v1/mailbox?since=<ts>` | Danh sách email forward chờ xử lý `{id, from, received_at, bytes, download_url}` (signed URL 10 phút) |
+| POST | `/v1/mailbox/{id}/ack` | Máy đã xử lý xong, server xóa MIME ngay (không chờ TTL) |
+| POST | `/v1/originals` | (Plus, "Giữ bản gốc") xin signed URL để lưu bản gốc; kiểm `max_originals_mb` |
+| GET | `https://cdn.remindme.app/templates/manifest.json` | Danh sách mẫu nhà cung cấp `{id, version, url, sig}`; file tĩnh, app tải khi có Wi-Fi hoặc mỗi 24h |
 
 ## Tích hợp
 | Method | Path | Mô tả |
@@ -44,13 +45,13 @@
 | PUT | `/v1/devices/{device_id}` | `{platform, fcm_token, tz, app_version, oem}` |
 | DELETE | `/v1/devices/{device_id}` | Đăng xuất thiết bị |
 
-Loại push (data message): `sync.tickle`, `reschedule`, `import.ready`, `import.failed`, `subscription.changed`, `trip.update` (Phase 3: đổi giờ bay).
+Loại push (data message): `sync.tickle`, `reschedule`, `inbox.new` (có email forward mới), `templates.updated`, `subscription.changed`, `trip.update` (Phase 3: đổi giờ bay).
 
 ## Webhook (không dùng JWT, xác thực bằng chữ ký/secret)
 | Path | Nguồn |
 |---|---|
 | `POST /hooks/revenuecat` | RevenueCat (header Authorization secret) → cập nhật `subscriptions`, push `subscription.changed` |
-| `POST /hooks/inbound-email` | Postmark/Cloudflare Email Worker (HMAC) → `email.inbound` job |
+| `POST /hooks/inbound-email` | Postmark/Cloudflare Email Worker (HMAC) → kiểm rate limit/kích thước → lưu MIME vào `mailbox_messages` → push `inbox.new` |
 | `POST /hooks/gmail-push` | Google Pub/Sub (Gmail `watch`) Phase 3 |
 | `POST /hooks/gcal-push` | Google Calendar push notification channel |
 
@@ -59,4 +60,4 @@ Loại push (data message): `sync.tickle`, `reschedule`, `import.ready`, `import
 `invalid` 422, `conflict` 409, `rate_limited` 429, `upstream_error` 502, `internal` 500.
 
 ## Rate limit
-Mặc định 60 req/phút/user; `/v1/imports` 10/phút; `/v1/parse/text` 30/phút.
+Mặc định 60 req/phút/user; `/v1/originals` 10/phút; email inbound 30 email/ngày/user.
