@@ -28,13 +28,67 @@ class TodayScreen extends ConsumerWidget {
           ],
         ),
       ),
-      body: switch (sections) {
-        AsyncData(:final value) when value.isEmpty =>
+      body: Column(
+        children: [
+          const _ReminderHealthCard(),
+          Expanded(child: _body(context, l, sections)),
+        ],
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context, AppLocalizations l, AsyncValue<TodaySections> sections) {
+    return switch (sections) {
+      AsyncData(:final value) when value.isEmpty =>
           EmptyState(icon: Icons.wb_sunny_outlined, title: l.todayEmptyTitle, body: l.todayEmptyBody),
         AsyncData(:final value) => _SectionList(sections: value),
         AsyncError() => EmptyState(icon: Icons.error_outline, title: l.loadError),
         _ => const Center(child: CircularProgressIndicator()),
-      },
+    };
+  }
+}
+
+/// UX §6b: thiếu quyền thông báo / báo thức chính xác thì nhắc có thể không kêu. Chỉ hiện khi đã có nhắc.
+class _ReminderHealthCard extends ConsumerWidget {
+  const _ReminderHealthCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final health = ref.watch(notificationHealthProvider).value;
+    final has = ref.watch(hasRemindersProvider).value ?? false;
+    if (health == null || health.ok || !has) return const SizedBox.shrink();
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Card(
+      key: const Key('reminderHealthCard'),
+      color: theme.colorScheme.errorContainer,
+      margin: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space2, Tokens.screenMargin, 0),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.all(Tokens.space4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.remindersMayNotRingTitle, style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onErrorContainer)),
+            const SizedBox(height: Tokens.space1),
+            Text(l.remindersMayNotRingBody, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onErrorContainer)),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton(
+                onPressed: () async {
+                  final os = ref.read(notificationSchedulerProvider);
+                  if (!health.notificationsAllowed) {
+                    await os.requestPermission();
+                  } else {
+                    await os.openExactAlarmSettings();
+                  }
+                  ref.invalidate(notificationHealthProvider);
+                },
+                child: Text(l.remindersAllow),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

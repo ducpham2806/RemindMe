@@ -6,13 +6,20 @@ import 'package:material_ui/material_ui.dart';
 import 'package:remindme_client/app.dart';
 import 'package:remindme_client/data/providers.dart';
 import 'package:remindme_data/remindme_data.dart';
+import 'package:remindme_platform/remindme_platform.dart';
+import 'package:remindme_platform/testing.dart';
 
 /// Giờ cố định cho test: 1/12/2026 10:00 giờ máy chạy test.
 final testNow = DateTime(2026, 12, 1, 10);
 
+/// OS giả của lần pumpApp gần nhất (thông báo đã lập lịch, quyền).
+late InMemoryNotificationScheduler testOs;
+
 /// App với DB in-memory. Trả container để test đọc repo/DB.
 Future<ProviderContainer> pumpApp(WidgetTester tester,
-    {required Size size, Locale? locale, double textScale = 1.0, String? region = 'US', Future<void> Function(ItemsRepository repo)? seed}) async {
+    {required Size size, Locale? locale, double textScale = 1.0, String? region = 'US', Future<void> Function(ItemsRepository repo)? seed,
+    NotificationHealth health = const NotificationHealth(notificationsAllowed: true), Stream<NotificationTap>? taps}) async {
+  testOs = InMemoryNotificationScheduler(maxPending: 60, healthValue: health);
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
@@ -26,6 +33,8 @@ Future<ProviderContainer> pumpApp(WidgetTester tester,
     deviceIdProvider.overrideWithValue('test-device'),
     deviceTimeZoneProvider.overrideWithValue('Asia/Ho_Chi_Minh'),
     deviceRegionProvider.overrideWithValue(region),
+    notificationSchedulerProvider.overrideWithValue(testOs),
+    notificationTapsProvider.overrideWithValue(taps ?? const Stream.empty()),
     nowProvider.overrideWithValue(() => testNow),
   ]);
   addTearDown(() async {
@@ -37,4 +46,10 @@ Future<ProviderContainer> pumpApp(WidgetTester tester,
   await tester.pumpWidget(UncontrolledProviderScope(container: container, child: RemindMeApp(locale: locale)));
   await tester.pumpAndSettle();
   return container;
+}
+
+/// Chờ ReminderBinding lập lịch (debounce 300 ms).
+Future<void> settleReminders(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pumpAndSettle();
 }

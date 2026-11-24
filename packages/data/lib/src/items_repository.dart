@@ -238,6 +238,9 @@ class ItemsRepository {
     return q.watch().map((rows) => {for (final r in rows) r.itemId});
   }
 
+  Future<bool> isRecurring(String itemId) async =>
+      await (_db.select(_db.recurrences)..where((t) => t.itemId.equals(itemId) & t.deletedAt.isNull())).getSingleOrNull() != null;
+
   Future<Map<String, Object?>?> recurrenceOf(String itemId) async {
     final r = await (_db.select(_db.recurrences)..where((t) => t.itemId.equals(itemId) & t.deletedAt.isNull())).getSingleOrNull();
     if (r == null) return null;
@@ -343,6 +346,9 @@ class ItemsRepository {
     });
     return id;
   }
+
+  Stream<bool> watchHasReminders() =>
+      (_db.select(_db.reminders)..where((t) => t.deletedAt.isNull())..limit(1)).watch().map((r) => r.isNotEmpty);
 
   Future<void> removeReminder(String reminderId) => engine.delete(SyncTable.reminders, reminderId);
 

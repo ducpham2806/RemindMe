@@ -371,5 +371,141 @@
   "quickAddDidYouMean": "Did you mean",
   "@quickAddDidYouMean": {
     "description": "Label before alternative chips when the date or time was ambiguous."
+  },
+  "notifInMinutes": "{count, plural, =1{In 1 minute} other{In {count} minutes}} · {time}",
+  "@notifInMinutes": {
+    "description": "Notification body for a reminder set N minutes before the item. {time} is the CLDR-formatted start time.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "15"
+      },
+      "time": {
+        "type": "String",
+        "example": "3:00 PM"
+      }
+    }
+  },
+  "notifInHours": "{count, plural, =1{In 1 hour} other{In {count} hours}} · {time}",
+  "@notifInHours": {
+    "description": "Notification body for a reminder set N hours before the item.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "15"
+      },
+      "time": {
+        "type": "String",
+        "example": "3:00 PM"
+      }
+    }
+  },
+  "notifInDays": "{count, plural, =1{Tomorrow} other{In {count} days}} · {time}",
+  "@notifInDays": {
+    "description": "Notification body for a reminder set N days before the item.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "15"
+      },
+      "time": {
+        "type": "String",
+        "example": "3:00 PM"
+      }
+    }
+  },
+  "notifSnoozedBody": "Snoozed reminder",
+  "@notifSnoozedBody": {
+    "description": "Body of a notification that fires again after the user snoozed it."
+  },
+  "notifFallbackTitle": "Open RemindMe to keep getting reminders",
+  "@notifFallbackTitle": {
+    "description": "iOS fallback notification when the 64-notification limit was reached and the app could not reschedule in the background."
+  },
+  "notifFallbackBody": "Your next reminders are set up each time you open the app.",
+  "@notifFallbackBody": {
+    "description": "Body of the iOS fallback notification."
+  },
+  "notifActionDone": "Done",
+  "@notifActionDone": {
+    "description": "Notification button: mark the item (or this occurrence) as done. Keep ≤ 20 chars (watch)."
+  },
+  "notifActionSnooze10": "Snooze 10 min",
+  "@notifActionSnooze10": {
+    "description": "Notification button: remind again in 10 minutes."
+  },
+  "notifActionSnooze60": "Snooze 1 hour",
+  "@notifActionSnooze60": {
+    "description": "Notification button: remind again in 1 hour."
+  },
+  "notifChannelReminders": "Reminders",
+  "@notifChannelReminders": {
+    "description": "Android notification channel name for regular reminders (shown in system settings)."
+  },
+  "notifChannelAlarms": "Alarm reminders",
+  "@notifChannelAlarms": {
+    "description": "Android notification channel name for alarm-style reminders."
+  },
+  "itemRemindersLabel": "Reminders",
+  "@itemRemindersLabel": {
+    "description": "Section label on the item detail screen."
+  },
+  "reminderAtTime": "At time of item",
+  "@reminderAtTime": {
+    "description": "Reminder that fires exactly at the item time (offset 0)."
+  },
+  "reminderMinutesBefore": "{count, plural, =1{1 minute before} other{{count} minutes before}}",
+  "@reminderMinutesBefore": {
+    "description": "Reminder N minutes before the item.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+  "reminderHoursBefore": "{count, plural, =1{1 hour before} other{{count} hours before}}",
+  "@reminderHoursBefore": {
+    "description": "Reminder N hours before the item.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+  "reminderDaysBefore": "{count, plural, =1{1 day before} other{{count} days before}}",
+  "@reminderDaysBefore": {
+    "description": "Reminder N days before the item.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+  "reminderAdd": "Add reminder",
+  "@reminderAdd": {
+    "description": "Button opening the list of reminder presets."
+  },
+  "reminderRemove": "Remove reminder",
+  "@reminderRemove": {
+    "description": "Tooltip of the delete icon on a reminder chip."
+  },
+  "reminderNeedsDate": "Set a date to add reminders",
+  "@reminderNeedsDate": {
+    "description": "Shown in the reminders section when the item has no date."
+  },
+  "remindersMayNotRingTitle": "Reminders may not ring",
+  "@remindersMayNotRingTitle": {
+    "description": "Warning card on Today when notification or exact-alarm permission is missing."
+  },
+  "remindersMayNotRingBody": "Allow notifications and exact alarms so reminders ring on time.",
+  "@remindersMayNotRingBody": {
+    "description": "Body of the permission warning card."
+  },
+  "remindersAllow": "Allow",
+  "@remindersAllow": {
+    "description": "Button on the permission warning card; opens the system prompt or settings."
   }
 }

@@ -1,6 +1,6 @@
 # STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 
-**Cập nhật:** 2026-11-24 · **Phase:** 0 → S1 (nền móng code) · **Nhánh:** `ccr-7a85f116-dswwig`
+**Cập nhật:** 2026-11-24 · **Phase:** 0 → S1-S3 (code chạy offline; chờ tài khoản Supabase/Firebase) · **Nhánh:** `ccr-7a85f116-dswwig`
 
 ## Đã có
 - Bộ docs v2 (`docs/INDEX.md`) + 14 ADR (ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
@@ -14,7 +14,11 @@
   (tên, ghi chú có `base_clock`, ưu tiên, xóa), Quick Add lưu việc. `ItemsRepository` + `InstallInfo.deviceId` trong `packages/data`. `OfflineSyncApi` giữ outbox tới khi có server.
 - Quick Add hiểu câu tự nhiên en/vi (`packages/parsers`: engine NLU + gói YAML, chip thời điểm/lặp/tag/ưu tiên, "Ý bạn là" khi mơ hồ, nhiều việc 1 câu).
   `packages/core`: âm lịch VN/TQ/HQ + `Recurrence` (RRULE qua `rrule`, âm lịch, sau khi hoàn thành). Bộ câu tổng hợp: vi 100%, en 98,3%.
-- Chưa có: worker, decoder/mẫu tài liệu, auth/flavors, `SupabaseSyncApi`; Hôm nay chưa trải các lần lặp (S3).
+- S3 nhắc nhở (offline, `reminder-engine.md` §1 "Code"): rolling window 14 ngày (iOS 60 + thông báo dự phòng, Android 500), đổi múi giờ theo quy tắc DST,
+  fixed/floating, âm lịch; diff với `scheduled_notifications`; adapter `flutter_local_notifications` (exact alarm nếu được cấp, `alarmClock` cho nhắc kiểu báo thức,
+  nút Xong/Hoãn 10'/1h cả khi app tắt); Hôm nay trải từng lần của chuỗi lặp; màn chi tiết thêm/bỏ nhắc; Quick Add mặc định nhắc đúng giờ; thẻ "Nhắc nhở có thể không kêu".
+  Manifest Android (quyền + receiver), desugaring, AppDelegate iOS; min iOS 17 / Android API 26 theo ADR-011. CI thêm `android-build` (+ `ios-build` chạy tay).
+- Chưa có: worker, decoder/mẫu tài liệu, auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
@@ -35,6 +39,10 @@
 - Đăng nhập theo thị trường (Zalo/LINE/Kakao) ở Phase 1? Bán qua web? Chấp nhận CASA cho Gmail nếu Google yêu cầu? Đội ngũ thực tế.
 
 ## Việc kỹ thuật còn nợ
+- S3 còn thiếu (cần máy thật hoặc hạ tầng): chạy thử trên Android/iOS thật (chưa có SDK trong container; CI build APK sẽ kiểm biên dịch),
+  method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
+  onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
+  hủy thông báo khi `session_revoked` (chờ luồng sync thật), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).

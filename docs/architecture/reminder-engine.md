@@ -24,6 +24,12 @@ sau sync pull, khi nhận silent push, BGAppRefresh/WorkManager, `BOOT_COMPLETED
 ```
 ID thông báo xác định (deterministic): `hash(reminder_id + occurrence_at)` để diff ổn định và tránh trùng.
 
+**Code (S3):** `packages/data/lib/src/reminders/` (`planner.dart` hàm thuần + `expandOccurrences` dùng chung với màn Hôm nay;
+`scheduler.dart` đọc DB, diff với `scheduled_notifications`; `actions.dart` nút Xong/Hoãn), `packages/core/lib/src/tz.dart` (giờ tường ↔ UTC).
+App: `apps/client/lib/data/reminder_binding.dart` (lập lại khi DB đổi, app mở lại, đổi ngôn ngữ/12-24h; hỏi quyền 1 lần khi có nhắc đầu tiên),
+`lib/platform/local_notifications.dart` (adapter `flutter_local_notifications`), `lib/platform/notification_background.dart` (nút bấm khi app tắt).
+FNV-1a 32 bit, lấy 31 bit dương (Android dùng int32). Khóa của lần cả ngày là 00:00 theo múi giờ, giờ kêu là giờ mặc định của người dùng.
+
 ## 2. Android
 | Việc | Cách làm |
 |---|---|
@@ -57,6 +63,7 @@ Plugin: `flutter_local_notifications` + method channel riêng cho `setAlarmClock
   Ngày 30 ở tháng thiếu (29 ngày) kêu ngày 29. Lịch hiển thị ngày phụ dưới ngày dương khi người dùng bật hệ lịch đó.
 - Ngoại lệ: `exdates` cho "bỏ qua lần này"; sửa "chỉ lần này" thì tạo item con với `source_ref = <series_id>:<occurrence>`.
 - Hoàn thành 1 lần của chuỗi: ghi `occurrence_log` (không đóng cả chuỗi).
+- Màn Hôm nay hiện **từng lần** của chuỗi rơi vào ngày đó; lần của ngày trước bị bỏ lỡ không dồn vào Quá hạn (tránh chuỗi hằng ngày chất đống).
 
 ## 5. Múi giờ, DST và du lịch (nguồn chuẩn cho quy tắc thời gian)
 **Cố định hay trôi theo giờ địa phương** (`items.time_mode`):
@@ -86,6 +93,7 @@ Bảng IATA → tz: toàn bộ dữ liệu mở OurAirports, đóng gói vào ap
 | Tàu/xe | 2h trước, 30' trước |
 | Khách sạn | 18:00 hôm trước check-in, 1h trước giờ check-out |
 | Khám bệnh | 1 ngày trước (nhắc mang giấy tờ/nhịn ăn nếu có trong ghi chú), 1h trước |
+| Việc/sự kiện có giờ hoặc ngày tạo từ Quick Add | Đúng giờ (chip 🔔 trong UX §2.2), sửa ở màn chi tiết; mốc có sẵn: đúng giờ, 10', 30', 1h, 1 ngày trước |
 
 ## 6. Đồng hồ thông minh
 | Giai đoạn | Apple Watch | Wear OS | Đồng hồ khác (Xiaomi, Huawei, Garmin, Samsung Tizen cũ) |

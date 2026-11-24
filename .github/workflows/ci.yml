@@ -2,6 +2,7 @@ name: ci
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   docs-and-lint:
@@ -70,3 +71,34 @@ jobs:
         run: for p in core platform data parsers; do (cd packages/$p && dart test) || exit 1; done
       - name: Test widget (3 kích thước, pseudo-locale)
         run: cd apps/client && flutter test
+
+  # Kiểm cấu hình native (manifest, desugaring, plugin): runner ubuntu có sẵn Android SDK.
+  android-build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.50.1
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: cd apps/client && flutter build apk --debug
+
+  # macOS tốn phút gấp nhiều lần: chỉ chạy khi bấm tay (Actions → ci → Run workflow).
+  ios-build:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.50.1
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: cd apps/client && flutter build ios --debug --no-codesign

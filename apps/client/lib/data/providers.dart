@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:remindme_core/remindme_core.dart';
 import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_parsers/remindme_parsers.dart';
+import 'package:remindme_platform/remindme_platform.dart';
 
 import '../platform/device_time.dart';
 
@@ -39,6 +40,23 @@ final nluEngineProvider = FutureProvider.family<NluEngine, String>((ref, key) as
     ]));
 
 final recurringIdsProvider = StreamProvider<Set<String>>((ref) => ref.watch(itemsRepositoryProvider).watchRecurringIds());
+
+/// Lập lịch thông báo của OS (`LocalNotificationScheduler` trên Android/iOS/macOS); `main()` khởi tạo rồi override.
+final notificationSchedulerProvider =
+    Provider<NotificationScheduler>((ref) => throw UnimplementedError('override trong main() hoặc test'));
+
+/// Bấm thông báo / nút khi app đang chạy.
+final notificationTapsProvider = Provider<Stream<NotificationTap>>((ref) => const Stream.empty());
+
+/// Lần bấm thông báo đã mở app (app đang tắt).
+final launchNotificationTapProvider = Provider<NotificationTap?>((ref) => null);
+
+final notificationHealthProvider = FutureProvider<NotificationHealth>((ref) => ref.watch(notificationSchedulerProvider).health());
+
+/// Có ít nhất 1 nhắc (chỉ khi đó mới hiện thẻ "Nhắc nhở có thể không kêu").
+final hasRemindersProvider = StreamProvider<bool>((ref) => ref.watch(itemsRepositoryProvider).watchHasReminders());
+
+final remindersProvider = StreamProvider.family<List<Reminder>, String>((ref, itemId) => ref.watch(itemsRepositoryProvider).watchReminders(itemId));
 
 /// Giờ hiện tại; test override để cố định ngày.
 final nowProvider = Provider<DateTime Function()>((ref) => DateTime.now);

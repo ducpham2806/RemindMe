@@ -6,6 +6,7 @@ import 'package:remindme_data/remindme_data.dart';
 import '../../core/l10n/formatters.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
+import '../../data/reminders.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 
@@ -147,6 +148,8 @@ class _EditorState extends ConsumerState<_Editor> {
             ListTile(contentPadding: EdgeInsetsDirectional.zero, leading: const Icon(Icons.schedule), title: Text(when)),
           ],
           const SizedBox(height: Tokens.space4),
+          _RemindersSection(item: item),
+          const SizedBox(height: Tokens.space4),
           Text(l.itemPriorityLabel, style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: Tokens.space2),
           SegmentedButton<int>(
@@ -173,6 +176,56 @@ class _EditorState extends ConsumerState<_Editor> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Nhắc của item: mỗi mốc là 1 chip (xóa được), "Thêm nhắc" mở danh sách mốc có sẵn.
+class _RemindersSection extends ConsumerWidget {
+  const _RemindersSection({required this.item});
+  final ItemView item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final repo = ref.read(itemsRepositoryProvider);
+    final reminders = ref.watch(remindersProvider(item.id)).value ?? const [];
+    final used = {for (final r in reminders) r.offsetMinutes ?? 0};
+    return Column(
+      key: const Key('itemReminders'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l.itemRemindersLabel, style: theme.textTheme.labelLarge),
+        const SizedBox(height: Tokens.space2),
+        if (!item.isScheduled)
+          Text(l.reminderNeedsDate, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant))
+        else
+          Wrap(
+            spacing: Tokens.space2,
+            runSpacing: Tokens.space2,
+            children: [
+              for (final r in reminders)
+                InputChip(
+                  key: Key('reminder-${r.offsetMinutes ?? 0}'),
+                  avatar: const Icon(Icons.notifications_outlined, size: 18),
+                  label: Text(describeReminderOffset(l, r.offsetMinutes ?? 0)),
+                  deleteButtonTooltipMessage: l.reminderRemove,
+                  onDeleted: () => repo.removeReminder(r.id),
+                ),
+              PopupMenuButton<int>(
+                key: const Key('reminderAdd'),
+                tooltip: l.reminderAdd,
+                onSelected: (m) => repo.addReminder(item.id, offsetMinutes: m),
+                itemBuilder: (context) => [
+                  for (final m in reminderPresets)
+                    if (!used.contains(m)) PopupMenuItem(value: m, child: Text(describeReminderOffset(l, m))),
+                ],
+                child: Chip(avatar: const Icon(Icons.add, size: 18), label: Text(l.reminderAdd)),
+              ),
+            ],
+          ),
+      ],
     );
   }
 }

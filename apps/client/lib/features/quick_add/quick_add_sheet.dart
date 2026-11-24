@@ -7,6 +7,7 @@ import '../../core/l10n/formatters.dart';
 import '../../core/l10n/recurrence_text.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
+import '../../data/reminders.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Quick Add (UX §2.2): gõ câu tự nhiên, NLU (V1) phân tích ngay khi gõ và hiện chip thời điểm / lặp / tag / ưu tiên.
@@ -100,6 +101,8 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
         tags: d.result.tags,
         recurrence: rec?.toPayload(),
         recurrenceStart: rec == null ? null : (local ?? DateTime(today.year, today.month, today.day)).toUtc(),
+        // Có thời điểm thì mặc định nhắc đúng giờ (chip 🔔 trong UX §2.2); sửa ở màn chi tiết.
+        reminderOffsets: when == null ? const [] : const [0],
       );
     }
     if (mounted) Navigator.of(context).pop();
@@ -184,6 +187,8 @@ class _DraftChips extends StatelessWidget {
     final when = draft.when;
     final chips = <Widget>[
       if (when != null) Chip(key: const Key('chipWhen'), avatar: const Icon(Icons.event, size: 18), label: Text(fmt.civil(when, today: today))),
+      if (when != null || r.recurrence != null)
+        Chip(key: const Key('chipReminder'), avatar: const Icon(Icons.notifications_outlined, size: 18), label: Text(describeReminderOffset(l, 0))),
       if (r.recurrence != null)
         Chip(key: const Key('chipRepeat'), avatar: const Icon(Icons.repeat, size: 18), label: Text(describeRecurrence(context, r.recurrence!.toPayload()))),
       for (final t in r.tags) Chip(avatar: const Icon(Icons.tag, size: 18), label: Text(t)),

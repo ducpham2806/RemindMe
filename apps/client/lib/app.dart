@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'core/l10n/locale_resolution.dart';
 import 'core/theme/app_theme.dart';
+import 'data/reminder_binding.dart';
 import 'l10n/app_localizations.dart';
 import 'router.dart';
 
@@ -50,6 +51,7 @@ class _RemindMeAppState extends ConsumerState<RemindMeApp> {
       ],
       localeListResolutionCallback: (preferred, supported) => resolveLocale(preferred, supported),
       routerConfig: _router,
+      builder: (context, child) => ReminderBinding(router: _router, child: child ?? const SizedBox.shrink()),
     );
   }
 }

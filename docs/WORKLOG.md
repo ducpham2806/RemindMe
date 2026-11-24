@@ -12,6 +12,23 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · S3 Reminder engine (offline) · Claude Code
+- **Làm:**
+  - `core/tz.dart`: giờ tường ↔ UTC qua tzdata (package `timezone`); giờ không tồn tại → giờ hợp lệ kế tiếp, giờ lặp → lần đầu.
+  - `data/reminders/`: `ReminderPlanner` (14 ngày, offset/absolute/hoãn, fixed vs floating, cả ngày lúc 09:00, âm lịch, bỏ lần đã Xong, iOS 60 + 1 dự phòng),
+    `expandOccurrences` dùng chung với Hôm nay, `ReminderScheduler` (diff với bảng mới `scheduled_notifications`, schema v2 + migration), `NotificationActionHandler`.
+  - `ItemsRepository`: reminder (thêm/bỏ/hoãn), lần của chuỗi (xong/bỏ qua/hoàn tác), Hôm nay trải từng lần (theo dõi items + recurrences + occurrence_log).
+  - App: `LocalNotificationScheduler` (`flutter_local_notifications` 23), isolate nền cho nút Xong/Hoãn, `ReminderBinding`, mục Nhắc ở màn chi tiết,
+    Quick Add mặc định nhắc đúng giờ, thẻ thiếu quyền; Android manifest/desugaring/minSdk 26, AppDelegate, iOS 17; 22 key ARB.
+  - CI: job `android-build`, `ios-build` (chạy tay). `tools/check-arb.py` sửa lỗi coi nhánh ICU `=1{Tomorrow}` là placeholder.
+- **Quyết định:** Quick Add có thời điểm → mặc định 1 nhắc đúng giờ (reminder-engine §5). Lần lặp đã qua không dồn vào Quá hạn (§4).
+  Khóa lần cả ngày = 00:00 theo múi giờ, giờ kêu riêng. Không dùng `USE_EXACT_ALARM` (giữ như §2).
+- **Lỗi bắt được nhờ test:** `Mutation.toJson` bỏ payload của lệnh xóa → hoàn tác "Xong" 1 lần lặp bị server từ chối `missing_key` (contract test với Postgres thật);
+  tràn layout chip ở 320dp + chữ 1,3x (đã sửa ở lượt trước); `rootBundle` cache Future của zone test cũ.
+- **Kiểm chứng:** `flutter analyze` 0; core 39, platform 2, data 31 (+5 contract), parsers 17, client 34 test; pgTAP 109; lint/ARB/pseudo/platform 0 lỗi.
+  Chưa chạy trên máy thật (container không có Android SDK/Xcode).
+- **Dở dang / tiếp theo:** xem STATE "Việc kỹ thuật còn nợ" mục S3.
+
 ## 2026-11-24 · S1/S2 không cần tài khoản: chặn clock, nối DB vào app, NLU en/vi, recurrence + âm lịch · Claude Code
 - **Làm:**
   - CI run #9 không tạo job (tên step chứa `: ` làm YAML hỏng) → quote; run #10 xanh cả 3 job.

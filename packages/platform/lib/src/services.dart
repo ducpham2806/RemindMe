@@ -22,9 +22,30 @@ class ScheduledNotification {
   final String? payload;
 }
 
+/// Nhắc có kêu đúng giờ được không (UX §6b "Nhắc nhở có thể không kêu").
+class NotificationHealth {
+  const NotificationHealth({required this.notificationsAllowed, this.exactAlarmsAllowed = true});
+  final bool notificationsAllowed;
+  /// Android 12+: quyền báo thức chính xác (SCHEDULE_EXACT_ALARM). Nền tảng khác luôn true.
+  final bool exactAlarmsAllowed;
+  bool get ok => notificationsAllowed && exactAlarmsAllowed;
+}
+
+/// Người dùng bấm thông báo ([actionId] null) hoặc nút trên thông báo ('done', 'snooze_10', 'snooze_60').
+class NotificationTap {
+  const NotificationTap({this.actionId, this.payload});
+  final String? actionId;
+  final String? payload;
+}
+
 abstract interface class NotificationScheduler {
-  /// Số thông báo tối đa được chờ cùng lúc (iOS 64; Android không giới hạn thực tế).
+  /// Số thông báo được lập lịch cùng lúc: iOS 60 (64 trừ 4 chừa lại, reminder-engine.md §1), Android 500.
   int get maxPending;
+  Future<NotificationHealth> health();
+  /// Hỏi quyền thông báo (Android 13+, iOS). Trả true nếu được cấp.
+  Future<bool> requestPermission();
+  /// Android: mở màn cài đặt báo thức chính xác. Nền tảng khác: không làm gì.
+  Future<void> openExactAlarmSettings();
   Future<void> schedule(List<ScheduledNotification> notifications);
   Future<void> cancel(Iterable<int> notificationIds);
   /// Gọi khi bị đăng xuất (session_revoked) hoặc đổi tài khoản.

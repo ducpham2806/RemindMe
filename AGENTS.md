@@ -10,7 +10,7 @@ từ vé máy bay/tàu/xe/khách sạn/lịch khám; nhắc lặp lại (kể c�
 Thị trường: **global từ launch**, ngôn ngữ cấp A là `en` + `vi`, các locale khác theo cấp B/C (`docs/architecture/i18n-l10n.md`).
 
 ## Trạng thái
-Giai đoạn: **Phase 0 → S1/S2** (docs; Supabase migrations + pgTAP; core/platform/data/parsers; app offline: Hôm nay, chi tiết, Quick Add có NLU en/vi). Xem `docs/STATE.md`.
+Giai đoạn: **Phase 0 → S1-S3** (Supabase migrations + pgTAP; core/platform/data/parsers; app offline: Hôm nay, chi tiết, Quick Add NLU en/vi, nhắc local). Xem `docs/STATE.md`.
 
 ## Stack đã chốt (lý do: `docs/architecture/decisions.md`)
 - Mobile: Flutter 3 (Dart), Riverpod, go_router, Drift (SQLite), offline-first
@@ -31,7 +31,7 @@ apps/watch-ios/*    watchOS app        apps/wear-android/*  Wear OS app
 services/worker/*   TS worker: entitlement, hộp thư email, push, OAuth, webhooks (không phân tích nội dung, không nằm trên đường ghi)
 supabase/           migrations/ (schema, RLS, sync_push/pull, quota, seed gói), tests/database/ (pgTAP), tests/shim/
 packages/core/      Dart thuần: HLC, id, thiết bị, entitlement, giao thức sync, CivilDate, recurrence (RRULE + âm lịch)
-packages/data/      Drift (mirror bảng server), outbox, SyncEngine; test với server giả + contract test Postgres
+packages/data/      Drift (mirror bảng server), outbox, SyncEngine, reminders/ (rolling window); test server giả + contract Postgres
 packages/platform/  interface + PlatformCapabilities; adapter theo nền tảng nằm trong apps/*/lib/platform/
 packages/parsers/   Dart thuần: NLU luật + gói en/vi (nlu/packs/), bộ câu eval; decoder, mẫu tài liệu* ; fixtures/
 docs/               tài liệu (bản đồ: docs/INDEX.md)

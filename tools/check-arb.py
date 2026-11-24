@@ -7,7 +7,9 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DIR = ROOT / "apps/client/lib/l10n"
 TEMPLATE = DIR / "app_en.arb"
 REQUIRED_FULL = {"en", "vi", "en_XA"}   # cấp A + pseudo; locale cấp B được phép thiếu tạm (fallback en)
-ARG = re.compile(r"\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*[,}]")
+# Placeholder: `{name}` hoặc `{name, plural|select, ...}`. Không tính nhánh ICU `=1{Tomorrow}` / `other{Done}`
+# (ngoặc đứng ngay sau bộ chọn `=N` hoặc từ khóa nhánh).
+ARG = re.compile(r"(?<![=\w])(?<!=\d)(?<!=\d\d)\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*[,}]")
 
 def placeholders(msg: str) -> set:
     return set(ARG.findall(msg))
