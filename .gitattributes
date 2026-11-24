@@ -4,3 +4,5 @@
 *.pdf binary
 *.pkpass binary
 *.xlsx binary
+# Mẫu tài liệu giữ nguyên từng byte (CRLF của .ics/.eml theo RFC, hash file dùng để dedupe).
+packages/parsers/fixtures/docs/** -text
