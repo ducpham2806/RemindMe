@@ -99,7 +99,7 @@ create table recurrences (
   user_id uuid not null references profiles on delete cascade,
   kind text not null check (kind in ('rrule','calendar','after_completion')),
   rrule text,                                 -- kind=rrule: 'FREQ=WEEKLY;BYDAY=MO,WE,FR'
-  calendar jsonb,                             -- kind=calendar: {system:'lunar_vi'|'lunar_zh'|'lunar_ko'|'hijri', month, day, leap:'skip'|'both'|'first'}
+  calendar jsonb,                             -- kind=calendar: {system:'lunar_vi'|'lunar_zh'|'lunar_ko'|'hijri', month?, day, leap?:'skip'|'both'}  -- month null = hằng tháng (rằm)
   interval_days int,                          -- kind=after_completion: lặp N ngày sau lần hoàn thành trước
   workdays_region text,                       -- 'ngày làm việc' theo cuối tuần + ngày lễ của quốc gia này
   dtstart timestamptz not null, until timestamptz, exdates timestamptz[] default '{}',

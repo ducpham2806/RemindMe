@@ -24,18 +24,8 @@ class NluSpan {
   String toString() => '$kind[$start,$end)';
 }
 
-/// Thời điểm: ngày (bắt buộc nếu có thời điểm) + giờ (null = cả ngày).
-class When {
-  const When(this.date, [this.time]);
-  final CivilDate date;
-  final CivilTime? time;
-  @override
-  bool operator ==(Object other) => other is When && other.date == date && other.time == time;
-  @override
-  int get hashCode => Object.hash(date, time);
-  @override
-  String toString() => time == null ? '$date' : '$date $time';
-}
+/// Thời điểm: ngày + giờ (null = cả ngày). Cùng kiểu với recurrence engine ở core.
+typedef When = CivilDateTime;
 
 enum AmbiguityKind {
   /// '03/04' khi không biết vùng: 3/4 hay 4/3.

@@ -7,4 +7,6 @@ export 'src/device.dart';
 export 'src/entitlements.dart';
 export 'src/hlc.dart';
 export 'src/ids.dart';
+export 'src/lunar.dart';
+export 'src/recurrence.dart';
 export 'src/sync_protocol.dart';

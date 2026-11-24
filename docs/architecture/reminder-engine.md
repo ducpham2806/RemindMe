@@ -48,12 +48,13 @@ Plugin: `flutter_local_notifications` + method channel riêng cho `setAlarmClock
 | Nạp lại | `BGAppRefreshTask` + silent push (`content-available: 1`, không đảm bảo, chỉ là lưới an toàn) |
 
 ## 4. Lặp lại (recurrence)
-- Thư viện: Dart `rrule` (pub.dev) trong app; TS `rrule` (npm) trong worker chỉ để xuất ICS/Google Calendar. Fixtures chung `packages/parsers/fixtures/recurrence/`.
+- Thư viện: Dart `rrule` (pub.dev) trong app, bọc trong `packages/core/lib/src/recurrence.dart` (tính trên giờ tường `CivilDateTime`, đổi UTC theo tz ở tầng nhắc); TS `rrule` (npm) trong worker chỉ để xuất ICS/Google Calendar. Fixtures chung `packages/parsers/fixtures/recurrence/` (chưa tạo: làm khi có worker).
 - Mẫu UI: hằng ngày, các ngày trong tuần, mỗi N ngày/tuần/tháng, ngày X hằng tháng, thứ N cuối tháng, hằng năm,
   **ngày làm việc** (cuối tuần + ngày lễ của `workdays_region`, `i18n-l10n.md` §5),
   **sau khi hoàn thành N ngày** (`kind = 'after_completion'`, `interval_days = N`: không phải RRULE).
 - **Hệ lịch khác** (`kind = 'calendar'`, ADR-007): âm lịch VN/TQ/HQ (thuật toán âm dương, tham số UTC+7/+8/+9), Hijri (Phase 2).
-  Tháng nhuận: `leap: 'skip' | 'both' | 'first'`. Lịch hiển thị ngày phụ dưới ngày dương khi người dùng bật hệ lịch đó.
+  Code: `packages/core/lib/src/lunar.dart` (thuật toán Hồ Ngọc Đức). Tháng nhuận: `leap: 'skip'` (mặc định, không kêu trong tháng nhuận) | `'both'` (kêu cả tháng thường và tháng nhuận).
+  Ngày 30 ở tháng thiếu (29 ngày) kêu ngày 29. Lịch hiển thị ngày phụ dưới ngày dương khi người dùng bật hệ lịch đó.
 - Ngoại lệ: `exdates` cho "bỏ qua lần này"; sửa "chỉ lần này" thì tạo item con với `source_ref = <series_id>:<occurrence>`.
 - Hoàn thành 1 lần của chuỗi: ghi `occurrence_log` (không đóng cả chuỗi).
 

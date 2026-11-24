@@ -102,3 +102,24 @@ class CivilTime implements Comparable<CivilTime> {
   @override
   String toString() => '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
 }
+
+/// Ngày + giờ tường (giờ null = cả ngày). Đổi sang UTC cần `tz` IANA, ở tầng app.
+class CivilDateTime implements Comparable<CivilDateTime> {
+  const CivilDateTime(this.date, [this.time]);
+  final CivilDate date;
+  final CivilTime? time;
+
+  @override
+  int compareTo(CivilDateTime other) {
+    final c = date.compareTo(other.date);
+    if (c != 0) return c;
+    return (time?.minutesOfDay ?? -1) - (other.time?.minutesOfDay ?? -1);
+  }
+
+  @override
+  bool operator ==(Object other) => other is CivilDateTime && other.date == date && other.time == time;
+  @override
+  int get hashCode => Object.hash(date, time);
+  @override
+  String toString() => time == null ? '$date' : '$date $time';
+}
