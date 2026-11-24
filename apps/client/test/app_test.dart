@@ -1,20 +1,11 @@
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_client/app.dart';
 import 'package:remindme_client/core/l10n/locale_resolution.dart';
 import 'package:remindme_client/core/layout/window_size.dart';
 
-Future<void> pumpApp(WidgetTester tester, {required Size size, Locale? locale, double textScale = 1.0}) async {
-  tester.view.physicalSize = size;
-  tester.view.devicePixelRatio = 1.0;
-  tester.platformDispatcher.textScaleFactorTestValue = textScale;
-  addTearDown(tester.view.reset);
-  addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-  await tester.pumpWidget(ProviderScope(child: RemindMeApp(locale: locale)));
-  await tester.pumpAndSettle();
-}
+import 'helpers.dart';
 
 void main() {
   group('layout thích ứng (multi-platform.md §2)', () {

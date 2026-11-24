@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import 'features/calendar/calendar_screen.dart';
+import 'features/items/item_detail_screen.dart';
 import 'features/me/me_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/trips/trips_screen.dart';
@@ -13,7 +14,11 @@ GoRouter buildRouter() => GoRouter(
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigation) => AdaptiveShell(navigation: navigation),
           branches: [
-            StatefulShellBranch(routes: [GoRoute(path: '/today', builder: (_, _) => const TodayScreen())]),
+            StatefulShellBranch(routes: [
+              GoRoute(path: '/today', builder: (_, _) => const TodayScreen(), routes: [
+                GoRoute(path: 'item/:id', builder: (_, state) => ItemDetailScreen(id: state.pathParameters['id']!)),
+              ]),
+            ]),
             StatefulShellBranch(routes: [GoRoute(path: '/calendar', builder: (_, _) => const CalendarScreen())]),
             StatefulShellBranch(routes: [GoRoute(path: '/trips', builder: (_, _) => const TripsScreen())]),
             StatefulShellBranch(routes: [GoRoute(path: '/me', builder: (_, _) => const MeScreen())]),

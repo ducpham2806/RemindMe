@@ -161,7 +161,7 @@ enum SyncErrorCode {
 }
 
 class SyncException implements Exception {
-  SyncException(this.code, [this.message]);
+  const SyncException(this.code, [this.message]);
   final SyncErrorCode code;
   final String? message;
   @override

@@ -24,7 +24,7 @@ Paywall và store listing đọc remote config `desktop_client_available` (mặc
 4. **Layout thích ứng** theo window size class của Material 3: compact < 600 dp, medium 600-839, expanded ≥ 840. Medium/expanded dùng master-detail
    (danh sách + chi tiết), lịch tuần rộng. Mọi màn chạy được với chuột, bàn phím (Tab, Enter, Esc, phím tắt), hover, menu chuột phải, cửa sổ đổi kích thước.
    Golden test chạy ở 3 kích thước.
-5. **Định danh thiết bị**: `device_id` sinh 1 lần mỗi lần cài, lưu secure storage; app báo `platform` + `device_class` cho `session_claim` (ADR-013).
+5. **Định danh thiết bị**: `device_id` (UUIDv7) sinh 1 lần mỗi lần cài, lưu trong DB local (`sync_state`, `InstallInfo.deviceId`), không lưu Keychain vì Keychain còn lại sau khi gỡ app; app báo `platform` + `device_class` cho `session_claim` (ADR-013).
 6. **Thêm plugin**: kiểm cột nền tảng trên pub.dev và ghi vào bảng §3 trong cùng PR. Plugin chỉ có mobile thì phải nằm sau interface ở mục 2.
 
 ## 3. Ma trận năng lực theo nền tảng

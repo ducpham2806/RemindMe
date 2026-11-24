@@ -9,6 +9,8 @@ environment:
 
 dependencies:
   cupertino_ui: ^1.1.7
+  drift: ^2.35.4
+  drift_flutter: ^0.3.1
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -18,6 +20,7 @@ dependencies:
   intl: ^0.20.3
   material_ui: ^1.1.0
   remindme_core: any
+  remindme_data: any
   remindme_platform: any
 
 dev_dependencies:

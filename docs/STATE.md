@@ -10,7 +10,9 @@
 - Workspace Dart/Flutter 3.50.1 (`pubspec.yaml` gốc): `packages/core` (HLC khớp server, UUIDv7, id Inbox, loại thiết bị, entitlement, giao thức sync),
   `packages/platform` (interface + `PlatformCapabilities`), `packages/data` (Drift mirror bảng server, outbox, `SyncEngine` merge HLC; contract test với RPC Postgres thật),
   `apps/client` (theme token, go_router + shell thích ứng 3 cỡ, ARB en/vi + pseudo `en_XA`, Ctrl/Cmd+N Quick Add). CI thêm job `flutter` + contract test.
-- Chưa có: worker, `packages/parsers` (code), auth/flavors, nối DB + sync vào UI.
+- App chạy offline với DB thật (`drift_flutter`): Hôm nay (Quá hạn/Hôm nay/Chưa đặt giờ/Đã xong, vuốt = Xong + Hoàn tác), chi tiết item
+  (tên, ghi chú có `base_clock`, ưu tiên, xóa), Quick Add lưu việc. `ItemsRepository` + `InstallInfo.deviceId` trong `packages/data`. `OfflineSyncApi` giữ outbox tới khi có server.
+- Chưa có: worker, `packages/parsers` (code), auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
@@ -20,7 +22,7 @@
 4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
 5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
 6. Sprint S1 phần còn lại: tạo project Supabase/Firebase (cần tài khoản chủ dự án) → flavors dev/staging/prod, auth (ẩn danh + Google + Apple + email OTP),
-   `SupabaseSyncApi` (bản thật của `SyncApi`) + luồng `profile_init` → `session_claim` → sync; nối Drift (`drift_flutter`) vào app; bundle font Be Vietnam Pro; golden test.
+   `SupabaseSyncApi` (bản thật của `SyncApi`, thay `OfflineSyncApi`) + luồng `profile_init` → `session_claim` → sync; bundle font Be Vietnam Pro; golden test.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
 - Tên thương mại/domain (docs dùng giả định `RemindMe`, `remindme.app`, bundle `app.remindme`).

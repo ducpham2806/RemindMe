@@ -72,12 +72,14 @@ class SyncEngine {
       await db.customUpdate(
         'UPDATE ${codec.name} SET deleted_at = ? WHERE ${keys.first} = ? AND deleted_at IS NULL',
         variables: [Variable.withInt(nowMs), Variable.withString(id)],
+        updates: {codec.table},
       );
       if (table == SyncTable.items) {
         for (final child in [SyncTable.reminders, SyncTable.recurrences, SyncTable.bookingDetails, SyncTable.occurrenceLog]) {
           await db.customUpdate(
             'UPDATE ${child.wire} SET deleted_at = ? WHERE item_id = ? AND deleted_at IS NULL',
             variables: [Variable.withInt(nowMs), Variable.withString(id)],
+            updates: {_codecs[child]!.table},
           );
         }
       }
@@ -214,12 +216,14 @@ class SyncEngine {
       await db.customInsert(
         'INSERT INTO ${codec.name} (${cols.join(', ')}) VALUES (${List.filled(cols.length, '?').join(', ')})',
         variables: [for (final c in cols) _variable(out[c])],
+        updates: {codec.table},
       );
     } else {
       final cols = out.keys.where((c) => !keys.contains(c)).toList();
       await db.customUpdate(
         'UPDATE ${codec.name} SET ${cols.map((c) => '$c = ?').join(', ')} WHERE $where',
         variables: [for (final c in cols) _variable(out[c]), ...keyVars],
+        updates: {codec.table},
       );
     }
   }
@@ -238,6 +242,7 @@ class SyncEngine {
 
   Future<void> _bumpAttempts(List<OutboxEntry> batch) => db.customUpdate(
         'UPDATE outbox SET attempts = attempts + 1 WHERE seq IN (${batch.map((e) => e.seq).join(',')})',
+        updates: {db.outbox},
       );
 
   Future<String?> _getState(String key) async =>
