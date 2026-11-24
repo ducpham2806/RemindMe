@@ -56,6 +56,20 @@ final notificationHealthProvider = FutureProvider<NotificationHealth>((ref) => r
 /// Có ít nhất 1 nhắc (chỉ khi đó mới hiện thẻ "Nhắc nhở có thể không kêu").
 final hasRemindersProvider = StreamProvider<bool>((ref) => ref.watch(itemsRepositoryProvider).watchHasReminders());
 
+final recurrenceProvider =
+    StreamProvider.family<Map<String, Object?>?, String>((ref, itemId) => ref.watch(itemsRepositoryProvider).watchRecurrence(itemId));
+
+final listsRepositoryProvider =
+    Provider<ListsRepository>((ref) => ListsRepository(ref.watch(syncEngineProvider), now: ref.watch(nowProvider)));
+
+final listsProvider = StreamProvider<List<ListSummary>>((ref) => ref.watch(listsRepositoryProvider).watchLists());
+
+/// Việc của 1 list; khóa 'inbox' = Inbox ảo (việc chưa thuộc list nào).
+final listItemsProvider = StreamProvider.family<List<ItemView>, String>(
+    (ref, id) => ref.watch(listsRepositoryProvider).watchItems(id == inboxRouteId ? null : id));
+
+const inboxRouteId = 'inbox';
+
 final remindersProvider = StreamProvider.family<List<Reminder>, String>((ref, itemId) => ref.watch(itemsRepositoryProvider).watchReminders(itemId));
 
 /// Giờ hiện tại; test override để cố định ngày.

@@ -18,6 +18,9 @@
   fixed/floating, âm lịch; diff với `scheduled_notifications`; adapter `flutter_local_notifications` (exact alarm nếu được cấp, `alarmClock` cho nhắc kiểu báo thức,
   nút Xong/Hoãn 10'/1h cả khi app tắt); Hôm nay trải từng lần của chuỗi lặp; màn chi tiết thêm/bỏ nhắc; Quick Add mặc định nhắc đúng giờ; thẻ "Nhắc nhở có thể không kêu".
   Manifest Android (quyền + receiver), desugaring, AppDelegate iOS; min iOS 17 / Android API 26 theo ADR-011. CI thêm `android-build` (+ `ios-build` chạy tay).
+- S2 còn lại đã xong: Tôi → Danh sách (Hộp thư + list người dùng, tạo/đổi tên/xóa, việc về Hộp thư), chọn list ở chi tiết, Quick Add `#tag` khớp tên list,
+  tìm kiếm không dấu (`foldForSearch`). S4 phần UI: sửa ngày/giờ ở chi tiết, chọn lặp (hằng ngày, ngày thường, hằng tuần, hằng tháng, hằng năm, âm lịch theo ngôn ngữ).
+  Chi tiết item và tìm kiếm là route gốc `/item/:id`, `/search`. CI `android-build` pass (compileSdk 37).
 - Chưa có: worker, decoder/mẫu tài liệu, auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
@@ -47,6 +50,7 @@
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).
 - Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
+- Hệ âm lịch trong lựa chọn lặp đang suy theo ngôn ngữ giao diện (vi/zh/ko); chuyển sang cài đặt `profiles.calendar_systems` khi có màn Cài đặt.
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.
 
 ## Blocker

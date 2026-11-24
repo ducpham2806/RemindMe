@@ -42,6 +42,7 @@ Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Pha
 - [x] (Kéo sớm S2) Nối Drift vào app: `ItemsRepository`, Hôm nay (Quá hạn/Hôm nay/Chưa đặt giờ/Đã xong), chi tiết item (tên, ghi chú, ưu tiên, xóa), Quick Add lưu việc; offline, outbox chờ `SupabaseSyncApi`
 - [x] (Kéo sớm S2/S3) V1 engine NLU + gói `en`, `vi` (bộ câu tổng hợp, chờ bộ thật ≥ 300), recurrence engine + âm lịch VN/TQ/HQ (`packages/core`)
 - [x] (Kéo sớm S3) Reminder engine offline: rolling window, DST/tz, adapter thông báo + nút Xong/Hoãn, Hôm nay trải lần lặp. Còn: thử máy thật, `setAlarmClock` native, BGAppRefresh, onboarding OEM, telemetry
+- [x] (Kéo sớm S2/S4) List + tìm kiếm không dấu; sửa ngày/giờ và chọn lặp (RRULE + âm lịch) ở chi tiết item
 - **Gate:** PRD chốt sau phỏng vấn; prototype pass (≥ 4/5 người hoàn thành tác vụ chính); spike có kết luận engine OCR/STT cho từng nền tảng.
 
 ## Phase 1: MVP (16 tuần = 8 sprint)

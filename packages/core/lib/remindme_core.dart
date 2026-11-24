@@ -10,4 +10,5 @@ export 'src/ids.dart';
 export 'src/lunar.dart';
 export 'src/recurrence.dart';
 export 'src/sync_protocol.dart';
+export 'src/text.dart';
 export 'src/tz.dart';

@@ -150,6 +150,35 @@ void main() {
       expect(ram, isNotEmpty);
     });
 
+    test('đổi thời điểm: có giờ ↔ cả ngày ↔ bỏ ngày; đặt và bỏ lặp', () async {
+      final id = await repo.create(title: 'Gym');
+      await repo.setSchedule(id, startsAt: DateTime.utc(2026, 12, 1, 11), tz: 'Asia/Ho_Chi_Minh');
+      var v = (await repo.watchItem(id).first)!;
+      expect((v.startsAt, v.allDay, v.startDate), (DateTime.utc(2026, 12, 1, 11), false, null));
+      await repo.setSchedule(id, startDate: '2026-12-02', tz: 'Asia/Ho_Chi_Minh');
+      v = (await repo.watchItem(id).first)!;
+      expect((v.startsAt, v.allDay, v.startDate), (null, true, '2026-12-02'));
+      await repo.setRecurrence(id, {'kind': 'rrule', 'rrule': 'FREQ=WEEKLY;BYDAY=WE'}, start: DateTime.utc(2026, 12, 1, 17));
+      expect(await repo.isRecurring(id), isTrue);
+      await repo.setRecurrence(id, null);
+      expect(await repo.isRecurring(id), isFalse);
+      await repo.setSchedule(id);
+      v = (await repo.watchItem(id).first)!;
+      expect(v.isScheduled, isFalse);
+      expect(() => repo.setSchedule(id, startsAt: DateTime.utc(2026)), throwsArgumentError);
+    });
+
+    test('tìm kiếm không dấu trên tiêu đề, ghi chú, tag; việc mở trước', () async {
+      final a = await repo.create(title: 'Khám răng ở Đà Lạt', tags: ['sức khỏe']);
+      final b = await repo.create(title: 'Mua vé', notes: 'đi Đà Lạt cuối tuần');
+      await repo.setDone(a, done: true);
+      await repo.create(title: 'Gọi mẹ');
+      expect((await repo.search('da lat')).map((i) => i.id), [b, a]);
+      expect((await repo.search('SUC KHOE')).single.id, a);
+      expect(await repo.search('   '), isEmpty);
+      expect(await repo.search('da lat me'), isEmpty, reason: 'mọi từ phải khớp');
+    });
+
     test('device_id sinh 1 lần cho mỗi DB (mỗi lần cài)', () async {
       final a = await InstallInfo.deviceId(db);
       expect(await InstallInfo.deviceId(db), a);

@@ -29,6 +29,7 @@ String describeRecurrence(BuildContext context, Map<String, Object?> r) {
     case 'WEEKLY':
       final days = (parts['BYDAY'] ?? '').split(',').where(_byday.contains).toList();
       if (days.isEmpty) return l.recurEveryNWeeks(n);
+      if (n == 1 && days.toSet().containsAll(const ['MO', 'TU', 'WE', 'TH', 'FR']) && days.length == 5) return l.recurWeekdays;
       // 7/12/2026 là thứ Hai: cộng chỉ số thứ để lấy tên thứ theo locale.
       final names = [for (final d in days) DateFormat.E(locale).format(DateTime(2026, 12, 7 + _byday.indexOf(d)))];
       return l.recurWeeklyOn(n, names.join(', '));

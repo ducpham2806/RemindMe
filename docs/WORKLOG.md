@@ -12,6 +12,18 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · CI Android, S2 list + tìm kiếm, S4 sửa ngày/giờ + chọn lặp · Claude Code
+- **Làm:**
+  - CI run #20 `android-build` lỗi (chủ dự án gửi ảnh): `flutter_local_notifications` 23 + `androidx.core` 1.19 cần compileSdk ≥ 37 → `compileSdk = 37`; run #21 pass.
+  - `ItemsRepository`: `setSchedule`, `setRecurrence` (chuỗi lặp task/habit chuyển floating), `setList`, `search`, `getItem`, `watchRecurrence`.
+    `ListsRepository`: Hộp thư ảo/thật, đếm việc mở, tạo/đổi tên/xóa (việc về Hộp thư), `matchTag`. `core/text.dart`: `foldForSearch` (bỏ dấu, NFD).
+  - App: `ScheduleEditor` (chip ngày/giờ, bỏ giờ/bỏ ngày, bottom sheet lặp kèm âm lịch), màn Danh sách + chi tiết list, chọn list ở chi tiết, Quick Add `#tag` → list,
+    màn Tìm kiếm (nút trên Hôm nay); route `/item/:id`, `/search` ở gốc; 20 key ARB.
+- **Lỗi bắt được nhờ test:** dialog đặt tên list dispose controller khi dialog còn đang đóng → crash (sửa: dialog StatefulWidget).
+  Test: đọc DB bằng `runAsync` kẹt khóa với lập lịch nhắc trong fake-async; `db.close()` lúc teardown chờ câu lệnh của zone giả (ghi chú ở testing-and-release §2).
+- **Kiểm chứng:** `flutter analyze` 0; core 40, platform 2, data 37 (+5 contract), parsers 17, client 40 test; lint/ARB/pseudo/platform 0 lỗi.
+- **Tiếp theo:** S4 còn: ngày lễ/cuối tuần theo quốc gia (L3), STT (V2, cần máy thật); S5 E1 decoder (`.ics`, `.pkpass`, email JSON-LD, BCBP, xlsx/csv): Dart thuần, làm được không cần tài khoản.
+
 ## 2026-11-24 · S3 Reminder engine (offline) · Claude Code
 - **Làm:**
   - `core/tz.dart`: giờ tường ↔ UTC qua tzdata (package `timezone`); giờ không tồn tại → giờ hợp lệ kế tiếp, giờ lặp → lần đầu.

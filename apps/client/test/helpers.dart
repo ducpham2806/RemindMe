@@ -39,8 +39,12 @@ Future<ProviderContainer> pumpApp(WidgetTester tester,
   ]);
   addTearDown(() async {
     await tester.pumpWidget(const SizedBox());
+    // Lập lịch nhắc có thể còn dở (transaction trong zone fake-async): cho chạy xong, nếu không db.close() chờ mãi.
+    await tester.pump(const Duration(seconds: 1));
     container.dispose();
-    await db.close();
+    // Câu lệnh bắt đầu trong zone fake-async có thể không bao giờ xong sau khi test dừng đồng hồ giả;
+    // DB in-memory bỏ đi nên đóng có giới hạn thời gian (app thật không có zone giả).
+    await tester.runAsync(() => db.close().timeout(const Duration(seconds: 2), onTimeout: () {}));
   });
   if (seed != null) await tester.runAsync(() => seed(container.read(itemsRepositoryProvider)));
   await tester.pumpWidget(UncontrolledProviderScope(container: container, child: RemindMeApp(locale: locale)));
@@ -48,7 +52,7 @@ Future<ProviderContainer> pumpApp(WidgetTester tester,
   return container;
 }
 
-/// Chờ ReminderBinding lập lịch (debounce 300 ms).
+/// Chờ ReminderBinding lập lịch (debounce 300 ms). Gọi trước mọi `tester.runAsync` đọc DB để tránh kẹt khóa transaction.
 Future<void> settleReminders(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 400));
   await tester.pumpAndSettle();

@@ -507,5 +507,91 @@
   "remindersAllow": "Allow",
   "@remindersAllow": {
     "description": "Button on the permission warning card; opens the system prompt or settings."
+  },
+  "itemAddDate": "Add date",
+  "@itemAddDate": {
+    "description": "Chip on item detail when the item has no date; opens a date picker."
+  },
+  "itemAddTime": "Add time",
+  "@itemAddTime": {
+    "description": "Chip on item detail when the item has a date but no time; opens a time picker."
+  },
+  "itemRemoveTime": "Remove time",
+  "@itemRemoveTime": {
+    "description": "Tooltip: turn a timed item into an all-day item."
+  },
+  "itemRemoveDate": "Remove date",
+  "@itemRemoveDate": {
+    "description": "Tooltip: clear the date (item moves to “No time set”)."
+  },
+  "itemRepeatLabel": "Repeat",
+  "@itemRepeatLabel": {
+    "description": "Label of the repeat row on item detail."
+  },
+  "recurNone": "Doesn’t repeat",
+  "@recurNone": {
+    "description": "Repeat option: no recurrence."
+  },
+  "recurWeekdays": "Every weekday",
+  "@recurWeekdays": {
+    "description": "Repeat option: Monday to Friday."
+  },
+  "recurNeedsDate": "Set a date to repeat",
+  "@recurNeedsDate": {
+    "description": "Shown in place of repeat options when the item has no date."
+  },
+  "listsInbox": "Inbox",
+  "@listsInbox": {
+    "description": "Default list (glossary core_inbox). Owner may rename it, see STATE open questions."
+  },
+  "listsNew": "New list",
+  "@listsNew": {
+    "description": "Button/dialog title for creating a list."
+  },
+  "listsNameHint": "List name",
+  "@listsNameHint": {
+    "description": "Hint of the list name field."
+  },
+  "listsRename": "Rename",
+  "@listsRename": {
+    "description": "Menu action: rename a list."
+  },
+  "listsDelete": "Delete list",
+  "@listsDelete": {
+    "description": "Menu action and confirmation title: delete a list."
+  },
+  "listsDeleteBody": "Items in this list move to Inbox.",
+  "@listsDeleteBody": {
+    "description": "Delete-list confirmation body: nothing is lost."
+  },
+  "listsOpenCount": "{count, plural, =0{No open items} =1{1 open item} other{{count} open items}}",
+  "@listsOpenCount": {
+    "description": "Subtitle under each list.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "listsEmptyItems": "No open items in this list",
+  "@listsEmptyItems": {
+    "description": "Empty state of a list."
+  },
+  "itemListLabel": "List",
+  "@itemListLabel": {
+    "description": "Label of the list row on item detail."
+  },
+  "searchTooltip": "Search",
+  "@searchTooltip": {
+    "description": "Tooltip of the search button (glossary nav_search)."
+  },
+  "searchHint": "Search tasks and notes",
+  "@searchHint": {
+    "description": "Hint in the search field."
+  },
+  "searchNoResults": "No matching items",
+  "@searchNoResults": {
+    "description": "Shown when a search finds nothing."
   }
 }

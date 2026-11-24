@@ -71,7 +71,7 @@ class ItemTile extends ConsumerWidget {
           ? null
           : Text(when, style: overdue ? TextStyle(color: theme.colorScheme.error) : null),
       trailing: _trailing(context, ref),
-      onTap: () => context.push('/today/item/${item.id}'),
+      onTap: () => context.push('/item/${item.id}'),
     );
     if (item.isDone) return tile;
     return Dismissible(

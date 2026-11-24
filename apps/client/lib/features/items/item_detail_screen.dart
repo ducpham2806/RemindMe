@@ -3,12 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_data/remindme_data.dart';
 
-import '../../core/l10n/formatters.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../data/reminders.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
+import 'schedule_editor.dart';
 
 /// Chi tiết item (UX §2.3), phần S2: tiêu đề, ghi chú, ưu tiên, xong/chưa xong, xóa.
 /// Thời gian, lặp, nhắc, list, tag, checklist thêm ở S3+ (cần engine nhắc và recurrence).
@@ -118,7 +118,6 @@ class _EditorState extends ConsumerState<_Editor> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final item = widget.item;
-    final when = Fmt.of(context).when(item, today: ref.watch(todayWindowProvider));
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -143,11 +142,10 @@ class _EditorState extends ConsumerState<_Editor> {
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _saveTitle(),
           ),
-          if (when != null) ...[
-            const SizedBox(height: Tokens.space3),
-            ListTile(contentPadding: EdgeInsetsDirectional.zero, leading: const Icon(Icons.schedule), title: Text(when)),
-          ],
-          const SizedBox(height: Tokens.space4),
+          const SizedBox(height: Tokens.space3),
+          ScheduleEditor(item: item),
+          _ListRow(item: item),
+          const SizedBox(height: Tokens.space2),
           _RemindersSection(item: item),
           const SizedBox(height: Tokens.space4),
           Text(l.itemPriorityLabel, style: Theme.of(context).textTheme.labelLarge),
@@ -226,6 +224,47 @@ class _RemindersSection extends ConsumerWidget {
             ],
           ),
       ],
+    );
+  }
+}
+
+/// List của item; chạm để chuyển list.
+class _ListRow extends ConsumerWidget {
+  const _ListRow({required this.item});
+  final ItemView item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final lists = ref.watch(listsProvider).value ?? const <ListSummary>[];
+    final current = lists.where((s) => item.listId == null ? s.isInbox : s.id == item.listId).firstOrNull;
+    String name(ListSummary s) => s.isInbox ? l.listsInbox : s.name!;
+    return ListTile(
+      key: const Key('itemList'),
+      contentPadding: EdgeInsetsDirectional.zero,
+      leading: const Icon(Icons.list_alt_outlined),
+      title: Text(l.itemListLabel),
+      subtitle: Text(current == null ? l.listsInbox : name(current)),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (context) => SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              for (final s in lists)
+                ListTile(
+                  leading: Icon(s == current ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                  title: Text(name(s)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref.read(itemsRepositoryProvider).setList(item.id, s.id);
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

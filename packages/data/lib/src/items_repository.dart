@@ -241,6 +241,17 @@ class ItemsRepository {
   Future<bool> isRecurring(String itemId) async =>
       await (_db.select(_db.recurrences)..where((t) => t.itemId.equals(itemId) & t.deletedAt.isNull())).getSingleOrNull() != null;
 
+  /// Quy tắc lặp của item (dạng hàng `recurrences`) hoặc null; cập nhật khi đổi.
+  Stream<Map<String, Object?>?> watchRecurrence(String itemId) =>
+      (_db.select(_db.recurrences)..where((t) => t.itemId.equals(itemId) & t.deletedAt.isNull())).watchSingleOrNull().map((r) => r == null
+          ? null
+          : {
+              'kind': r.kind,
+              'rrule': r.rrule,
+              'calendar': r.calendar == null ? null : jsonDecode(r.calendar!),
+              'interval_days': r.intervalDays,
+            });
+
   Future<Map<String, Object?>?> recurrenceOf(String itemId) async {
     final r = await (_db.select(_db.recurrences)..where((t) => t.itemId.equals(itemId) & t.deletedAt.isNull())).getSingleOrNull();
     if (r == null) return null;
@@ -250,6 +261,29 @@ class ItemsRepository {
       'calendar': r.calendar == null ? null : jsonDecode(r.calendar!),
       'interval_days': r.intervalDays,
     };
+  }
+
+  /// Tìm theo tiêu đề, ghi chú, tag; không phân biệt hoa thường/dấu (`foldForSearch`). Việc đang mở trước, rồi mới nhất trước.
+  /// Lọc trong Dart vì `lower()` của SQLite không hiểu Unicode; đủ nhanh tới vài chục nghìn mục.
+  Future<List<ItemView>> search(String query, {int limit = 100}) async {
+    final terms = foldForSearch(query).split(' ').where((t) => t.isNotEmpty).toList();
+    if (terms.isEmpty) return const [];
+    final rows = await (_db.select(_db.items)..where((t) => t.deletedAt.isNull() & t.status.isNotIn(const ['archived']))).get();
+    final hits = <ItemView>[];
+    for (final r in rows) {
+      final hay = foldForSearch('${r.title ?? ''} ${r.notes ?? ''} ${r.tags ?? ''}');
+      if (terms.every(hay.contains)) hits.add(ItemView.fromRow(r));
+    }
+    hits.sort((a, b) {
+      if (a.isDone != b.isDone) return a.isDone ? 1 : -1;
+      return b.id.compareTo(a.id);
+    });
+    return hits.take(limit).toList();
+  }
+
+  Future<ItemView?> getItem(String id) async {
+    final r = await (_db.select(_db.items)..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+    return r == null ? null : ItemView.fromRow(r);
   }
 
   Stream<ItemView?> watchItem(String id) {
@@ -324,6 +358,41 @@ class ItemsRepository {
         {'notes': (notes == null || notes.trim().isEmpty) ? null : notes},
         baseClock: baseClock == null ? null : {'notes': baseClock},
       );
+
+  /// Đặt thời điểm: [startsAt] (UTC) + [tz] cho việc có giờ, hoặc [startDate] cho việc cả ngày; cả hai null = bỏ ngày.
+  Future<void> setSchedule(String id, {DateTime? startsAt, String? tz, String? startDate}) {
+    if (startsAt != null && tz == null) throw ArgumentError('startsAt cần tz IANA đi kèm');
+    if (startsAt != null && startDate != null) throw ArgumentError('chọn startsAt hoặc startDate');
+    return engine.edit(SyncTable.items, id, {
+      'starts_at': startsAt?.toUtc().toIso8601String(),
+      'start_date': startDate,
+      'all_day': startDate != null,
+      'tz': startsAt != null ? tz : (startDate != null ? tz : null),
+    });
+  }
+
+  /// Đặt quy tắc lặp ([rule] dạng hàng `recurrences`: kind + rrule/calendar) hoặc bỏ lặp (null).
+  Future<void> setRecurrence(String itemId, Map<String, Object?>? rule, {DateTime? start}) async {
+    if (rule == null) {
+      if (await isRecurring(itemId)) await engine.delete(SyncTable.recurrences, itemId);
+      return;
+    }
+    if (start == null) throw ArgumentError('lặp cần start (dtstart)');
+    await engine.edit(SyncTable.recurrences, itemId, {
+      'kind': rule['kind'],
+      'rrule': rule['rrule'],
+      'calendar': rule['calendar'],
+      'dtstart': start.toUtc().toIso8601String(),
+    });
+    // Việc lặp kêu theo giờ nơi đang đứng (reminder-engine.md §5).
+    final item = await (_db.select(_db.items)..where((t) => t.id.equals(itemId))).getSingleOrNull();
+    if (item != null && (item.kind == 'task' || item.kind == 'habit') && item.timeMode != 'floating') {
+      await engine.edit(SyncTable.items, itemId, {'time_mode': 'floating'});
+    }
+  }
+
+  /// Chuyển item sang list [listId] (null = Inbox).
+  Future<void> setList(String id, String? listId) => engine.edit(SyncTable.items, id, {'list_id': listId});
 
   Future<void> setPriority(String id, int priority) {
     if (priority < 0 || priority > 3) throw RangeError.range(priority, 0, 3, 'priority');

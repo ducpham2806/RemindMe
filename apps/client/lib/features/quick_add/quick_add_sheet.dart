@@ -92,7 +92,14 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
       final local = when == null
           ? null
           : DateTime(when.date.year, when.date.month, when.date.day, when.time?.hour ?? 0, when.time?.minute ?? 0);
+      // "#congviec" khớp list "Công việc" thì việc vào list đó (UX §2.2); tag vẫn giữ.
+      String? listId;
+      for (final t in d.result.tags) {
+        listId = await ref.read(listsRepositoryProvider).matchTag(t);
+        if (listId != null) break;
+      }
       await repo.create(
+        listId: listId,
         title: d.title,
         startsAt: when?.time == null ? null : local!.toUtc(),
         startDate: when != null && when.time == null ? when.date.toIso() : null,

@@ -30,6 +30,10 @@ Device farm (Firebase Test Lab / BrowserStack / AWS Device Farm) cho integration
 | Bản địa hóa | CI kiểm ARB (thiếu key, ICU, placeholder, độ dài); pseudo-locale; LQA trên ảnh chụp | `i18n-l10n.md` §8-9 | Mỗi PR + trước bật locale |
 | Bảo mật | gitleaks, dependency scan, threat model review, pen-test bên ngoài | `security-privacy.md` §2 | Mỗi PR / trước production |
 
+**Widget test với DB thật (Drift in-memory, `apps/client/test/helpers.dart`):** app chạy trong fake-async, `ReminderBinding` lập lịch sau 300 ms.
+Đọc DB bằng `tester.runAsync` trong lúc đó sẽ kẹt khóa transaction: kiểm qua giao diện, hoặc `settleReminders(tester)` trước khi đọc.
+Dialog có `TextEditingController` phải là StatefulWidget tự dispose (TextField còn được vẽ trong animation đóng). Test tiếng Việt: bấm `Icons.arrow_back`, không dùng `pageBack()` (tìm theo tooltip tiếng Anh).
+
 **Kịch bản accessibility (pass = hoàn thành không cần nhìn màn hình):** tạo nhắc bằng VoiceOver/TalkBack; đánh dấu xong từ thông báo;
 mở mã đặt chỗ từ thông báo; đổi ngôn ngữ app. Tiêu chí: mọi control có label, thứ tự đọc đúng, vùng chạm ≥ 48dp, tương phản AA.
 

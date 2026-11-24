@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_data/remindme_data.dart';
 
@@ -20,6 +21,14 @@ class TodayScreen extends ConsumerWidget {
     final sections = ref.watch(todaySectionsProvider);
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+            key: const Key('openSearch'),
+            tooltip: l.searchTooltip,
+            icon: const Icon(Icons.search),
+            onPressed: () => context.push('/search'),
+          ),
+        ],
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
