@@ -192,3 +192,15 @@ Paywall đọc remote config `desktop_client_available` để bỏ chữ "sắp 
 **Hệ quả.** S1 tốn thêm ~2-3 ngày dựng cấu trúc package và layout thích ứng; đổi lại Phase 4 desktop ước ~5 tuần thay vì làm app mới.
 Windows không có SDK RevenueCat nên không bán trong app Windows (mua trên điện thoại/web, quyền theo tài khoản). Windows không có FCM:
 dùng Realtime khi app mở. Có thể cho app iPad chạy trên Mac Apple Silicon từ Phase 2 như bước đệm.
+
+## ADR-015: Decoder T0 cho MIME, csv/xlsx, Markdown tự viết, không dùng `enough_mail`/`excel`/`csv`/`markdown`
+**Bối cảnh.** `on-device-extraction.md` §13 dự kiến 4 package này. Decoder chạy trong isolate, phải Dart thuần (chạy cả desktop/web, ADR-014)
+và mỗi package kéo thêm phụ thuộc bắc cầu (`enough_mail` kèm crypto, event bus, `intl`) trong khi app chỉ cần đọc, không gửi email hay ghi file.
+
+**Quyết định.** Tự viết phần đọc trong `packages/parsers/lib/src/decoders/`: MIME (multipart lồng, base64, quoted-printable, RFC 2047/2231,
+UTF-8/Latin-1/windows-1252), csv (RFC 4180, đoán dấu phân cách và mã hóa), xlsx (`archive` + `xml`, đã có trong lockfile), Markdown theo dòng
+(checkbox, heading, Obsidian Tasks). Từ điển cột bảng nằm trong gói ngôn ngữ (`table:` của `nlu/packs/<lang>.yaml`).
+
+**Hệ quả.** Không thêm phụ thuộc mới ngoài `xml`; phần đọc nằm trong tầm kiểm soát và có test riêng. Phải tự lo trường hợp hiếm:
+charset cũ khác (windows-1258, Shift_JIS, GB2312) đang rơi về UTF-8 rồi windows-1252, công thức xlsx chỉ lấy giá trị đã lưu, Markdown không dựng cây CommonMark đầy đủ.
+Nếu mẫu thật cho thấy lỗi nhiều ở các chỗ này thì xét lại từng package riêng.

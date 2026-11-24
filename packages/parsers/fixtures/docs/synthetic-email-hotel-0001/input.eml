@@ -1,0 +1,74 @@
+Content-Type: multipart/mixed; boundary="=_mixed_hotel_0001"
+MIME-Version: 1.0
+From: =?utf-8?q?Bi=E1=BB=83n_Xanh_Booking?= <no-reply@example.com>
+To: guest@example.org
+Subject: =?utf-8?b?WMOhYyBuaOG6rW4gxJHhurd0IHBow7JuZyBIQi00ODIxMw==?=
+Date: Mon, 23 Nov 2026 09:15:00 +0700
+
+--=_mixed_hotel_0001
+Content-Type: multipart/alternative;
+ boundary="=_alt_hotel_0001"
+MIME-Version: 1.0
+
+--=_alt_hotel_0001
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+
+C=E1=BA=A3m =C6=A1n qu=C3=BD kh=C3=A1ch =C4=91=C3=A3 =C4=91=E1=BA=B7t ph=C3=
+=B2ng t=E1=BA=A1i Kh=C3=A1ch s=E1=BA=A1n Bi=E1=BB=83n Xanh =C4=90=C3=A0 N=
+=E1=BA=B5ng.
+M=C3=A3 =C4=91=E1=BA=B7t ph=C3=B2ng: HB-48213
+Nh=E1=BA=ADn ph=C3=B2ng: 21/12/2026 14:00
+Tr=E1=BA=A3 ph=C3=B2ng: 23/12/2026 12:00
+
+--=_alt_hotel_0001
+Content-Type: text/html; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><title>X=C3=A1c nh=E1=BA=ADn</title>
+<script type=3D"application/ld+json">
+{"@context":"https://schema.org","@type":"LodgingReservation","reservationN=
+umber":"HB-48213",
+ "reservationStatus":"https://schema.org/ReservationConfirmed",
+ "underName":{"@type":"Person","name":"Kh=C3=A1ch V=C3=AD D=E1=BB=A5"},
+ "reservationFor":{"@type":"LodgingBusiness","name":"Kh=C3=A1ch s=E1=BA=A1n=
+ Bi=E1=BB=83n Xanh =C4=90=C3=A0 N=E1=BA=B5ng",
+  "address":{"@type":"PostalAddress","streetAddress":"12 V=C3=B5 Nguy=C3=AA=
+n Gi=C3=A1p","addressLocality":"=C4=90=C3=A0 N=E1=BA=B5ng","addressCountry"=
+:"VN"}},
+ "checkinTime":"2026-12-21T14:00:00+07:00","checkoutTime":"2026-12-23T12:00=
+:00+07:00",
+ "totalPrice":"2450000","priceCurrency":"VND"}
+</script></head>
+<body><p>C=E1=BA=A3m =C6=A1n qu=C3=BD kh=C3=A1ch =C4=91=C3=A3 =C4=91=E1=BA=
+=B7t ph=C3=B2ng t=E1=BA=A1i <b>Kh=C3=A1ch s=E1=BA=A1n Bi=E1=BB=83n Xanh =C4=
+=90=C3=A0 N=E1=BA=B5ng</b>.</p>
+<table><tr><td>M=C3=A3 =C4=91=E1=BA=B7t ph=C3=B2ng</td><td>HB-48213</td></t=
+r><tr><td>Nh=E1=BA=ADn ph=C3=B2ng</td><td>21/12/2026 14:00</td></tr></table=
+></body></html>
+--=_alt_hotel_0001--
+
+--=_mixed_hotel_0001
+Content-Type: text/calendar; method="PUBLISH"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename*=utf-8''%C4%91%E1%BA%B7t-ph%C3%B2ng.ics
+
+QkVHSU46VkNBTEVOREFSDQpWRVJTSU9OOjIuMA0KUFJPRElEOi0vL0V4YW1wbGUvL0Jvb2tpbmcv
+L0VODQpCRUdJTjpWRVZFTlQNClVJRDpoYi00ODIxM0BleGFtcGxlLmNvbQ0KU1VNTUFSWTpLaMOh
+Y2ggc+G6oW4gQmnhu4NuIFhhbmggxJDDoCBO4bq1bmcNCkRUU1RBUlQ6MjAyNjEyMjFUMDcwMDAw
+Wg0KRFRFTkQ6MjAyNjEyMjNUMDUwMDAwWg0KTE9DQVRJT046MTIgVsO1IE5ndXnDqm4gR2nDoXBc
+LCDEkMOgIE7hurVuZw0KRU5EOlZFVkVOVA0KRU5EOlZDQUxFTkRBUg0K
+
+--=_mixed_hotel_0001
+Content-Type: application/pdf
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="invoice.pdf"
+
+JVBERi0xLjQKJSBzeW50aGV0aWMgcGxhY2Vob2xkZXIKJSVFT0YK
+
+--=_mixed_hotel_0001--

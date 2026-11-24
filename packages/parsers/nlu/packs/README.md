@@ -25,6 +25,9 @@ thêm ngôn ngữ = thêm 1 file gói + bộ câu `fixtures/nlu/<lang>.json`, kh
 | `day_parts` | từ → `{range: [từ, đến], default: 'HH:MM', rel?}` | Khung giờ gồm 2 đầu, `from > to` = qua nửa đêm; `rel: 0` cho từ như "tonight" |
 | `meridiem` | từ → `am` \| `pm` | |
 | `units` | từ → `minute` \| `hour` \| `day` \| `week` \| `fortnight` \| `month` \| `year` | |
+| `table.columns` | trường → danh sách tên cột | Nhập xlsx/csv: `title`, `date`, `time`, `notes`, `priority`, `status`, `location`, `assignee`, `list` (so không dấu) |
+| `table.priority` | từ → 1..3 | Giá trị cột Ưu tiên ("cao" = 3) |
+| `table.done` | danh sách | Giá trị cột Trạng thái nghĩa là đã xong (`x`, `✓`, `TRUE` có sẵn trong code) |
 
 ## Mẫu
 4 phần, chạy theo thứ tự `recurrence` → `times` → `dates` → `parts`; trong mỗi phần, mẫu đầu tiên khớp được giữ (đặt mẫu dài trước).

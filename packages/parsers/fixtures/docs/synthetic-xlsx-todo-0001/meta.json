@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-xlsx-todo-0001",
+  "source_kind": "xlsx",
+  "market": "GB",
+  "doc_language": "en",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "xlsx tạo bằng openpyxl: dòng tiêu đề ở dòng 3, ô ngày kiểu Excel (định dạng tự định nghĩa), ô giờ (mã 18), cột Done? kiểu đúng/sai, cột Owner không được lấy làm tên việc."
+}

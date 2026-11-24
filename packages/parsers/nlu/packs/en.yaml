@@ -167,3 +167,19 @@ dates:
 
 parts:
   - {type: part, re: '(?:{this:this}\s+|in\s+the\s+)?{daypart:part}'}
+
+# Table import xlsx/csv (on-device-extraction.md §6): column name → field, compared case- and accent-insensitively.
+# `assignee` only marks the column (never used as the title); its values are not imported yet.
+table:
+  columns:
+    title: [task, tasks, task name, title, name, item, todo, to do, to-do, action, action item, activity, subject]
+    date: [date, due, due date, due on, deadline, when, day, start date, scheduled, do date]
+    time: [time, start time, at, hour]
+    notes: [notes, note, description, details, comments, comment, remarks]
+    priority: [priority, prio, importance, urgency]
+    status: [status, done, completed, complete, state, progress]
+    location: [location, place, venue, where, address]
+    assignee: [owner, assignee, assigned to, responsible, who]
+    list: [category, list, group, project, type, area]
+  priority: {high: 3, urgent: 3, critical: 3, highest: 3, medium: 2, normal: 2, med: 2, low: 1, lowest: 1}
+  done: [done, completed, complete, finished, closed, yes, y, resolved]

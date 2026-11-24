@@ -1,0 +1,11 @@
+{
+  "doc_type": "todo_list",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    { "kind": "task", "required": { "title": "Renew passport", "due": { "local": "2026-12-04" } }, "optional": { "location_text": "Passport office" } },
+    { "kind": "task", "required": { "title": "Book airport parking", "due": { "local": "2026-12-18T07:45" } } },
+    { "kind": "task", "required": { "title": "Pick up dry cleaning", "due": { "local": "2026-12-19T17:30" } } },
+    { "kind": "task", "required": { "title": "Pack chargers" }, "must_not_fill": ["due"] }
+  ]
+}

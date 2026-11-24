@@ -1,0 +1,22 @@
+{
+  "doc_type": "hotel",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "booking",
+      "booking_type": "hotel",
+      "required": {
+        "title": "Khách sạn Biển Xanh Đà Nẵng",
+        "confirmation_code": "HB-48213",
+        "check_in": { "local": "2026-12-21T14:00" },
+        "check_out": { "local": "2026-12-23T12:00" }
+      },
+      "optional": {
+        "location_text": "12 Võ Nguyên Giáp, Đà Nẵng, VN",
+        "price": { "amount": "2450000", "currency": "VND" }
+      },
+      "must_not_fill": ["seat", "number", "origin"]
+    }
+  ]
+}

@@ -12,6 +12,18 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · S5 E1: email MIME, csv/xlsx → việc, Markdown · Claude Code
+- **Làm:** `packages/parsers`: `MimePart`/`MimeMessage` (multipart lồng, base64, QP, RFC 2047/2231, windows-1252, ngày RFC 5322), `htmlToText`,
+  `EmailDecoder` (JSON-LD trong HTML, `text/calendar`, `.ics`/`.pkpass` đính kèm, `message/rfc822`, `dedupeCandidates`, `pending` cho PDF/ảnh, bỏ logo `Content-ID`);
+  `CsvReader` (RFC 4180, đoán `,`/`;`/tab/`|`, BOM UTF-8/UTF-16), `XlsxReader` (shared/inline string, ô ngày theo định dạng, hệ 1904, đúng/sai);
+  `TableTaskExtractor` + mục `table:` trong `vi.yaml`/`en.yaml`; `MarkdownDecoder` + `obsidianRecurrenceToRrule`. `Candidate` thêm trường cho việc.
+  Fixtures mới: `synthetic-email-hotel-0001`, `synthetic-csv-todo-0001`, `synthetic-xlsx-todo-0001`, `synthetic-md-todo-0001`.
+- **Quyết định:** ADR-015 (tự viết thay `enough_mail`/`excel`/`csv`/`markdown`, chỉ thêm `xml`). Thứ tự ngày của bảng: dữ liệu → vùng → hỏi.
+  Cột người phụ trách chỉ để nhận diện. Lặp "when done" của Obsidian chưa hỗ trợ (giữ lặp theo lịch).
+- **Kiểm chứng:** parsers 48 test; eval 7 mẫu (bỏ qua 1 ảnh): 100% trường bắt buộc, 0 điền sai; `validate-fixtures` 8 mẫu 0 lỗi (boundary MIME số dài
+  bị bắt nhầm là số định danh, đổi tên boundary); 5.000 dòng xlsx 0,57 s / csv 0,05 s (container, JIT); analyze 0.
+- **Tiếp theo:** nối import vào app (file_picker + share intent → màn Xem lại E5 → tạo item/list/checklist); PDF (E1.3) cần `pdfrx`; T2 chờ OCR thật.
+
 ## 2026-11-24 · S5 E1: decoder .ics, BCBP, JSON-LD, .pkpass + harness eval · Claude Code
 - **Làm:** `packages/parsers`: `Candidate`/`CandidateFields`/`LocalTime` theo `expected.schema.json`; 4 decoder T0 (`IcsDecoder`, `BcbpDecoder`, `JsonLdDecoder`,
   `PkpassDecoder` qua `archive`); `scoreDocument` (% trường bắt buộc đúng, điền sai, `must_not_fill`) + `test/extract_eval_test.dart` chạy trên `fixtures/docs/`.

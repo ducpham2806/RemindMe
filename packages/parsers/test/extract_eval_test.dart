@@ -4,6 +4,13 @@ import 'dart:io';
 import 'package:remindme_parsers/remindme_parsers.dart';
 import 'package:test/test.dart';
 
+final packs = [for (final l in ['vi', 'en']) GrammarPack.fromYaml(File('nlu/packs/$l.yaml').readAsStringSync())];
+
+List<Candidate> tableTasks(TableSheet sheet, String source, DateTime reference, String market) {
+  final x = TableTaskExtractor(packs, region: market);
+  return x.extract(sheet, x.detect(sheet), source: source, now: reference);
+}
+
 /// Chạy tầng có sẵn trên từng mẫu trong fixtures/docs (E3.5). Loại input chưa có tầng xử lý (ảnh, PDF, text tự do cần T2) thì bỏ qua.
 List<Candidate>? run(File input, Map<String, Object?> meta) {
   final reference = DateTime.parse(meta['collected_at']! as String);
@@ -11,11 +18,22 @@ List<Candidate>? run(File input, Map<String, Object?> meta) {
   switch (ext) {
     case 'ics':
       return const IcsDecoder().decode(input.readAsStringSync());
-    case 'eml' || 'html':
+    case 'eml':
+      final c = const EmailDecoder().decode(input.readAsBytesSync(), reference: reference).candidates;
+      return c.isEmpty ? null : c;
+    case 'html':
       final c = const JsonLdDecoder().decodeHtml(input.readAsStringSync());
       return c.isEmpty ? null : c;
     case 'pkpass':
       return const PkpassDecoder().decodeZip(input.readAsBytesSync(), reference: reference);
+    case 'csv':
+      return tableTasks(const CsvReader().readBytes(input.readAsBytesSync()), 'csv', reference, meta['market']! as String);
+    case 'xlsx':
+      return tableTasks(const XlsxReader().read(input.readAsBytesSync()).first, 'xlsx', reference, meta['market']! as String);
+    case 'md':
+      final lang = meta['doc_language']! as String;
+      final nlu = NluEngine([...packs.where((p) => p.lang == lang), ...packs.where((p) => p.lang != lang)]);
+      return MarkdownDecoder(nlu: nlu, region: meta['market'] as String?).decode(input.readAsStringSync(), now: reference);
     case 'txt' when meta['source_kind'] == 'boarding_pass_barcode':
       return const BcbpDecoder().decode(input.readAsLinesSync().first.trimRight(), reference: reference);
     default:

@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-md-todo-0001",
+  "source_kind": "md",
+  "market": "VN",
+  "doc_language": "vi",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Ghi chú Obsidian tổng hợp: front-matter tags, heading = list, emoji Obsidian Tasks (📅 ⏳ ✅ 🔁 ⏰ ⏫), dạng Dataview [due:: ], việc con thụt lề, [-] đã hủy, dòng không có ngày máy đọc được thì chạy NLU tiếng Việt."
+}

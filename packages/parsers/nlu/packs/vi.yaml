@@ -135,3 +135,19 @@ dates:
 parts:
   # "ăn sáng", "bữa tối" là bữa ăn, không phải buổi.
   - {type: part, re: '(?:buổi\s*)?(?<!ăn\s)(?<!bữa\s){daypart:part}(?:\s*(?:{this:this}|{relday:rel}))?'}
+
+# Nhập bảng xlsx/csv (on-device-extraction.md §6): tên cột → trường, so không dấu, không phân biệt hoa thường.
+# `assignee` chỉ để nhận ra cột (không lấy làm tên việc); giá trị chưa dùng.
+table:
+  columns:
+    title: [việc, công việc, việc cần làm, nội dung, nội dung công việc, tiêu đề, tên việc, tên công việc, đầu việc, hạng mục, nhiệm vụ]
+    date: [ngày, hạn, hạn chót, hạn hoàn thành, ngày hết hạn, thời hạn, ngày làm, ngày thực hiện, ngày bắt đầu, deadline]
+    time: [giờ, thời gian, lúc, giờ bắt đầu]
+    notes: [ghi chú, mô tả, chi tiết, diễn giải, nhận xét]
+    priority: [ưu tiên, mức ưu tiên, độ ưu tiên, mức độ]
+    status: [trạng thái, tình trạng, tiến độ, hoàn thành, xong]
+    location: [địa điểm, nơi, địa chỉ, chỗ]
+    assignee: [người phụ trách, phụ trách, người làm, người thực hiện, người được giao]
+    list: [nhóm, danh mục, phân loại, loại, dự án, hạng mục lớn]
+  priority: {cao: 3, rất cao: 3, khẩn: 3, khẩn cấp: 3, gấp: 3, quan trọng: 3, trung bình: 2, vừa: 2, bình thường: 2, thấp: 1}
+  done: [xong, đã xong, hoàn thành, đã hoàn thành, rồi, đã làm, có, đóng]

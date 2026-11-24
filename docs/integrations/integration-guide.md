@@ -154,7 +154,7 @@ Hợp với nhắc lịch khám, nhắc người thân. Có chi phí theo tin n�
 ## 13. Danh sách SDK/plugin dự kiến (Flutter)
 `supabase_flutter`, `drift`, `riverpod`, `go_router`, `firebase_messaging`, `flutter_local_notifications`, `timezone`,
 `flutter_timezone`, `rrule`, plugin STT native riêng (cần bias/language switch, `speech_to_text` không đủ), `google_mlkit_barcode_scanning`, `image_picker`, `file_picker`,
-`receive_sharing_intent`, `google_mlkit_text_recognition`, `google_mlkit_document_scanner`, `pdfrx`, `excel`, `csv`, `markdown`, `html`, `enough_mail`, `archive`,
+`receive_sharing_intent`, `google_mlkit_text_recognition`, `google_mlkit_document_scanner`, `pdfrx`, `archive`, `xml` (MIME, csv/xlsx, Markdown tự viết: ADR-015),
 `phone_numbers_parser`, `onnxruntime` (PP-OCR), `whisper_cpp_flutter_plus` hoặc tương đương (Phase 2), `purchases_flutter`, `device_calendar`, `home_widget`, `sentry_flutter`, `posthog_flutter`,
 `google_sign_in`, `sign_in_with_apple`, `intl`, `flutter_localizations`. Kiểm tra bảo trì (pub.dev score, ngày phát hành) trước khi khóa phiên bản.
 Plugin nào chạy trên macOS/Windows/web: `architecture/multi-platform.md` §3 (cập nhật bảng đó khi thêm plugin).

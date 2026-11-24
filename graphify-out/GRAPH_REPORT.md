@@ -1,17 +1,17 @@
 # Graph Report - RemindMe  (2026-11-24)
 
 ## Corpus Check
-- 189 files · ~150,857 words
+- 207 files · ~161,254 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 38 file(s) not represented in the graph (top: (none) 7, .xml 7, .plist 4)
+- Unclassified: 40 file(s) not represented in the graph (top: (none) 7, .xml 7, .plist 4)
 
 ## Summary
-- 2596 nodes · 3319 edges · 150 communities (129 shown, 21 thin omitted)
+- 2895 nodes · 3668 edges · 154 communities (132 shown, 22 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `af9cce78`
+- Built from commit: `c165f9df`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -62,7 +62,7 @@
 - AppDelegate
 - app.dart
 - pg_contract_test.dart
-- sync_engine_test.dart
+- mime.dart
 - package:material_ui/material_ui.dart
 - fake_server.dart
 - data/pubspec.yaml
@@ -79,7 +79,7 @@
 - main.dart
 - client/analysis_options.yaml
 - window_size.dart
-- adaptive_shell.dart
+- markdown.dart
 - pubspec.yaml
 - items_repository.dart
 - MainActivity.kt
@@ -96,7 +96,7 @@
 - _
 - months
 - weekdays
-- formatters.dart
+- table.dart
 - day_parts
 - numbers
 - numbers
@@ -115,7 +115,7 @@
 - units
 - relative_days
 - weekday_list_tokens
-- device_time.dart
+- table_tasks.dart
 - Comparable
 - meridiem
 - Gói ngữ pháp NLU (`<lang>.yaml`)
@@ -135,7 +135,7 @@
 - scheduler_test.dart
 - actions.dart
 - testing.dart
-- package:remindme_data/remindme_data.dart
+- email.dart
 - SyncApi
 - NotificationScheduler
 - SyncException
@@ -145,16 +145,20 @@
 - ics.dart
 - search_screen.dart
 - lists_screen.dart
-- pkpass.dart
-- recurrence_text.dart
+- dart:convert
+- priority
 - reminders_test.dart
 - bcbp.dart
-- today_screen.dart
+- columns
 - schedule_editor_test.dart
-- dart:convert
+- tz.dart
 - Map
 - extract_eval_test.dart
-- RRuleRecurrence
+- today_test.dart
+- app_test.dart
+- html_text.dart
+- Việc nhà tháng 12
+- BookingType
 
 ## God Nodes (most connected - your core abstractions)
 1. `_` - 31 edges
@@ -163,10 +167,10 @@
 4. `numbers` - 20 edges
 5. `numbers` - 19 edges
 6. `units` - 18 edges
-7. `dependencies` - 17 edges
-8. `weekdays` - 17 edges
-9. `itemsRepositoryProvider` - 16 edges
-10. `Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình` - 15 edges
+7. `weekdays` - 17 edges
+8. `dependencies` - 17 edges
+9. `Architecture Decision Records (ADR)` - 16 edges
+10. `itemsRepositoryProvider` - 16 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `OfflineSyncApi` --implements--> `SyncApi`  [EXTRACTED]
@@ -183,7 +187,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (150 total, 21 thin omitted)
+## Communities (154 total, 22 thin omitted)
 
 ### Community 0 - "UX: kiến trúc thông tin, luồng, màn hình"
 Cohesion: 0.08
@@ -215,7 +219,7 @@ Nodes (12): 10. Bàn giao cho Flutter, 11. Màn hình lớn (tablet, máy tính)
 
 ### Community 7 - "Architecture Decision Records (ADR)"
 Cohesion: 0.12
-Nodes (15): ADR-001: Flutter cho app mobile, native cho watch, ADR-002: Supabase + worker TypeScript, ADR-003: Offline-first, nhắc nhở local, ADR-004: AI extraction phía server (Superseded by ADR-010), ADR-005: Email chuyển tiếp trước, Gmail API sau, ADR-006: RevenueCat cho subscription, ADR-007: Lặp lại RRULE + hệ lịch khác, ADR-008: Entitlement phía server (+7 more)
+Nodes (16): ADR-001: Flutter cho app mobile, native cho watch, ADR-002: Supabase + worker TypeScript, ADR-003: Offline-first, nhắc nhở local, ADR-004: AI extraction phía server (Superseded by ADR-010), ADR-005: Email chuyển tiếp trước, Gmail API sau, ADR-006: RevenueCat cho subscription, ADR-007: Lặp lại RRULE + hệ lịch khác, ADR-008: Entitlement phía server (+8 more)
 
 ### Community 8 - "Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình"
 Cohesion: 0.10
@@ -250,8 +254,8 @@ Cohesion: 0.25
 Nodes (7): 1. Phân loại dữ liệu, 2. Kiểm soát, 3. Bên thứ ba xử lý dữ liệu (liệt kê trong Privacy Policy), 4. Pháp lý theo thị trường (checklist, luật sư địa phương xác nhận), 5. Ứng phó sự cố, 6. Xóa tài khoản, xuất dữ liệu, lưu trữ, Bảo mật & quyền riêng tư
 
 ### Community 20 - "STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)"
-Cohesion: 0.06
-Nodes (31): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+23 more)
+Cohesion: 0.05
+Nodes (32): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+24 more)
 
 ### Community 21 - "Quy trình phát triển với AI (Claude Code, Codex) + graphify, unslop, agency agents"
 Cohesion: 0.25
@@ -334,8 +338,8 @@ Cohesion: 0.14
 Nodes (25): BookingDetail, BookingDetailsCompanion, DataClass, Import, ImportsCompanion, Item, ItemsCompanion, ListsCompanion (+17 more)
 
 ### Community 43 - "tokens.dart"
-Cohesion: 0.10
-Nodes (20): background, danger, divider, fontFallback, fontFamily, health, lunar, minLineHeight (+12 more)
+Cohesion: 0.06
+Nodes (21): background, danger, divider, fontFallback, fontFamily, health, lunar, minLineHeight (+13 more)
 
 ### Community 44 - "hlc.dart"
 Cohesion: 0.11
@@ -346,20 +350,20 @@ Cohesion: 0.10
 Nodes (8): AppDelegate, SceneDelegate, RunnerTests, Flutter, flutter_local_notifications, Testing, UIKit, UserNotifications
 
 ### Community 46 - "app.dart"
-Cohesion: 0.10
-Nodes (10): appSupportedLocales, build, createState, locale, pseudoLocale, _router, detectPlatform, devicePlatformProvider (+2 more)
+Cohesion: 0.09
+Nodes (12): appSupportedLocales, build, createState, locale, pseudoLocale, RemindMeApp, _RemindMeAppState, _router (+4 more)
 
 ### Community 47 - "pg_contract_test.dart"
 Cohesion: 0.14
 Nodes (11): call, conn, enabled, env, main, pull, push, row (+3 more)
 
-### Community 48 - "sync_engine_test.dart"
-Cohesion: 0.18
-Nodes (10): SyncEngine, db, Device, engine, main, name, now, row (+2 more)
+### Community 48 - "mime.dart"
+Cohesion: 0.03
+Nodes (57): _attached, attachments, b, _base64, body, children, clean, continued (+49 more)
 
 ### Community 49 - "package:material_ui/material_ui.dart"
-Cohesion: 0.09
-Nodes (15): find, resolveLocale, sup, build, CalendarScreen, EmptyState, build, MeScreen (+7 more)
+Cohesion: 0.04
+Nodes (34): civil, _context, date, dayHeader, Fmt, _locale, of, time (+26 more)
 
 ### Community 50 - "fake_server.dart"
 Cohesion: 0.14
@@ -386,8 +390,8 @@ Cohesion: 0.14
 Nodes (10): main, main, main, main, d, main, main, main (+2 more)
 
 ### Community 56 - "quick_add_sheet.dart"
-Cohesion: 0.12
-Nodes (15): _canSave, createState, dispose, _Draft, _drafts, fallbackTitle, picks, result (+7 more)
+Cohesion: 0.09
+Nodes (23): deviceRegionProvider, nluEngineProvider, nowProvider, ReminderBinding, build, _canSave, createState, dispose (+15 more)
 
 ### Community 57 - "ids.dart"
 Cohesion: 0.18
@@ -402,16 +406,16 @@ Cohesion: 0.18
 Nodes (10): dependencies, remindme_core, description, dev_dependencies, test, environment, sdk, name (+2 more)
 
 ### Community 60 - "quick_add_test.dart"
-Cohesion: 0.08
-Nodes (19): main, main, openLists, phone, vi, enterText, main, openQuickAdd (+11 more)
+Cohesion: 0.22
+Nodes (8): enterText, main, openQuickAdd, phone, pumpAndSettle, rows, runAsync, tap
 
 ### Community 61 - "analysis_options.yaml"
 Cohesion: 0.22
 Nodes (8): analyzer, exclude, language, include, strict-casts, strict-raw-types, linter, rules
 
 ### Community 62 - "main.dart"
-Cohesion: 0.08
-Nodes (11): db, deviceId, launchTap, local, locale, main, os, tz (+3 more)
+Cohesion: 0.07
+Nodes (16): db, deviceId, launchTap, local, locale, main, os, tz (+8 more)
 
 ### Community 63 - "client/analysis_options.yaml"
 Cohesion: 0.22
@@ -420,6 +424,10 @@ Nodes (8): analyzer, exclude, language, include, strict-casts, strict-raw-types,
 ### Community 64 - "window_size.dart"
 Cohesion: 0.22
 Nodes (6): expanded, expandedMin, fromWidth, mediumMin, of, WindowSize
+
+### Community 65 - "markdown.dart"
+Cohesion: 0.05
+Nodes (36): checklist, _date, _dayList, _days, decode, done, doneOn, _Draft (+28 more)
 
 ### Community 66 - "pubspec.yaml"
 Cohesion: 0.25
@@ -430,36 +438,36 @@ Cohesion: 0.03
 Nodes (64): addReminder, allDay, completedAt, completeOccurrence, create, _db, delete, deviceId (+56 more)
 
 ### Community 79 - "pack.dart"
-Cohesion: 0.05
-Nodes (38): conjunctions, contains, dateOrderByRegion, dateOrderDefault, dateOrderFor, DayPart, dayParts, defaultTime (+30 more)
+Cohesion: 0.04
+Nodes (41): conjunctions, contains, dateOrderByRegion, dateOrderDefault, dateOrderFor, DayPart, dayParts, defaultTime (+33 more)
 
 ### Community 80 - "engine.dart"
 Cohesion: 0.05
-Nodes (34): _apply, byDay, byMonthDay, characters0, datePack, explicit24, _Facts, _firstOccurrence (+26 more)
+Nodes (33): _apply, byDay, byMonthDay, characters0, datePack, explicit24, _Facts, _firstOccurrence (+25 more)
 
 ### Community 81 - "result.dart"
 Cohesion: 0.06
 Nodes (29): ambiguities, Ambiguity, AmbiguityKind, calendar, chosen, end, hashCode, kind (+21 more)
 
 ### Community 82 - "providers.dart"
-Cohesion: 0.09
-Nodes (36): appDatabaseProvider, bundledNluPacks, deviceId, deviceIdProvider, deviceRegionProvider, deviceTimeZoneProvider, inboxRouteId, itemsRepositoryProvider (+28 more)
+Cohesion: 0.08
+Nodes (31): appDatabaseProvider, bundledNluPacks, deviceId, deviceIdProvider, hasRemindersProvider, inboxRouteId, launchNotificationTapProvider, nluPackKey (+23 more)
 
 ### Community 83 - "lunar.dart"
-Cohesion: 0.04
-Nodes (41): _dateFromJd, day, fromSolar, fromWire, hashCode, _jdFromDate, leap, _leapMonthOffset (+33 more)
+Cohesion: 0.07
+Nodes (29): _dateFromJd, day, fromSolar, fromWire, hashCode, _jdFromDate, leap, _leapMonthOffset (+21 more)
 
 ### Community 84 - "item_detail_screen.dart"
-Cohesion: 0.10
-Nodes (21): itemProvider, remindersProvider, build, createState, _delete, didUpdateWidget, dispose, _Editor (+13 more)
+Cohesion: 0.09
+Nodes (27): itemProvider, itemsRepositoryProvider, remindersProvider, _onTap, build, createState, _delete, didUpdateWidget (+19 more)
 
 ### Community 85 - "with"
 Cohesion: 0.07
 Nodes (37): runs-on, steps, runs-on, steps, runs-on, steps, PGHOST, PGPASSWORD (+29 more)
 
 ### Community 86 - "recurrence.dart"
-Cohesion: 0.09
-Nodes (16): LunarSystem, between, both, day, fromRow, fromWire, intervalDays, leap (+8 more)
+Cohesion: 0.08
+Nodes (19): LunarSystem, AfterCompletion, between, both, day, fromRow, fromWire, intervalDays (+11 more)
 
 ### Community 87 - "_"
 Cohesion: 0.08
@@ -473,9 +481,9 @@ Nodes (25): months, apr, april, aug, august, dec, december, feb (+17 more)
 Cohesion: 0.09
 Nodes (23): weekdays, chúa nhật, chủ nhật, cn, cuối tuần, t2, t3, t4 (+15 more)
 
-### Community 90 - "formatters.dart"
-Cohesion: 0.17
-Nodes (9): civil, _context, date, dayHeader, Fmt, _locale, of, time (+1 more)
+### Community 90 - "table.dart"
+Cohesion: 0.05
+Nodes (33): base, boolean, _builtinDateFormats, cell, _cell, columnCount, _columnIndex, CsvReader (+25 more)
 
 ### Community 91 - "day_parts"
 Cohesion: 0.10
@@ -518,12 +526,12 @@ Cohesion: 0.13
 Nodes (14): conjunctions, filler_tails, fillers, lang, list_separators, next_modifiers, next, next week (+6 more)
 
 ### Community 101 - "nlu_test.dart"
-Cohesion: 0.16
-Nodes (9): ctx, en, main, p, pack, vi, engine, langs (+1 more)
+Cohesion: 0.09
+Nodes (20): en, main, now, vi, ctx, en, main, p (+12 more)
 
 ### Community 102 - "parsers/pubspec.yaml"
-Cohesion: 0.13
-Nodes (14): dependencies, archive, remindme_core, yaml, description, dev_dependencies, test, environment (+6 more)
+Cohesion: 0.12
+Nodes (15): dependencies, archive, remindme_core, xml, yaml, description, dev_dependencies, test (+7 more)
 
 ### Community 103 - "vi.yaml"
 Cohesion: 0.11
@@ -549,9 +557,9 @@ Nodes (7): relative_days, day after tomorrow, the day after tomorrow, tmr, tmrw,
 Cohesion: 0.29
 Nodes (7): weekday_list_tokens, 2, 3, 4, 5, 6, 7
 
-### Community 109 - "device_time.dart"
-Cohesion: 0.33
-Nodes (4): deviceRegion, deviceTimeZone, etcZoneFor, h
+### Community 109 - "table_tasks.dart"
+Cohesion: 0.05
+Nodes (32): columns, copyWith, dateOrder, dateOrderAmbiguous, detect, _done, extract, _foldHeader (+24 more)
 
 ### Community 110 - "Comparable"
 Cohesion: 0.33
@@ -598,8 +606,8 @@ Cohesion: 0.06
 Nodes (23): _android, _apple, cancel, cancelAll, _category, _channelAlarm, channelAlarms, _channelDefault (+15 more)
 
 ### Community 123 - "reminders.dart"
-Cohesion: 0.10
-Nodes (18): describeReminderOffset, fallback, forOccurrence, forSnooze, fromSubtags, into, l, labels (+10 more)
+Cohesion: 0.08
+Nodes (21): AppNotificationTexts, describeReminderOffset, fallback, forOccurrence, forSnooze, fromSubtags, into, l (+13 more)
 
 ### Community 124 - "reminder_binding.dart"
 Cohesion: 0.10
@@ -611,11 +619,11 @@ Nodes (21): Recurrence, ReminderPlanner, cancelAll, cancelled, db, _exdates, hor
 
 ### Community 126 - "candidate.dart"
 Cohesion: 0.04
-Nodes (46): amount, BookingType, BookingTypeWire, Candidate, CandidateFields, CandidateKind, carriage, carrierCode (+38 more)
+Nodes (51): amount, Candidate, CandidateFields, CandidateKind, carriage, carrierCode, checkIn, checklist (+43 more)
 
 ### Community 127 - "scheduler_test.dart"
-Cohesion: 0.10
-Nodes (16): AppDatabase, ItemsRepository, ListsRepository, day, item, main, db, items (+8 more)
+Cohesion: 0.07
+Nodes (26): AppDatabase, ItemsRepository, ListsRepository, SyncEngine, day, item, main, db (+18 more)
 
 ### Community 128 - "actions.dart"
 Cohesion: 0.13
@@ -625,9 +633,9 @@ Nodes (12): done, handle, itemId, NotificationActionHandler, NotificationActionI
 Cohesion: 0.15
 Nodes (11): NotificationHealth, cancel, cancelAll, health, healthValue, maxPending, openExactAlarmSettings, pending (+3 more)
 
-### Community 130 - "package:remindme_data/remindme_data.dart"
-Cohesion: 0.20
-Nodes (8): AppNotificationTexts, NotificationTexts, at0, fallback, forOccurrence, forSnooze, main, Texts
+### Community 130 - "email.dart"
+Cohesion: 0.06
+Nodes (26): bytes, candidates, decode, _decode, dedupeCandidates, EmailDecoder, EmailExtraction, fa (+18 more)
 
 ### Community 131 - "SyncApi"
 Cohesion: 0.50
@@ -638,8 +646,8 @@ Cohesion: 0.50
 Nodes (4): LocalNotificationScheduler, NoopNotificationScheduler, NotificationScheduler, InMemoryNotificationScheduler
 
 ### Community 134 - "schedule_editor.dart"
-Cohesion: 0.10
-Nodes (17): recurringIdsProvider, todayWindowProvider, body, build, icon, title, build, item (+9 more)
+Cohesion: 0.12
+Nodes (17): deviceTimeZoneProvider, recurrenceProvider, recurringIdsProvider, todayWindowProvider, build, item, ItemTile, overdue (+9 more)
 
 ### Community 135 - "lists_repository.dart"
 Cohesion: 0.11
@@ -654,20 +662,20 @@ Cohesion: 0.14
 Nodes (13): _alarmMinutes, decode, IcsDecoder, name, params, parse, _plusDuration, _Prop (+5 more)
 
 ### Community 138 - "search_screen.dart"
-Cohesion: 0.14
-Nodes (12): RemindMeApp, _RemindMeAppState, ReminderBinding, QuickAddSheet, build, createState, dispose, _query (+4 more)
+Cohesion: 0.12
+Nodes (12): body, build, icon, title, build, createState, dispose, _query (+4 more)
 
 ### Community 139 - "lists_screen.dart"
-Cohesion: 0.12
-Nodes (18): listItemsProvider, listsProvider, _ListRow, askListName, build, _confirmDelete, _controller, createState (+10 more)
+Cohesion: 0.11
+Nodes (19): listItemsProvider, listsProvider, listsRepositoryProvider, askListName, build, _confirmDelete, _controller, createState (+11 more)
 
-### Community 140 - "pkpass.dart"
-Cohesion: 0.17
-Nodes (9): _barcodeMessage, decodePassJson, decodeZip, _Field, group, key, label, PkpassDecoder (+1 more)
+### Community 140 - "dart:convert"
+Cohesion: 0.09
+Nodes (17): _barcodeMessage, decodePassJson, decodeZip, _Field, group, key, label, PkpassDecoder (+9 more)
 
-### Community 141 - "recurrence_text.dart"
-Cohesion: 0.25
-Nodes (6): _byday, describeRecurrence, l, locale, n, parts
+### Community 141 - "priority"
+Cohesion: 0.09
+Nodes (23): assignee, date, list, location, notes, priority, status, time (+15 more)
 
 ### Community 142 - "reminders_test.dart"
 Cohesion: 0.20
@@ -677,49 +685,57 @@ Nodes (5): en, main, phone, NotificationTap, main
 Cohesion: 0.25
 Nodes (6): BcbpDecoder, _dateFromJulian, decode, _flightNumber, looksLikeBcbp, _seat
 
-### Community 144 - "today_screen.dart"
-Cohesion: 0.17
-Nodes (12): hasRemindersProvider, notificationHealthProvider, notificationSchedulerProvider, todaySectionsProvider, didChangeDependencies, _body, build, _ReminderHealthCard (+4 more)
+### Community 144 - "columns"
+Cohesion: 0.09
+Nodes (22): assignee, date, list, location, notes, priority, status, time (+14 more)
 
 ### Community 145 - "schedule_editor_test.dart"
-Cohesion: 0.29
-Nodes (6): chip, main, openDetail, phone, seedNoDate, seedTimed
+Cohesion: 0.15
+Nodes (10): main, openLists, phone, vi, chip, main, openDetail, phone (+2 more)
 
-### Community 146 - "dart:convert"
-Cohesion: 0.29
-Nodes (4): bcbp1, main, ref, type
+### Community 146 - "tz.dart"
+Cohesion: 0.12
+Nodes (12): dayBounds, dstAdjusted, ensureInitialized, isValid, _loc, _offsetMs, _ready, ResolvedInstant (+4 more)
 
 ### Community 147 - "Map"
 Cohesion: 0.29
 Nodes (5): b, _fold, foldForSearch, groups, toString
 
 ### Community 148 - "extract_eval_test.dart"
-Cohesion: 0.29
-Nodes (4): ext, main, reference, run
+Cohesion: 0.18
+Nodes (8): ext, extract, main, packs, reference, run, tableTasks, x
 
-### Community 149 - "RRuleRecurrence"
+### Community 149 - "today_test.dart"
+Cohesion: 0.22
+Nodes (6): create, en, main, phone, seedDay, today
+
+### Community 151 - "html_text.dart"
+Cohesion: 0.29
+Nodes (6): decodeHtmlEntities, htmlToText, lines, _named, s, where
+
+### Community 152 - "Việc nhà tháng 12"
 Cohesion: 0.50
-Nodes (3): AfterCompletion, LunarRecurrence, RRuleRecurrence
+Nodes (3): Sửa chữa, Việc nhà tháng 12, Định kỳ
 
 ## Knowledge Gaps
-- **1085 isolated node(s):** `BcbpDecoder`, `looksLikeBcbp`, `decode`, `_flightNumber`, `_seat` (+1080 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1902 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1302 isolated node(s):** `PendingAttachment`, `EmailExtraction`, `EmailDecoder`, `filename`, `mediaType` (+1297 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2177 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `CivilDate` connect `Comparable` to `quick_add_sheet.dart`, `lunar.dart`, `planner.dart`, `_`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **What connects `BcbpDecoder`, `looksLikeBcbp`, `decode` to the rest of the system?**
-  _1085 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `_` connect `_` to `hlc.dart`, `Comparable`?**
+  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+- **What connects `PendingAttachment`, `EmailExtraction`, `EmailDecoder` to the rest of the system?**
+  _1302 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `UX: kiến trúc thông tin, luồng, màn hình` be split into smaller, more focused modules?**
   _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._
-- **Why does `AppDatabase` connect `scheduler_test.dart` to `database.dart`, `sync_engine.dart`, `sync_engine_test.dart`, `providers.dart`, `scheduler.dart`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Why does `CivilDate` connect `Comparable` to `markdown.dart`, `lunar.dart`, `planner.dart`, `_`, `quick_add_sheet.dart`?**
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **Should `Hướng dẫn tích hợp với nền tảng khác` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
-- **Why does `_` connect `_` to `hlc.dart`, `Comparable`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **Why does `AppDatabase` connect `scheduler_test.dart` to `providers.dart`, `database.dart`, `scheduler.dart`, `sync_engine.dart`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **Should `4. User stories và tiêu chí chấp nhận (MVP = P0)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._

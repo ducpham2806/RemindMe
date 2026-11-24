@@ -1,0 +1,11 @@
+{
+  "doc_type": "todo_list",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    { "kind": "task", "required": { "title": "Nộp báo cáo quý 4", "due": { "local": "2026-12-15T09:00" } } },
+    { "kind": "task", "required": { "title": "Gia hạn bảo hiểm xe máy", "due": { "local": "2026-12-20" } } },
+    { "kind": "task", "required": { "title": "Đặt vé tàu Tết", "due": { "local": "2027-01-02T08:30" } } },
+    { "kind": "task", "required": { "title": "Mua quà sinh nhật mẹ" }, "must_not_fill": ["due"] }
+  ]
+}

@@ -33,19 +33,21 @@ flowchart TD
 |---|---|---|
 | `.pkpass` (Apple Wallet) | `archive` giải zip, đọc `pass.json` | boardingPass/eventTicket: giờ, cổng, ghế, mã vạch, relevantDate |
 | `.ics` | Parser iCalendar tự viết (~300 dòng) hoặc package | VEVENT/VTODO, RRULE, VALARM |
-| Email `.eml` / MIME | `enough_mail` (MIME), `html` (DOM) | Text, HTML, file đính kèm (pdf, ics, pkpass, ảnh) |
+| Email `.eml` / MIME | Tự viết (ADR-015): multipart, base64, quoted-printable, RFC 2047/2231; HTML → chữ bằng regex | Text, HTML, file đính kèm (pdf, ics, pkpass, ảnh) |
 | JSON-LD / Microdata trong HTML email | Tìm `<script type="application/ld+json">`, map schema.org `FlightReservation`, `LodgingReservation`, `TrainReservation`, `BusReservation`, `EventReservation`, `FoodEstablishmentReservation` | Gần như đủ trường, **không phụ thuộc ngôn ngữ**. Nhiều hãng bay, OTA và nhà ga quốc tế nhúng sẵn; hãng nội địa từng nước cần kiểm tra mẫu thật |
 | PDF có text layer | `pdfrx` (PDFium) lấy text + tọa độ từng ký tự | Text có bố cục, dùng chung bộ máy T2 như OCR |
 | PDF scan | Render trang → ảnh (`pdfrx`) → T1 | |
-| xlsx / csv | `excel`, `csv` | Bảng → mục 6 |
-| Markdown | `markdown` + regex Obsidian Tasks | Mục 7 |
+| xlsx / csv | Tự viết (ADR-015): `archive` + `xml` cho xlsx, RFC 4180 cho csv | Bảng → mục 6 |
+| Markdown | Tự viết theo dòng (ADR-015) + regex Obsidian Tasks | Mục 7 |
 | Barcode boarding pass | ML Kit Barcode (Android/iOS, offline) hoặc Vision `DetectBarcodesRequest`; parser **IATA BCBP (Resolution 792)** | Tên, PNR, sân bay đi/đến, hãng, số chuyến, ngày (Julian), hạng, ghế. Chính xác 100% nếu quét được |
 | QR khác | Phân loại theo tiền tố: URL (mở/đọc tham số booking id), VietQR (bỏ qua: là mã thanh toán), text | |
 
-**Đã có (S5 kéo sớm):** `packages/parsers/lib/src/decoders/` (`ics.dart`, `bcbp.dart`, `jsonld.dart`, `pkpass.dart`) trả `Candidate`
+**Đã có (S5 kéo sớm):** `packages/parsers/lib/src/decoders/` (`ics.dart`, `bcbp.dart`, `jsonld.dart`, `pkpass.dart`, `mime.dart` + `email.dart`,
+`table.dart`, `markdown.dart`; `lib/src/extract/table_tasks.dart`) trả `Candidate`
 (`lib/src/extract/candidate.dart`, cùng dạng `fixtures/schema/expected.schema.json`); harness `lib/src/extract/eval.dart` + `test/extract_eval_test.dart`
 chấm mọi mẫu trong `fixtures/docs/` (loại chưa có tầng xử lý thì bỏ qua). Giờ giữ như in trên vé + offset nếu nguồn có; `tz` IANA suy sau theo sân bay/ga (T2).
-Tên hành khách trong BCBP/JSON-LD không được lấy ra. Chưa có: MIME `.eml` nhiều phần/quoted-printable (`enough_mail`), PDF, xlsx/csv, md.
+Tên hành khách trong BCBP/JSON-LD không được lấy ra. `EmailDecoder` chuyển HTML sang JSON-LD, `.ics`/`text/calendar`, `.pkpass`, email lồng `message/rfc822`;
+đặt chỗ trùng giữa JSON-LD và `.ics` chỉ giữ 1; PDF, ảnh, xlsx đính kèm trả về `pending` cho tầng sau; logo nhúng (`Content-ID`) bị bỏ. Chưa có: PDF.
 
 ## 3. T1: OCR trên thiết bị
 | Nền tảng | Engine | Hệ chữ |
@@ -150,17 +152,24 @@ Quy tắc dùng:
 
 ## 6. xlsx / csv → danh sách việc
 1. Tìm dòng header trong 10 dòng đầu (dòng có nhiều ô text khớp từ điển đồng nghĩa nhất).
-2. Từ điển cột nằm trong gói ngôn ngữ (`packs/<lang>/columns.json`), ví dụ vi/en: **Việc** (Công việc, Nội dung, Tiêu đề, Task) · **Ngày** (Ngày, Hạn, Deadline, Due) ·
+2. Từ điển cột nằm trong gói ngôn ngữ (mục `table:` của `nlu/packs/<lang>.yaml`, định dạng ở `packages/parsers/nlu/packs/README.md`), ví dụ vi/en: **Việc** (Công việc, Nội dung, Tiêu đề, Task) · **Ngày** (Ngày, Hạn, Deadline, Due) ·
    **Giờ** (Giờ, Time) · **Ghi chú** (Note, Mô tả) · **Ưu tiên** (Priority) · **Trạng thái** (Status) · **Địa điểm** · **Người phụ trách**. Thử mọi gói cấp A/B, chọn gói khớp nhiều cột nhất.
 3. Không có header thì suy theo kiểu dữ liệu 20 dòng mẫu: cột phần lớn là ngày → Ngày; cột chuỗi dài nhất → Việc.
 4. Ô ngày kiểu số serial Excel, chuỗi `dd/mm/yyyy`, ô datetime đều được hỗ trợ. Nhiều sheet thì người dùng chọn sheet.
 5. Màn xem trước 10 dòng + dropdown đổi mapping; lưu mapping theo hash header (mục 4.5).
 6. Hiệu năng: 5.000 dòng < 3 giây trên máy tầm trung (parse trong isolate).
+7. Thứ tự ngày `03/04`: ô có phần > 12 quyết định cho cả cột; không có thì theo vùng người dùng (gói), vẫn không biết thì màn xem trước hỏi (`dateOrderAmbiguous`).
+   Ô ngày dạng chữ ("thứ 6 tuần sau") và tên việc có thời điểm khi bảng không có cột ngày chạy qua NLU của gói.
+
+**Đã có:** `CsvReader`, `XlsxReader` (`decoders/table.dart`), `TableTaskExtractor.detect` → `TableMapping` (sửa được ở màn xem trước) → `extract`.
+Đo trong container (JIT): xlsx 5.000 dòng 0,57 s, csv 5.000 dòng 0,05 s; máy thật đo ở spike. Cột `assignee` chỉ để không nhầm làm tên việc, chưa nhập giá trị.
 
 ## 7. Markdown
 - `- [ ] việc` / `- [x] việc` → task (open/done); `#`/`##` heading → list; thụt lề → checklist con.
 - Cú pháp Obsidian Tasks: `📅 2026-12-01` (hạn), `⏳` (scheduled), `🛫` (start), `⏰ 08:00`, `🔁 every week`, `⏫/🔼/🔽` (ưu tiên).
 - Front-matter YAML `due:`, `tags:`. Câu tự nhiên trong dòng ("họp lúc 3h chiều mai") chạy qua parser ngày giờ tiếng Việt.
+- **Đã có:** `MarkdownDecoder` (`decoders/markdown.dart`): thêm dạng Dataview `[due:: ...]`, `[-]` = đã hủy (bỏ), `✅` = đã xong, không có ô checkbox nào
+  thì mọi gạch đầu dòng là việc, bỏ khối code. `🔁` → RRULE qua `obsidianRecurrenceToRrule`; không hiểu thì giữ nguyên văn trong ghi chú. "when done" chưa hỗ trợ.
 
 ## 8. Email chuyển tiếp: server chỉ là hộp thư
 1. Email tới `u-<token>@in.remindme.app` → webhook → server **chỉ lưu MIME đã mã hóa** (TTL 7 ngày) và gửi push `inbox.new`.
@@ -197,8 +206,8 @@ Chuyển sang `voice-and-text-input.md` §5 (gói ngữ pháp theo ngôn ngữ, 
 | Tăng kích thước app | Android ≈ +1 MB (ML Kit unbundled); iOS: 0 nếu dùng Vision, ≈ +10 MB nếu nhúng ML Kit |
 
 ## 13. Thư viện dự kiến
-Danh sách chung: `integration-guide.md` §13. Riêng phần này: ML Kit (text, barcode, document scanner), `pdfrx`, `excel`, `csv`, `markdown`,
-`enough_mail`, `html`, `archive`, `phone_numbers_parser`, ONNX Runtime (PP-OCRv5); native plugin `RemindExtractKit` (Swift) và Kotlin plugin.
+Danh sách chung: `integration-guide.md` §13. Riêng phần này: ML Kit (text, barcode, document scanner), `pdfrx`,
+`archive`, `xml` (MIME, csv/xlsx, Markdown tự viết: ADR-015), `phone_numbers_parser`, ONNX Runtime (PP-OCRv5); native plugin `RemindExtractKit` (Swift) và Kotlin plugin.
 
 ## 14. Rủi ro
 | Rủi ro | Giảm thiểu |

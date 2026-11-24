@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-csv-todo-0001",
+  "source_kind": "csv",
+  "market": "VN",
+  "doc_language": "vi",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "CSV kiểu Excel VN: BOM UTF-8, dấu ';', CRLF, ngày dd/mm/yyyy, giờ '9:00'/'8h30', ô có xuống dòng trong ngoặc kép, dòng không có hạn."
+}

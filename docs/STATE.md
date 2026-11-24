@@ -3,7 +3,7 @@
 **Cập nhật:** 2026-11-24 · **Phase:** 0 → S1-S3 (code chạy offline; chờ tài khoản Supabase/Firebase) · **Nhánh:** `ccr-7a85f116-dswwig`
 
 ## Đã có
-- Bộ docs v2 (`docs/INDEX.md`) + 14 ADR (ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
+- Bộ docs v2 (`docs/INDEX.md`) + 15 ADR (ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
 - DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
   + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói, chặn/kẹp `field_clock` sai) + 109 test pgTAP.
 - Khung repo: CI `.github/workflows/ci.yml` (3 job docs-and-lint, db + contract test, flutter đều pass trên GitHub, run #10), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
@@ -22,8 +22,11 @@
   tìm kiếm không dấu (`foldForSearch`). S4 phần UI: sửa ngày/giờ ở chi tiết, chọn lặp (hằng ngày, ngày thường, hằng tuần, hằng tháng, hằng năm, âm lịch theo ngôn ngữ).
   Chi tiết item và tìm kiếm là route gốc `/item/:id`, `/search`. CI `android-build` pass (compileSdk 37).
 - S5 E1 phần đầu: decoder `.ics` (TZID, cả ngày, RRULE, VALARM, VTODO), IATA BCBP (nhiều chặng, suy năm từ ngày Julian), JSON-LD schema.org
-  trong email (Flight/Lodging/Train/Bus/Event/Restaurant/RentalCar), `.pkpass` (ưu tiên BCBP); harness eval E3.5 trên `fixtures/docs/` (3 mẫu tổng hợp mới).
-- Chưa có: worker, MIME/PDF/xlsx/csv/md decoder, bộ máy luật T2 + mẫu nhà cung cấp, màn Xem lại (E5), auth/flavors, `SupabaseSyncApi`.
+  trong email (Flight/Lodging/Train/Bus/Event/Restaurant/RentalCar), `.pkpass` (ưu tiên BCBP); harness eval E3.5 trên `fixtures/docs/`.
+- S5 E1 tiếp: email MIME (`EmailDecoder`: HTML → JSON-LD, `.ics`, `.pkpass`, email lồng, gộp trùng, PDF/ảnh trả `pending`), csv/xlsx → việc
+  (`TableTaskExtractor`: dò header theo từ điển cột trong gói, suy cột khi không header, thứ tự ngày, NLU cho ô chữ), Markdown/Obsidian Tasks (`MarkdownDecoder`).
+  `Candidate` thêm `priority`, `done`, `tags`, `listName`, `checklist`. Eval 7 mẫu tổng hợp: 100% trường bắt buộc, 0 điền sai.
+- Chưa có: worker, PDF decoder, nối import vào app (chọn file/chia sẻ → màn Xem lại E5), bộ máy luật T2 + mẫu nhà cung cấp, màn Xem lại (E5), auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;

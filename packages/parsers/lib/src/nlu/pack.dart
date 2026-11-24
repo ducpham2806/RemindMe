@@ -59,6 +59,9 @@ class GrammarPack {
     required this.prepositionRe,
     required this.fillerRe,
     required this.fillerTailRe,
+    required this.tableColumns,
+    required this.tablePriority,
+    required this.tableDone,
   });
 
   final String lang;
@@ -88,6 +91,12 @@ class GrammarPack {
   final RegExp? prepositionRe;
   final RegExp? fillerRe;
   final RegExp? fillerTailRe;
+  /// Nhập bảng: trường (`title`, `date`...) → tên cột đã [foldForSearch].
+  final Map<String, List<String>> tableColumns;
+  /// Giá trị cột Ưu tiên (đã fold) → 1..3.
+  final Map<String, int> tablePriority;
+  /// Giá trị cột Trạng thái nghĩa là đã xong (đã fold).
+  final Set<String> tableDone;
 
   static String norm(String s) => s.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
 
@@ -161,6 +170,12 @@ class GrammarPack {
       }
     }
 
+    final table = (m['table'] as Map<String, Object?>?) ?? const {};
+    final tableColumns = {
+      for (final e in ((table['columns'] as Map<String, Object?>?) ?? const {}).entries)
+        e.key: [for (final x in (e.value! as List<Object?>)) foldForSearch('$x')],
+    };
+
     final fillers = strs('fillers');
     final tails = strs('filler_tails');
     final preps = strs('prepositions');
@@ -192,6 +207,11 @@ class GrammarPack {
       fillerRe: fillers.isEmpty
           ? null
           : RegExp('^\\s*(?:${alt(fillers)})(?![\\p{L}\\p{N}])[\\s,:]*', caseSensitive: false, unicode: true),
+      tableColumns: tableColumns,
+      tablePriority: {
+        for (final e in ((table['priority'] as Map<String, Object?>?) ?? const {}).entries) foldForSearch(e.key): e.value! as int,
+      },
+      tableDone: {for (final x in (table['done'] as List<Object?>? ?? const [])) foldForSearch('$x')},
       fillerTailRe: tails.isEmpty
           ? null
           : RegExp('^\\s*(?:${alt(tails)})(?![\\p{L}\\p{N}])\\s*', caseSensitive: false, unicode: true),

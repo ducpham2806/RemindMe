@@ -126,6 +126,18 @@ extension BookingTypeWire on BookingType {
       };
 }
 
+/// Việc con (cột `items.checklist`): dòng thụt lề dưới 1 việc trong Markdown.
+class ChecklistEntry {
+  const ChecklistEntry(this.text, {this.done = false});
+  final String text;
+  final bool done;
+
+  Map<String, Object?> toJson() => {'text': text, 'done': done};
+
+  @override
+  String toString() => '[${done ? 'x' : ' '}] $text';
+}
+
 /// Một đề xuất cho màn Xem lại.
 class Candidate {
   const Candidate({
@@ -137,12 +149,17 @@ class Candidate {
     this.rrule,
     this.reminderOffsetsMinutes = const [],
     this.notes,
+    this.priority,
+    this.done = false,
+    this.tags = const [],
+    this.listName,
+    this.checklist = const [],
   });
 
   final CandidateKind kind;
   final BookingType? bookingType;
   final CandidateFields fields;
-  /// Tầng/decoder đã tạo ra: `ics`, `pkpass`, `bcbp`, `jsonld`, `template:<id>`, `generic`, `llm`.
+  /// Tầng/decoder đã tạo ra: `ics`, `pkpass`, `bcbp`, `jsonld`, `csv`, `xlsx`, `md`, `template:<id>`, `generic`, `llm`.
   final String source;
   /// on-device-extraction.md §4.4: decoder định dạng có cấu trúc ≈ 0,95-0,99.
   final double confidence;
@@ -151,6 +168,14 @@ class Candidate {
   /// Nhắc có sẵn trong nguồn (VALARM của .ics), phút trước giờ bắt đầu.
   final List<int> reminderOffsetsMinutes;
   final String? notes;
+  /// 0-3 như `items.priority` (danh sách việc: cột Ưu tiên, emoji Obsidian).
+  final int? priority;
+  /// Việc đã xong trong nguồn (`- [x]`, cột Trạng thái).
+  final bool done;
+  final List<String> tags;
+  /// Tên list đề xuất (heading Markdown, tên sheet); màn Xem lại khớp với list có sẵn hoặc tạo mới.
+  final String? listName;
+  final List<ChecklistEntry> checklist;
 
   Map<String, Object?> toJson() => {
         'kind': kind.name,

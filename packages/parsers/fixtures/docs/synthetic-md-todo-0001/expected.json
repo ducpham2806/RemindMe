@@ -1,0 +1,13 @@
+{
+  "doc_type": "todo_list",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    { "kind": "task", "required": { "title": "Thay bóng đèn hành lang", "due": { "local": "2026-12-02" } } },
+    { "kind": "task", "required": { "title": "Gọi thợ sửa máy giặt" }, "must_not_fill": ["due"] },
+    { "kind": "task", "required": { "title": "Sơn lại cổng", "due": { "local": "2026-12-12" } } },
+    { "kind": "task", "required": { "title": "Đóng tiền điện", "due": { "local": "2026-12-05" } } },
+    { "kind": "task", "required": { "title": "Tưới cây", "due": { "local": "2026-11-28T07:30" } } },
+    { "kind": "task", "required": { "title": "Đi siêu thị", "due": { "local": "2026-11-28T15:00" } } }
+  ]
+}
