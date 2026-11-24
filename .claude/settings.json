@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./graphify-out/graph.json)",
+      "Read(./graphify-out/graph.html)",
+      "Read(./graphify-out/cache/**)",
+      "Read(./.venv-tools/**)",
+      "Read(./docs/worklog/archive/**)"
+    ]
+  }
+}

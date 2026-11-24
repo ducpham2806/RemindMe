@@ -1,0 +1,4 @@
+# Phiên bản đã kiểm tra 11/2026. Nâng cấp có chủ đích, ghi vào WORKLOG.
+graphifyy==0.9.118
+unslop==0.7.0
+anyio>=4  # graphify query/section cần, không khai báo trong package

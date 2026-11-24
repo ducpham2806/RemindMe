@@ -1,0 +1,14 @@
+.venv-tools/
+*.original.md
+node_modules/
+build/
+.dart_tool/
+.env
+.env.*
+!.env.example
+graphify-out/cache/
+graphify-out/*.html
+.DS_Store
+graphify-out/.graphify_*
+graphify-out/manifest.json
+graphify-out/memory/
