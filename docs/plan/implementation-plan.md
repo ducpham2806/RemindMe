@@ -106,7 +106,7 @@ Sau đó: web app (Flutter web) đọc/sửa. Tới khi có app máy tính, payw
 | E2.4 | Tiền xử lý ảnh; hậu xử lý NFC + chuẩn hóa so khớp theo hệ chữ | 1 | Fixtures chuẩn hóa |
 | E2.5 | Khung tải model OCR bổ sung theo hệ chữ (Ả Rập, Kirin, Thái: PP-OCRv5 mobile) | 1 | Dùng ở đợt 2-3; ở Phase 1 chỉ cần interface + tải thử 1 model |
 
-### E3. Bộ máy luật T2 (S4-S5, ~10d), `packages/parsers/engine/`
+### E3. Bộ máy luật T2 (S4-S5, ~10d), `packages/parsers/lib/src/engine/`
 | # | Việc | d | AC |
 |---|---|---|---|
 | E3.1 | Tìm anchor mờ + lấy vùng phải/dưới theo bbox | 2 | 50 case |

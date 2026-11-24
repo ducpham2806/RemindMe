@@ -183,3 +183,30 @@ table:
     list: [category, list, group, project, type, area]
   priority: {high: 3, urgent: 3, critical: 3, highest: 3, medium: 2, normal: 2, med: 2, low: 1, lowest: 1}
   done: [done, completed, complete, finished, closed, yes, y, resolved]
+
+# Document reading by T2 rules (on-device-extraction.md §4): classifier keywords (weight 1-3) and printed labels per field.
+# Compared accent- and case-insensitively, tolerant to small OCR errors.
+document:
+  classify:
+    flight: {flight: 2, flight number: 3, boarding pass: 3, boarding time: 3, airline: 2, airport: 2, terminal: 1, gate: 1, baggage: 2, departure: 1, arrival: 1, pnr: 2, e-ticket: 1, passenger: 1, layover: 2, itinerary: 1}
+    train: {train: 2, railway: 3, rail: 2, coach: 1, carriage: 2, platform: 2, station: 1}
+    bus: {bus: 2, bus station: 3, pickup point: 2, drop-off point: 2, boarding point: 2}
+    hotel: {hotel: 2, check-in: 1, check-out: 2, room type: 3, nights: 2, guests: 1, reservation: 1, property: 1, resort: 2, accommodation: 2}
+    medical: {appointment: 2, clinic: 3, hospital: 3, doctor: 2, patient: 2, physician: 3}
+    event: {ticket: 1, venue: 2, admission: 2, doors open: 3, section: 1, row: 1, showtime: 3, concert: 3, event: 1}
+  anchors:
+    confirmation_code: [booking reference, booking code, booking number, booking ref, confirmation code, confirmation number, reservation code, reservation number, record locator, pnr]
+    passengers: [passenger, passengers, traveler, traveller]
+    terminal: [terminal]
+    gate: [gate, boarding gate]
+    seat: [seat]
+    class: [cabin class, travel class, fare class, cabin, class]
+    total: [total, total price, total paid, amount paid, grand total]
+    check_in: [check-in, check in, arrival date]
+    check_out: [check-out, check out, departure date]
+    property: [hotel, property, accommodation]
+    address: [address]
+  segments: [departure, return, outbound, inbound, leg]
+  travel_classes: {economy: economy, premium economy: premium, business: business, first: first, first class: first, business class: business}
+  passenger_units: [adult, adults, child, children, infant, infants, passenger, passengers, pax]
+  code_stopwords: [NUMBER, TICKET, STATUS, ONLINE, RETURN, DIRECT, CHANGE, BOOKING, FLIGHT, CLASS, ECONOMY, CONFIRMED, REFERENCE, AIRLINE, TRAVEL, DETAILS, BUSINESS]

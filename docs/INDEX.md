@@ -14,7 +14,7 @@
 | `research/global-market.md` | Chi tiêu app theo quốc gia, đề xuất đợt locale, region dữ liệu, kiểm tra nhóm giá | Chốt locale/region/giá | Dữ liệu thị trường global |
 | `research/competitor-analysis.md` | Đối thủ, giá App Store VN, khoảng trống thị trường | Quyết định sản phẩm, marketing | Dữ liệu nghiên cứu |
 | `architecture/system-architecture.md` | Thành phần, luồng chính, sync, NFR, rủi ro | Hiểu tổng thể | Luồng sync, gộp tài khoản |
-| `architecture/decisions.md` | ADR-001..015 | Trước khi đổi công nghệ | Quyết định |
+| `architecture/decisions.md` | ADR-001..016 | Trước khi đổi công nghệ | Quyết định |
 | `architecture/data-model.md` | ERD, DDL, cột đồng bộ, phiên đăng nhập, quy tắc đếm quota, bảng client | Viết migration, Drift schema | Tên bảng/cột |
 | `architecture/api-spec.md` | RPC sync, endpoint worker, push, CDN pack, webhook | Viết API/client | Endpoint, push type |
 | `architecture/reminder-engine.md` | Rolling window, Android/iOS, lặp/hệ lịch, DST, du lịch, watch, nhiều thiết bị | Làm nhắc nhở | Quy tắc thời gian/DST, action thông báo |

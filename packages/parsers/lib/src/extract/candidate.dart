@@ -154,6 +154,8 @@ class Candidate {
     this.tags = const [],
     this.listName,
     this.checklist = const [],
+    this.fieldConfidence = const {},
+    this.issues = const [],
   });
 
   final CandidateKind kind;
@@ -176,6 +178,11 @@ class Candidate {
   /// Tên list đề xuất (heading Markdown, tên sheet); màn Xem lại khớp với list có sẵn hoặc tạo mới.
   final String? listName;
   final List<ChecklistEntry> checklist;
+  /// Độ tin cậy theo trường (tên theo schema: `starts_at`, `confirmation_code`...) để màn Xem lại tô vàng trường dưới ngưỡng (E5.1).
+  /// Rỗng = mọi trường như [confidence] (decoder định dạng có cấu trúc).
+  final Map<String, double> fieldConfidence;
+  /// Cảnh báo của bước kiểm tra logic (không chặn): `past_date`, `date_order_ambiguous`, `arrival_next_day`, `check_out_before_check_in`.
+  final List<String> issues;
 
   Map<String, Object?> toJson() => {
         'kind': kind.name,

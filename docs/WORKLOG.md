@@ -12,6 +12,22 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · Tầng luật T2: anchor mờ, extractor chung bay/khách sạn, mẫu nhà cung cấp (E3, E4.1) · Claude Code
+- **Làm:** `packages/parsers/lib/src/engine/`: `document.dart` (`TextDocument`/`TextLine`/`TextBox`, `FoldedText` giữ vị trí gốc, anchor mờ Sellers,
+  vùng phải/dưới theo bbox), `values.dart` (`ValueReader`: ngày/giờ bằng mẫu `dates`/`times` của gói, khớp dài nhất, thứ tự ngày theo vùng; tiền; số chuyến; mã sân bay),
+  `vocabulary.dart` (mục `document:` của gói), `generic.dart` (`DocClassifier`, `AnchorReader`, `GenericExtractor` bay/khách sạn), `slots.dart` (`Slots`,
+  `CandidateAssembler`: kiểm tra logic, qua đêm theo UTC, 14:00/12:00 mặc định), `template.dart` (`ProviderTemplate`, `TemplateReader`, `RuleEngine`), `airports.dart`.
+  `data/airports.tsv` + `tool/build_airports.py`, `templates/template.schema.json` (kiểm trong `validate-fixtures.py`). `Candidate` thêm `fieldConfidence`, `issues`.
+  Harness eval chạy T2 cho `.txt` và email không có T0, chấm thêm trường tùy chọn. Fixtures mới: `synthetic-email-flight-text-0001` (en, khứ hồi, +1),
+  `synthetic-hotel-text-0001` (vi, lỗi OCR ở nhãn). App: `decodeImport` gọi T2, `airportsTsvProvider`, 5 key ARB cảnh báo ở màn Xem lại.
+- **Quyết định:** ADR-016 (mwgg/Airports thay OurAirports vì có sẵn tz; từ vựng T2 trong gói NLU). Không trả tên hành khách. Tổng tiền chỉ gắn khi 1 chặng.
+  Mã sân bay đứng một mình chỉ khi có giờ sát bên. `$`, `¥` một mình không đoán tiền tệ. Tên khách sạn/địa chỉ chỉ lấy khi nhãn đứng như nhãn.
+- **Lỗi bắt được nhờ test:** dòng ghế của chặng đi bị gán cho chặng về (ranh giới khối); "ZY 5  Dec 20" đọc thành 5/12; "THE"/"END" là mã sân bay thật;
+  `rootBundle.loadString` tệp > 50 KB mở isolate (kẹt fake-async) → `load` + `utf8.decode`.
+- **Kiểm chứng:** parsers 65 test (17 engine; eval 10 mẫu: bắt buộc 100% 69/69, tùy chọn 100% 36/36, điền sai 0); app 54 test (+1 logic, +1 widget);
+  core 40, platform 2, data 40; analyze 0; check-docs, validate-fixtures (10 mẫu + 1 mẫu nhà cung cấp), lint, ARB, pseudo, platform 0 lỗi; unslop 0 thay đổi.
+- **Tiếp theo:** T2 tàu/xe (VN: mã tàu SE/TN, toa/ghế), khám bệnh; dedupe + gom trip (S6); màn Xem lại sửa từng trường (E5.1); mẫu thật khi có bộ mẫu.
+
 ## 2026-11-24 · Nhập từ tệp trong app: màn Xem lại (bản đầu E5) · Claude Code
 - **Làm:** `packages/data`: `ImportsRepository` (`commit` ghi hàng `imports` + item có `import_id`, list theo tên khớp không dấu hoặc tạo mới,
   `smartImportsThisMonth` đếm theo tháng của múi giờ máy như server, vượt hạn mức → `pending_quota`); `ItemsRepository.create` thêm `endsAt/endTz/endDate`,

@@ -1,0 +1,22 @@
+{
+  "doc_type": "hotel",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "booking",
+      "booking_type": "hotel",
+      "required": {
+        "title": "Khách sạn Hoa Sen Hội An",
+        "confirmation_code": "HS-20731",
+        "check_in": { "local": "2027-01-05T14:00" },
+        "check_out": { "local": "2027-01-07T12:00" }
+      },
+      "optional": {
+        "location_text": "99 Đường Ví Dụ, Hội An, Quảng Nam",
+        "price": { "amount": "3200000", "currency": "VND" }
+      },
+      "must_not_fill": ["seat", "number", "origin", "passenger_count"]
+    }
+  ]
+}

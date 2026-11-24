@@ -1,9 +1,9 @@
 # STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 
-**Cập nhật:** 2026-11-24 · **Phase:** 0 → S1-S3 (code chạy offline; chờ tài khoản Supabase/Firebase) · **Nhánh:** `ccr-7a85f116-dswwig`
+**Cập nhật:** 2026-11-24 · **Phase:** 0 → S1-S3 (code chạy offline; chờ tài khoản Supabase/Firebase) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
 
 ## Đã có
-- Bộ docs v2 (`docs/INDEX.md`) + 15 ADR (ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
+- Bộ docs v2 (`docs/INDEX.md`) + 16 ADR (ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
 - DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
   + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói, chặn/kẹp `field_clock` sai) + 109 test pgTAP.
 - Khung repo: CI `.github/workflows/ci.yml` (3 job docs-and-lint, db + contract test, flutter đều pass trên GitHub, run #10), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
@@ -28,7 +28,12 @@
   `Candidate` thêm `priority`, `done`, `tags`, `listName`, `checklist`. Eval 7 mẫu tổng hợp: 100% trường bắt buộc, 0 điền sai.
 - Nhập từ tệp trong app (bản đầu E5): Tôi → Nhập từ tệp (`file_picker`) → giải mã trong isolate → màn Xem lại → `ImportsRepository.commit`
   (hàng `imports` + item có `import_id`, list theo tên, checklist, địa điểm, lặp, nhắc). Đặt chỗ tạm lưu thành sự kiện; csv tính như xlsx (chủ dự án đồng ý).
-- Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước, bộ máy luật T2 + mẫu nhà cung cấp, màn Xem lại (E5), auth/flavors, `SupabaseSyncApi`.
+- Tầng luật T2 (E3 phần đầu + E4.1, `packages/parsers/lib/src/engine/`, on-device-extraction.md §4.4 "Đã có"): `TextDocument` (dòng + bbox), anchor mờ,
+  `ValueReader` (ngày/giờ qua mẫu gói NLU, tiền ISO 4217, số chuyến, mã sân bay), phân loại theo mục `document:` của gói, extractor chung bay (nhiều chặng, "+1",
+  qua đêm theo UTC) + khách sạn, validator (`fieldConfidence`, `issues`), mẫu nhà cung cấp JSON + schema (CI kiểm), `RuleEngine`. Dữ liệu IATA → tz
+  `data/airports.tsv` (ADR-016). App: email không JSON-LD và `.txt` dạng vé đi qua T2, màn Xem lại có cảnh báo + "hãy kiểm tra lại". Eval 10 mẫu: 100%, 0 điền sai.
+- Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước, T2 cho tàu/xe/khám bệnh/sự kiện,
+  mẫu nhà cung cấp thật (cần mẫu thật), màn Xem lại đầy đủ (E5.1: sửa từng trường, tô vàng), auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
@@ -53,6 +58,8 @@
   method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
   onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
   hủy thông báo khi `session_revoked` (chờ luồng sync thật), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
+- T2: chưa có dedupe với item đã có + gom trip (S6), tên thành phố → sân bay, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
+  nên không tính `smart_imports_per_month` (cần chủ dự án chốt: văn bản dán vào có tính là nhập thông minh không).
 - Nhập từ tệp: chưa thử `file_picker` trên máy thật; hạn mức `smart_imports_per_month` chưa kiểm khi offline (chưa có cache `quota_status`);
   đặt chỗ chưa thành `booking_details` + chuyến đi (S6); lặp âm lịch từ dòng chữ trong tệp .txt chưa giữ (chỉ RRULE).
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.

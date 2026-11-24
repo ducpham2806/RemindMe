@@ -1,22 +1,27 @@
 import 'candidate.dart';
 
-/// Chấm trích xuất theo on-device-extraction.md §11: % trường bắt buộc đúng, tỷ lệ "điền sai" (có giá trị nhưng sai, hoặc điền
-/// vào trường vé không có). So theo thứ tự candidate; chỉ so các khóa có trong expected (ví dụ `starts_at.tz` vắng thì không chấm).
+/// Chấm trích xuất theo on-device-extraction.md §11: % trường bắt buộc đúng, tỷ lệ "điền sai" (có giá trị nhưng sai ở trường bắt buộc
+/// hoặc tùy chọn, hoặc điền vào trường vé không có). Trường tùy chọn chỉ báo cáo % đúng, không chặn.
+/// So theo thứ tự candidate; chỉ so các khóa có trong expected (ví dụ `starts_at.tz` vắng thì không chấm).
 class ExtractEvalReport {
   int docs = 0;
   int skipped = 0;
   int requiredTotal = 0;
   int requiredCorrect = 0;
+  int optionalTotal = 0;
+  int optionalCorrect = 0;
   int wrongFills = 0;
   final failures = <String>[];
 
   double get requiredAccuracy => requiredTotal == 0 ? 1 : requiredCorrect / requiredTotal;
+  double get optionalAccuracy => optionalTotal == 0 ? 1 : optionalCorrect / optionalTotal;
   double get wrongFillRate => requiredTotal == 0 ? 0 : wrongFills / requiredTotal;
 
   @override
   String toString() {
     final b = StringBuffer('tài liệu $docs (bỏ qua $skipped chưa có tầng xử lý), trường bắt buộc đúng '
-        '${(requiredAccuracy * 100).toStringAsFixed(1)}% ($requiredCorrect/$requiredTotal), điền sai $wrongFills');
+        '${(requiredAccuracy * 100).toStringAsFixed(1)}% ($requiredCorrect/$requiredTotal), tùy chọn ${(optionalAccuracy * 100).toStringAsFixed(1)}% '
+        '($optionalCorrect/$optionalTotal), điền sai $wrongFills');
     for (final f in failures) {
       b.write('\n  ✗ $f');
     }
@@ -45,6 +50,16 @@ void scoreDocument(ExtractEvalReport report, String id, Map<String, Object?> exp
       } else {
         if (have != null) report.wrongFills++;
         report.failures.add('$id #${i + 1}: $path = ${have ?? '∅'} ≠ $want');
+      }
+    });
+    _flatten(((e['optional'] as Map?) ?? const {}).cast<String, Object?>()).forEach((path, want) {
+      report.optionalTotal++;
+      final have = got[path];
+      if (have == want) {
+        report.optionalCorrect++;
+      } else if (have != null) {
+        report.wrongFills++;
+        report.failures.add('$id #${i + 1}: (tùy chọn) $path = $have ≠ $want');
       }
     });
     for (final path in (e['must_not_fill'] as List<Object?>? ?? const []).cast<String>()) {

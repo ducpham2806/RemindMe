@@ -204,3 +204,16 @@ UTF-8/Latin-1/windows-1252), csv (RFC 4180, đoán dấu phân cách và mã hó
 **Hệ quả.** Không thêm phụ thuộc mới ngoài `xml`; phần đọc nằm trong tầm kiểm soát và có test riêng. Phải tự lo trường hợp hiếm:
 charset cũ khác (windows-1258, Shift_JIS, GB2312) đang rơi về UTF-8 rồi windows-1252, công thức xlsx chỉ lấy giá trị đã lưu, Markdown không dựng cây CommonMark đầy đủ.
 Nếu mẫu thật cho thấy lỗi nhiều ở các chỗ này thì xét lại từng package riêng.
+
+## ADR-016: Dữ liệu sân bay từ mwgg/Airports; từ vựng đọc tài liệu nằm trong gói NLU
+**Bối cảnh.** T2 cần mã IATA → múi giờ để ghi giờ bay theo giờ địa phương sân bay (`reminder-engine.md` §5). Docs dự kiến OurAirports, nhưng
+OurAirports không có cột múi giờ (phải suy từ tọa độ bằng bản đồ ranh giới múi giờ, nặng). Docs cũng dự kiến từ khóa phân loại ở `packs/<lang>/classifier.json`
+tách khỏi gói NLU.
+
+**Quyết định.** Dùng `airports.json` của mwgg/Airports (MIT, có sẵn `tz`), dựng `packages/parsers/data/airports.tsv` (~7.900 mã, 260 KB, 82 KB nén)
+bằng `tool/build_airports.py`: nước chỉ có 1 múi giờ trong `zone.tab` thì lấy múi đó (nguồn ghi HAN là `Asia/Bangkok`), tên cũ đổi theo `tzdata.zi`.
+Từ khóa phân loại, nhãn theo trường, hạng ghế, đơn vị hành khách nằm ở mục `document:` của `nlu/packs/<lang>.yaml`: 1 gói = 1 ngôn ngữ cho cả Quick Add,
+nhập bảng và đọc tài liệu; ngày/giờ trong tài liệu dùng lại mẫu `dates`/`times` của gói.
+
+**Hệ quả.** Thêm ~82 KB vào app; test kiểm mọi múi giờ có trong tzdata. Múi giờ của nước nhiều múi vẫn theo nguồn (cần soát khi có lỗi thật).
+Ghi công MIT ở `packages/parsers/data/README.md` (màn giấy phép trong app thêm khi có màn Giới thiệu). Thêm ngôn ngữ cho T2 = thêm mục `document:` vào gói, không sửa code.

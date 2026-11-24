@@ -83,7 +83,7 @@ Plugin: `flutter_local_notifications` + method channel riêng cho `setAlarmClock
   `Pacific/Chatham` (+12:45), `Asia/Ho_Chi_Minh`, và một ngày chuyển DST của mỗi vùng có DST.
 
 **Chuyến bay**: `starts_at` theo giờ địa phương sân bay đi (`origin.tz`), `ends_at` theo `destination.tz`; hiển thị cả 2.
-Bảng IATA → tz: toàn bộ dữ liệu mở OurAirports, đóng gói vào app.
+Bảng IATA → tz: `packages/parsers/data/airports.tsv` (mwgg/Airports, MIT; múi giờ chỉnh theo tzdata), đóng gói vào app (ADR-016).
 
 **Nhắc mặc định khi tạo booking** (người dùng sửa được; mỗi cái tính vào quota nhắc/ngày; có thể khác nhau theo thị trường qua gói dữ liệu):
 | Loại | Nhắc mặc định |

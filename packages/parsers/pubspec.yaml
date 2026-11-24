@@ -17,3 +17,4 @@ flutter:
   assets:
     - nlu/packs/en.yaml
     - nlu/packs/vi.yaml
+    - data/airports.tsv
