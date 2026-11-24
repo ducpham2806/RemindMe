@@ -1,33 +1,59 @@
 -- Helper dùng chung cho test pgTAP (include bằng \ir; không đuôi .sql nên pg_prove không chạy như 1 test).
 -- Tất cả nằm trong pg_temp, mất khi phiên kết thúc.
 
--- Tạo user + profile (như app gọi profile_init lúc onboarding).
+-- Session id xác định cho test: thiết bị thứ n của user.
+create function pg_temp.sid(p_uid uuid, p_n int default 1) returns uuid
+language sql as $$ select md5(p_uid::text || ':s' || p_n)::uuid $$;
+
+-- Đặt JWT claims như PostgREST (sub + session_id).
+create function pg_temp.claims(p_uid uuid, p_sid uuid default null) returns void
+language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated',
+    'session_id', coalesce(p_sid, pg_temp.sid(p_uid)))::text, true);
+end $$;
+
+-- Đăng nhập thiết bị n: tạo phiên GoTrue + session_claim. Trả kết quả claim.
+create function pg_temp.login(p_uid uuid, p_n int default 1, p_device text default null)
+returns jsonb language plpgsql as $$
+declare r jsonb;
+begin
+  insert into auth.sessions (id, user_id) values (pg_temp.sid(p_uid, p_n), p_uid) on conflict do nothing;
+  perform pg_temp.claims(p_uid, pg_temp.sid(p_uid, p_n));
+  perform set_config('role', 'authenticated', true);
+  r := public.session_claim(coalesce(p_device, 'device-' || p_n), '{"platform":"ios","device_model":"iPhone 15"}');
+  perform set_config('role', 'postgres', true);
+  return r;
+end $$;
+
+-- Tạo user + profile + phiên thiết bị 1 (như app: đăng nhập → profile_init → session_claim).
 create function pg_temp.mk_user(p_uid uuid, p_tz text default 'UTC', p_region text default 'US', p_locale text default 'en-US')
 returns uuid language plpgsql as $$
 begin
   insert into auth.users (id) values (p_uid);
-  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform pg_temp.claims(p_uid);
   perform public.profile_init(p_locale, p_region, p_tz);
+  perform pg_temp.login(p_uid, 1);
   return p_uid;
 end $$;
 
--- Gọi RPC với role authenticated của user, rồi trả về postgres.
-create function pg_temp.push(p_uid uuid, p_muts jsonb, p_device text default 'dev-test')
+-- Gọi RPC với role authenticated của user (phiên thiết bị 1 trừ khi chỉ định), rồi trả về postgres.
+create function pg_temp.push(p_uid uuid, p_muts jsonb, p_device text default 'dev-test', p_sid uuid default null)
 returns jsonb language plpgsql as $$
 declare r jsonb;
 begin
-  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform pg_temp.claims(p_uid, p_sid);
   perform set_config('role', 'authenticated', true);
   r := public.sync_push(p_device, p_muts);
   perform set_config('role', 'postgres', true);
   return r;
 end $$;
 
-create function pg_temp.pull(p_uid uuid, p_since bigint default 0, p_lim int default 500)
+create function pg_temp.pull(p_uid uuid, p_since bigint default 0, p_lim int default 500, p_sid uuid default null)
 returns jsonb language plpgsql as $$
 declare r jsonb;
 begin
-  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform pg_temp.claims(p_uid, p_sid);
   perform set_config('role', 'authenticated', true);
   r := public.sync_pull(p_since, p_lim);
   perform set_config('role', 'postgres', true);
@@ -38,7 +64,7 @@ create function pg_temp.quota(p_uid uuid)
 returns jsonb language plpgsql as $$
 declare r jsonb;
 begin
-  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform pg_temp.claims(p_uid);
   perform set_config('role', 'authenticated', true);
   r := public.quota_status();
   perform set_config('role', 'postgres', true);

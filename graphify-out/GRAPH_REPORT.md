@@ -1,17 +1,17 @@
 # Graph Report - RemindMe  (2026-11-24)
 
 ## Corpus Check
-- 55 files · ~58,688 words
+- 57 files · ~62,875 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 5 file(s) not represented in the graph (top: (none) 3, .csv 1, .psql 1)
 
 ## Summary
-- 382 nodes · 356 edges · 34 communities (27 shown, 7 thin omitted)
+- 387 nodes · 361 edges · 34 communities (27 shown, 7 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `849bdc1d`
+- Built from commit: `50bd72a5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -52,14 +52,14 @@
 ## God Nodes (most connected - your core abstractions)
 1. `Hướng dẫn tích hợp với nền tảng khác` - 15 edges
 2. `Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình` - 15 edges
-3. `RemindMe English style guide (source language)` - 14 edges
-4. `Hướng dẫn văn phong tiếng Việt cho RemindMe` - 14 edges
-5. `3. Phân tích từng đối thủ` - 14 edges
-6. `Architecture Decision Records (ADR)` - 13 edges
-7. `Quốc tế hóa và bản địa hóa (i18n / l10n)` - 12 edges
-8. `Kế hoạch triển khai` - 12 edges
+3. `Architecture Decision Records (ADR)` - 14 edges
+4. `RemindMe English style guide (source language)` - 14 edges
+5. `Hướng dẫn văn phong tiếng Việt cho RemindMe` - 14 edges
+6. `3. Phân tích từng đối thủ` - 14 edges
+7. `Kế hoạch triển khai` - 12 edges
+8. `Quốc tế hóa và bản địa hóa (i18n / l10n)` - 12 edges
 9. `Design system` - 11 edges
-10. `RemindMe: Nghiên cứu thị trường global (locale, region dữ liệu, nhóm giá), 11/2026` - 10 edges
+10. `UX: kiến trúc thông tin, luồng, màn hình` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
 - None detected - all connections are within the same source files.
@@ -70,8 +70,8 @@
 ## Communities (34 total, 7 thin omitted)
 
 ### Community 0 - "UX: kiến trúc thông tin, luồng, màn hình"
-Cohesion: 0.09
-Nodes (22): 1. Kiến trúc thông tin, 2.1 Hôm nay, 2.2 Quick Add (bottom sheet), 2.3 Chi tiết item, 2.4 Import → Xem lại, 2.5 Chi tiết chuyến đi, 2.6 Lịch, 2. Màn hình chính (wireframe) (+14 more)
+Cohesion: 0.08
+Nodes (23): 1. Kiến trúc thông tin, 2.1 Hôm nay, 2.2 Quick Add (bottom sheet), 2.3 Chi tiết item, 2.4 Import → Xem lại, 2.5 Chi tiết chuyến đi, 2.6 Lịch, 2. Màn hình chính (wireframe) (+15 more)
 
 ### Community 1 - "Hướng dẫn tích hợp với nền tảng khác"
 Cohesion: 0.10
@@ -82,8 +82,8 @@ Cohesion: 0.14
 Nodes (13): 1. Vấn đề, 2. Mục tiêu và chỉ số, 3. Persona, 4. User stories và tiêu chí chấp nhận (MVP = P0), 5. Phi mục tiêu (không làm ở v1), 6. Giả thuyết cần kiểm chứng sớm, Lịch trình & chuyến đi, Nhập liệu (+5 more)
 
 ### Community 3 - "steps"
-Cohesion: 0.12
-Nodes (18): runs-on, steps, runs-on, steps, PGHOST, PGPASSWORD, PGUSER, jobs (+10 more)
+Cohesion: 0.11
+Nodes (20): runs-on, steps, runs-on, steps, PGHOST, PGPASSWORD, PGUSER, jobs (+12 more)
 
 ### Community 4 - "3. Phân tích từng đối thủ"
 Cohesion: 0.08
@@ -98,8 +98,8 @@ Cohesion: 0.17
 Nodes (11): 10. Bàn giao cho Flutter, 1. Nguyên tắc, 2. Màu (token), 3. Chữ, 4. Khoảng cách, bo góc, đổ bóng, 5. Icon & hình, 6. Component chính, 7. Chuyển động (+3 more)
 
 ### Community 7 - "Architecture Decision Records (ADR)"
-Cohesion: 0.14
-Nodes (13): ADR-001: Flutter cho app mobile, native cho watch, ADR-002: Supabase + worker TypeScript, ADR-003: Offline-first, nhắc nhở local, ADR-004: AI extraction phía server (Superseded by ADR-010), ADR-005: Email chuyển tiếp trước, Gmail API sau, ADR-006: RevenueCat cho subscription, ADR-007: Lặp lại RRULE + hệ lịch khác, ADR-008: Entitlement phía server (+5 more)
+Cohesion: 0.13
+Nodes (14): ADR-001: Flutter cho app mobile, native cho watch, ADR-002: Supabase + worker TypeScript, ADR-003: Offline-first, nhắc nhở local, ADR-004: AI extraction phía server (Superseded by ADR-010), ADR-005: Email chuyển tiếp trước, Gmail API sau, ADR-006: RevenueCat cho subscription, ADR-007: Lặp lại RRULE + hệ lịch khác, ADR-008: Entitlement phía server (+6 more)
 
 ### Community 8 - "Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình"
 Cohesion: 0.10
@@ -135,7 +135,7 @@ Nodes (7): 1. Phân loại dữ liệu, 2. Kiểm soát, 3. Bên thứ ba xử l
 
 ### Community 20 - "STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)"
 Cohesion: 0.07
-Nodes (23): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+15 more)
+Nodes (24): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+16 more)
 
 ### Community 21 - "Quy trình phát triển với AI (Claude Code, Codex) + graphify, unslop, agency agents"
 Cohesion: 0.25
@@ -179,7 +179,7 @@ Nodes (3): PGUSER, run(), db-test.sh script
 
 ## Knowledge Gaps
 - **1 isolated node(s):** `PGUSER`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 317 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 321 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
@@ -188,14 +188,14 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `PGUSER` to the rest of the system?**
   _1 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `UX: kiến trúc thông tin, luồng, màn hình` be split into smaller, more focused modules?**
-  _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._
 - **Should `Hướng dẫn tích hợp với nền tảng khác` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
 - **Should `4. User stories và tiêu chí chấp nhận (MVP = P0)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `steps` be split into smaller, more focused modules?**
-  _Cohesion score 0.12280701754385964 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10952380952380952 - nodes in this community are weakly interconnected._
 - **Should `3. Phân tích từng đối thủ` be split into smaller, more focused modules?**
   _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
 - **Should `Architecture Decision Records (ADR)` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._

@@ -12,6 +12,20 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · Một tài khoản một thiết bị + lịch sử đăng nhập; sửa CI · Claude Code
+- **Làm:**
+  - Yêu cầu chủ dự án: đăng nhập máy mới thì máy cũ bị đá, lưu lịch sử đăng nhập. ADR-013 + migration `20261124000006_single_device_sessions.sql`:
+    bảng `user_sessions` (theo claim `session_id` của JWT; thiết bị, nền tảng, phiên bản, IP, quốc gia, thời gian, lý do kết thúc), RPC `session_status`,
+    `session_claim`, `session_end`; RLS mọi bảng của user + `sync_push`/`sync_pull`/`quota_status` chỉ nhận phiên `active` (bọc hàm cũ, đổi tên `app.*_core`);
+    phiên bị đá không claim lại được; xóa `auth.sessions` cũ; entitlement `max_active_devices` = 1/1.
+  - Test `005_single_device.sql` (21 test). Tổng 88 test pass.
+  - Docs: pricing (key mới), data-model, api-spec (RPC, lỗi 403, push `session.revoked`, job worker), reminder-engine §8 (hủy thông báo khi bị đá),
+    UX §3.7 + IA "Tài khoản & thiết bị", PRD US-54, security (phân loại, retention IP 90 ngày/lịch sử 12 tháng), analytics, system-architecture.
+  - CI: bước fixtures lỗi vì jsonschema 4.10 của Ubuntu ghép `$id` tương đối hai lần → dùng `$id` tuyệt đối, cố định Python 3.12. Job DB pass trên GitHub.
+- **Quyết định:** ADR-013. Vượt giới hạn thì đá phiên `last_seen_at` cũ nhất (không chặn máy mới). Đồng hồ/widget không tính là thiết bị.
+- **Kiểm chứng:** `tools/db-test.sh` 5 file, 88 test PASS; validate-fixtures pass với jsonschema 4.10.3 và 4.26.
+- **Dở dang / tiếp theo:** worker job `session.notify_revoked`, `cleanup.sessions`; xác nhận quyền xóa `auth.sessions` trên Supabase thật; xem `docs/STATE.md`.
+
 ## 2026-11-24 · Phase 0: DB sync có quota, khung repo, bộ mẫu, nghiên cứu global, L0 · Claude Code
 - **Làm:**
   - `supabase/migrations/` (5 file): schema theo data-model, khóa ngoại kèm `user_id`, RLS chỉ SELECT + trigger chặn ghi từ role client,

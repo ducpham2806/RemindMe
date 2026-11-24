@@ -151,3 +151,22 @@ thêm một hop mạng và phụ thuộc worker. (c) RPC Postgres `sync_push`/`s
 Quota và merge theo `field_clock` nằm trong 1 transaction. Spec: `api-spec.md` §1.
 
 **Hệ quả.** Logic sync viết bằng PL/pgSQL (hoặc plv8), test bằng pgTAP. Worker không nằm trên đường ghi, nên worker sập không ảnh hưởng sync.
+
+## ADR-013: Một tài khoản chỉ hoạt động trên 1 thiết bị tại một thời điểm
+**Bối cảnh.** Chủ dự án yêu cầu: đăng nhập ở thiết bị mới thì thiết bị cũ bị đăng xuất; lưu lịch sử đăng nhập (thiết bị, thời gian...).
+Lý do: chống chia sẻ tài khoản Plus, người dùng biết ngay khi tài khoản bị dùng ở nơi khác, tránh nhắc kêu trùng trên nhiều máy.
+JWT Supabase sống ~1 giờ, nên chỉ xóa phiên GoTrue thì thiết bị cũ vẫn đọc/ghi được tới khi token hết hạn.
+
+**Phương án.** (a) Chỉ gọi admin API đăng xuất phiên cũ: còn cửa sổ tới 1 giờ, và token chưa hết hạn vẫn dùng được. (b) Kiểm phiên ở worker:
+không phủ đường đọc PostgREST và `sync_push`. (c) Bảng `user_sessions` khóa theo claim `session_id` của JWT. RLS và mọi RPC chỉ chấp nhận
+phiên `active`. Đăng nhập mới gọi `session_claim` để kết thúc phiên cũ.
+
+**Quyết định.** (c). Số thiết bị cho phép là entitlement `max_active_devices` (Free 1, Plus 1, đổi được trong `plan_entitlements`, không hard-code).
+Đồng hồ và widget đi theo điện thoại nên không tính là thiết bị. Phiên đã bị đá không tự claim lại được: người dùng phải đăng nhập lại để có `session_id` mới.
+Lịch sử đăng nhập lưu ở cùng bảng: thiết bị, nền tảng, phiên bản, IP, quốc gia, thời điểm đăng nhập/hoạt động cuối/kết thúc, lý do kết thúc.
+SQL: `supabase/migrations/20261124000006_single_device_sessions.sql`. Spec: `api-spec.md` §1.
+
+**Hệ quả.** Mất tính năng dùng song song điện thoại + tablet. Nâng `max_active_devices` của Plus lên 2 là đòn bẩy bán hàng sẵn có, không cần code.
+Thiết bị bị đá có thể còn thay đổi chưa đồng bộ: giữ trong outbox, đẩy lên khi đăng nhập lại đúng tài khoản; tài khoản khác đăng nhập vào máy đó thì
+cảnh báo trước khi xóa dữ liệu local (`uiux/ux-flows-and-screens.md` §3.7). Thiết bị offline vẫn có thể kêu nhắc đã lập lịch cho tới khi online lại.
+IP là dữ liệu cá nhân: lưu 90 ngày, lịch sử 12 tháng (`security-privacy.md` §6).

@@ -14,8 +14,8 @@
 | `research/global-market.md` | Chi tiêu app theo quốc gia, đề xuất đợt locale, region dữ liệu, kiểm tra nhóm giá | Chốt locale/region/giá | Dữ liệu thị trường global |
 | `research/competitor-analysis.md` | Đối thủ, giá App Store VN, khoảng trống thị trường | Quyết định sản phẩm, marketing | Dữ liệu nghiên cứu |
 | `architecture/system-architecture.md` | Thành phần, luồng chính, sync, NFR, rủi ro | Hiểu tổng thể | Luồng sync, gộp tài khoản |
-| `architecture/decisions.md` | ADR-001..012 | Trước khi đổi công nghệ | Quyết định |
-| `architecture/data-model.md` | ERD, DDL, cột đồng bộ, quy tắc đếm quota, bảng client | Viết migration, Drift schema | Tên bảng/cột |
+| `architecture/decisions.md` | ADR-001..013 | Trước khi đổi công nghệ | Quyết định |
+| `architecture/data-model.md` | ERD, DDL, cột đồng bộ, phiên đăng nhập, quy tắc đếm quota, bảng client | Viết migration, Drift schema | Tên bảng/cột |
 | `architecture/api-spec.md` | RPC sync, endpoint worker, push, CDN pack, webhook | Viết API/client | Endpoint, push type |
 | `architecture/reminder-engine.md` | Rolling window, Android/iOS, lặp/hệ lịch, DST, du lịch, watch, nhiều thiết bị | Làm nhắc nhở | Quy tắc thời gian/DST, action thông báo |
 | `architecture/on-device-extraction.md` | Đọc ảnh/pdf/xlsx/md/email trên máy: decoder, OCR đa hệ chữ, luật + mẫu theo thị trường, LLM của OS | Làm import | Giới hạn email (§8), eval (§11), hiệu năng (§12) |

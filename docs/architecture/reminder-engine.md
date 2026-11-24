@@ -102,6 +102,10 @@ Tên event và thuộc tính: `docs/product/analytics-events.md` (nhóm "reminde
 Dashboard theo OEM, phiên bản OS, quốc gia.
 
 ## 8. Nhiều thiết bị
+- **Mặc định 1 tài khoản chỉ hoạt động trên 1 điện thoại/tablet** (ADR-013, entitlement `max_active_devices`). Khi bị đăng xuất vì máy khác đăng nhập
+  (push `session.revoked` hoặc lỗi `session_revoked` khi sync), app **hủy toàn bộ thông báo đã lập lịch** và xóa `scheduled_notifications`.
+  Máy mới lập lịch ngay sau lần `sync_pull` đầu. Máy cũ đang offline có thể kêu tiếp các nhắc đã lập lịch cho tới khi online lại.
+- Các quy tắc dưới đây áp dụng khi `max_active_devices` > 1 (nếu chủ dự án nâng cho Plus) và cho dữ liệu sửa offline trước khi bị đá.
 - Mỗi điện thoại/tablet tự lập lịch local. Mặc định mọi thiết bị có `devices.receives_reminders = true` đều kêu; người dùng có thể chọn
   "Chỉ thiết bị chính" trong Cài đặt.
 - Watch không lập lịch riêng ở Phase 1-2: nhận mirror từ điện thoại ghép đôi, tránh kêu 2 lần.

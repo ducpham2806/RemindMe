@@ -38,6 +38,8 @@
 | | `quota_blocked` | `key`, `limit` | Cân chỉnh giới hạn |
 | i18n | `locale_changed` | `from`, `to`, `setting` (ui/format/voice/holiday) | Nhu cầu ngôn ngữ |
 | sync | `sync_error` | `code`, `attempts` | Độ ổn định |
+| account | `session_claimed` | `replaced_count`, `same_device` | Tần suất đổi máy / dùng chung tài khoản (ADR-013) |
+| | `session_revoked_shown` | `pending_changes` (số), `reason` | Ảnh hưởng của giới hạn 1 thiết bị |
 
 ## 4. Quy tắc
 - Thêm event mới: thêm vào bảng này trong cùng PR, có reviewer kiểm tra không chứa nội dung người dùng.

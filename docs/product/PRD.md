@@ -84,6 +84,7 @@
 - **US-50 (P0)** Gói Free có giới hạn theo `pricing-entitlements.md`; hiển thị mức đã dùng trong Cài đặt.
 - **US-51 (P0)** Mua Plus tháng/quý/năm, khôi phục mua hàng, quản lý/hủy.
 - **US-52 (P0)** Xóa tài khoản và dữ liệu, xuất dữ liệu (JSON theo schema có version + ICS), định dạng ở `security-privacy.md` §6.
+- **US-54 (P0)** Tài khoản chỉ hoạt động trên 1 thiết bị: đăng nhập máy mới thì máy cũ bị đăng xuất; xem lịch sử đăng nhập. *AC:* máy cũ mất quyền đọc/ghi ngay (không đợi token hết hạn), hủy thông báo đã lập lịch, hiện máy nào đã đăng nhập; máy mới được hỏi xác nhận trước khi đá; lịch sử có thiết bị, nền tảng, quốc gia, thời gian, lý do; số thiết bị lấy từ `max_active_devices` (ADR-013).
 - **US-53 (P0)** Chọn ngôn ngữ giao diện riêng cho app, định dạng vùng, quốc gia ngày lễ (`architecture/i18n-l10n.md` §3).
 
 ## 5. Phi mục tiêu (không làm ở v1)

@@ -10,6 +10,7 @@
 | Nhạy cảm cao | Lịch khám/ghi chú sức khỏe (GDPR Art. 9), số CCCD/hộ chiếu, token OAuth, nội dung email | Mã hóa cột (pgsodium/Vault) cho `passengers`, token; che số giấy tờ; không log; TTL |
 | Cá nhân | Tiêu đề việc, địa điểm, lịch trình | RLS, TLS, backup mã hóa |
 | Kỹ thuật | Device id, phiên bản app, OEM, locale | Ẩn danh trong analytics |
+| Phiên đăng nhập | `user_sessions`: IP, quốc gia, mẫu máy, thời gian (ADR-013) | Chỉ user (phiên đang hoạt động) đọc; UI chỉ hiện quốc gia; IP xóa sau 90 ngày; mục đích an ninh tài khoản (lợi ích chính đáng, ghi trong Privacy Policy) |
 
 ## 2. Kiểm soát
 - **RLS**: mọi bảng `user_id = auth.uid()`. Bảng đồng bộ chỉ cho `SELECT` qua PostgREST; ghi chỉ qua RPC `sync_push` (ADR-012). Test RLS bằng pgTAP trong CI.
@@ -24,6 +25,7 @@
   Khóa ký nằm trong Cloud KMS, chỉ CI phát hành ký được. App nhúng 2 public key (hiện tại + kế tiếp) để xoay khóa; `manifest.json` có danh sách `revoked`.
 - **"Gửi mẫu để cải thiện"**: chỉ gửi bản đã che (chữ → X, số → 9), người dùng xem trước bản che.
 - **Email inbound**: kiểm SPF/DKIM/DMARC; người gửi lạ chỉ tạo đề xuất.
+- **Phiên**: 1 thiết bị hoạt động mỗi tài khoản (ADR-013); RLS + RPC kiểm `session_id` của JWT còn `active`, phiên bị đá mất quyền ngay; phiên GoTrue cũ bị xóa để refresh token chết.
 - **Mobile**: token trong Keychain/Keystore (`flutter_secure_storage`); token Gmail (Phase 3) chỉ nằm trên máy; tùy chọn khóa app bằng sinh trắc học.
 - **Logging/analytics**: không log tiêu đề/ghi chú/nội dung import; Sentry scrub PII (`beforeSend`); analytics theo consent (`docs/product/analytics-events.md`).
 - **Threat model** (STRIDE rút gọn) viết trước S5 cho: sync RPC, hộp thư email, CDN mẫu, OAuth. Pen-test bên ngoài trước production.
@@ -68,4 +70,5 @@ Runbook: phát hiện → khoanh vùng → thu hồi token/khóa → thông báo
   xóa file Storage; hoàn tất trong ≤ 30 ngày, backup tự hết hạn sau ≤ 35 ngày. Subscription do store quản lý: nhắc người dùng hủy trong store.
 - **Xuất dữ liệu**: file ZIP gồm `remindme-export.json` (schema có `export_version`, một mảng cho mỗi bảng đồng bộ, thời gian ISO 8601 + IANA tz)
   và `calendar.ics` (VEVENT/VTODO, RRULE; hệ lịch phụ được trải phẳng 2 năm). Tạo trên máy, không cần server.
-- **Thời hạn lưu**: MIME email 7 ngày (hoặc tới khi máy `ack`); tombstone `deleted_at` 90 ngày rồi xóa hẳn; log server 30 ngày; telemetry ẩn danh 13 tháng.
+- **Thời hạn lưu**: MIME email 7 ngày (hoặc tới khi máy `ack`); tombstone `deleted_at` 90 ngày rồi xóa hẳn; log server 30 ngày; telemetry ẩn danh 13 tháng;
+  `user_sessions`: IP và quốc gia xóa sau 90 ngày, hàng đã kết thúc xóa sau 12 tháng (job `cleanup.sessions`).

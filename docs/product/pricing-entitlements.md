@@ -39,7 +39,8 @@
 | `voice_input` | -1 | -1 | STT của OS + parser luật, không tốn chi phí |
 | `max_import_pages` | 20 | 200 | Trang PDF mỗi lần (để máy yếu không treo) |
 | `max_originals_mb` | 0 | 1024 | "Giữ bản gốc" trên cloud (Free: bản gốc chỉ nằm trên máy) |
-| `max_lists` | 5 | -1 | |
+| `max_lists` | 5 | -1 | Inbox không tính |
+| `max_active_devices` | 1 | 1 | Số điện thoại/tablet đăng nhập cùng lúc; đăng nhập máy mới thì máy cũ bị đăng xuất (ADR-013). Đồng hồ, widget không tính |
 | `calendar_sync_accounts` | 1 | 5 | Google/Microsoft |
 | `feature_watch_app` | 1 | 2 | 1 = xem danh sách + Xong/Hoãn; 2 = thêm nhanh bằng giọng nói, complication/tile, Live Activities. Thông báo mirror luôn có |
 | `feature_ics_feed` | 0 | 1 | Feed webcal (Phase 2) |

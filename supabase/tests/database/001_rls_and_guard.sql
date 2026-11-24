@@ -20,7 +20,7 @@ select ok((select is_inbox from public.lists where id = md5(pg_temp.u('alice')::
   'profile_init tạo Inbox với id xác định');
 
 -- Từ đây đóng vai Alice qua PostgREST.
-select set_config('request.jwt.claims', json_build_object('sub', pg_temp.u('alice'), 'role', 'authenticated')::text, true);
+select pg_temp.claims(pg_temp.u('alice'));
 set local role authenticated;
 
 select throws_ok(
@@ -40,7 +40,7 @@ select throws_ok($$ update public.profiles set inbound_email_token = 'x' where i
   '42501', null, 'không sửa được inbound_email_token');
 
 reset role;
-select set_config('request.jwt.claims', json_build_object('sub', pg_temp.u('bob'), 'role', 'authenticated')::text, true);
+select pg_temp.claims(pg_temp.u('bob'));
 set local role authenticated;
 select is((select count(*) from public.items), 0::bigint, 'Bob không thấy item của Alice');
 reset role;
