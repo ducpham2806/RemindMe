@@ -66,7 +66,7 @@ jobs:
       - run: flutter pub get
       - run: cd apps/client && flutter gen-l10n
       - run: flutter analyze
-      - name: Test package Dart thuần (chạy trong từng package: sqlite3 dùng native assets)
+      - name: "Test package Dart thuần (chạy trong từng package vì sqlite3 dùng native assets)"
         run: for p in core platform data; do (cd packages/$p && dart test) || exit 1; done
       - name: Test widget (3 kích thước, pseudo-locale)
         run: cd apps/client && flutter test
