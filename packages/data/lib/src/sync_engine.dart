@@ -64,14 +64,19 @@ class SyncEngine {
   }
 
   /// Xóa mềm (tombstone). Xóa item thì tombstone luôn reminder/recurrence/booking/occurrence của nó, giống server.
-  Future<void> delete(SyncTable table, String id) {
+  /// [occurrenceAt] bắt buộc với `occurrence_log` (khóa 2 cột), bỏ qua với bảng khác.
+  Future<void> delete(SyncTable table, String id, {DateTime? occurrenceAt}) {
+    if (table == SyncTable.occurrenceLog && occurrenceAt == null) {
+      throw ArgumentError('occurrence_log cần occurrenceAt');
+    }
     return db.transaction(() async {
       final codec = _codecs[table]!;
       final keys = RowCodec.keyColumns(table);
       final nowMs = _now().millisecondsSinceEpoch;
+      final occ = table == SyncTable.occurrenceLog;
       await db.customUpdate(
-        'UPDATE ${codec.name} SET deleted_at = ? WHERE ${keys.first} = ? AND deleted_at IS NULL',
-        variables: [Variable.withInt(nowMs), Variable.withString(id)],
+        'UPDATE ${codec.name} SET deleted_at = ? WHERE ${keys.first} = ?${occ ? ' AND occurrence_at = ?' : ''} AND deleted_at IS NULL',
+        variables: [Variable.withInt(nowMs), Variable.withString(id), if (occ) Variable.withInt(occurrenceAt!.millisecondsSinceEpoch)],
         updates: {codec.table},
       );
       if (table == SyncTable.items) {
@@ -83,7 +88,14 @@ class SyncEngine {
           );
         }
       }
-      await _enqueue(Mutation(table: table, id: id, op: MutationOp.delete));
+      await _enqueue(Mutation(
+        table: table,
+        id: id,
+        op: MutationOp.delete,
+        payload: table == SyncTable.occurrenceLog
+            ? {'item_id': id, 'occurrence_at': occurrenceAt!.toUtc().toIso8601String()}
+            : const {},
+      ));
     });
   }
 

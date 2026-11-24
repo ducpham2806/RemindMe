@@ -178,4 +178,22 @@ void main() {
     expect((await row(phoneDb, id))['title'], 'fixed');
     expect((await row(tabletDb, id))['title'], 'fixed');
   }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
+
+  test('xong 1 lần của chuỗi lặp rồi hoàn tác: occurrence_log khóa 2 cột qua RPC thật', () async {
+    final login = await newUser();
+    final (phone, _) = await login('phone-1', 'ios', 'phone');
+    final repo = ItemsRepository(phone);
+    final id = await repo.create(title: 'Pills', startsAt: DateTime.utc(2026, 12, 1, 1), tz: 'Asia/Ho_Chi_Minh',
+        recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY'}, recurrenceStart: DateTime.utc(2026, 12, 1, 1), reminderOffsets: [0]);
+    final occ = DateTime.utc(2026, 12, 2, 1);
+    await repo.completeOccurrence(id, occ);
+    var r = await phone.sync();
+    expect(r.issues, isEmpty, reason: '${r.issues.map((i) => '${i.table} ${i.error} ${i.id}')}');
+    await repo.reopenOccurrence(id, occ);
+    r = await phone.sync();
+    expect(r.issues, isEmpty, reason: '${r.issues.map((i) => '${i.table} ${i.error} ${i.id}')}');
+    final rows = await conn.execute(
+        Sql.named('select deleted_at is not null as gone from public.occurrence_log where item_id = @i::uuid'), parameters: {'i': id});
+    expect(rows.single.first, isTrue);
+  }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
 }

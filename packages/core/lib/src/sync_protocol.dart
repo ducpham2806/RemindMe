@@ -62,7 +62,7 @@ class Mutation {
         'table': table.wire,
         'id': id,
         'op': op.name,
-        if (op == MutationOp.upsert) 'payload': payload,
+        if (op == MutationOp.upsert || payload.isNotEmpty) 'payload': payload,
         if (op == MutationOp.upsert) 'field_clock': fieldClock,
         if (baseClock != null) 'base_clock': baseClock,
       };

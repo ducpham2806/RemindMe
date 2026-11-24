@@ -195,6 +195,7 @@ class ItemsRepository {
     String? notes,
     Map<String, Object?>? recurrence,
     DateTime? recurrenceStart,
+    List<int> reminderOffsets = const [],
   }) async {
     final trimmed = title.trim();
     if (trimmed.isEmpty) throw ArgumentError.value(title, 'title', 'không được rỗng');
@@ -222,6 +223,9 @@ class ItemsRepository {
         ...recurrence,
         'dtstart': recurrenceStart!.toUtc().toIso8601String(),
       });
+    }
+    for (final off in reminderOffsets) {
+      await addReminder(id, offsetMinutes: off);
     }
     return id;
   }
@@ -251,6 +255,54 @@ class ItemsRepository {
   }
 
   Future<void> delete(String id) => engine.delete(SyncTable.items, id);
+
+  // ------------------------------------------------------------------ nhắc (reminders)
+
+  /// Thêm nhắc [offsetMinutes] phút trước giờ của item (0 = đúng giờ).
+  Future<String> addReminder(String itemId, {required int offsetMinutes, bool isAlarm = false}) async {
+    final id = uuidV7(nowMillis: _now().millisecondsSinceEpoch);
+    await engine.edit(SyncTable.reminders, id, {
+      'item_id': itemId,
+      'trigger_kind': 'offset',
+      'offset_minutes': offsetMinutes,
+      'channel': const ['push'],
+      'is_alarm': isAlarm,
+    });
+    return id;
+  }
+
+  Future<void> removeReminder(String reminderId) => engine.delete(SyncTable.reminders, reminderId);
+
+  Future<List<Reminder>> remindersOf(String itemId) => (_db.select(_db.reminders)
+        ..where((t) => t.itemId.equals(itemId) & t.deletedAt.isNull())
+        ..orderBy([(t) => OrderingTerm.asc(t.offsetMinutes)]))
+      .get();
+
+  Stream<List<Reminder>> watchReminders(String itemId) => (_db.select(_db.reminders)
+        ..where((t) => t.itemId.equals(itemId) & t.deletedAt.isNull())
+        ..orderBy([(t) => OrderingTerm.asc(t.offsetMinutes)]))
+      .watch();
+
+  /// Hoãn (action Snooze trên thông báo): kêu lại lúc [until].
+  Future<void> snooze(String reminderId, {required DateTime until}) =>
+      engine.edit(SyncTable.reminders, reminderId, {'snoozed_until': until.toUtc().toIso8601String()});
+
+  // ------------------------------------------------------------------ từng lần của chuỗi lặp
+
+  /// Xong 1 lần của chuỗi lặp (không đóng cả chuỗi), reminder-engine.md §4.
+  Future<void> completeOccurrence(String itemId, DateTime occurrenceAt) => engine.edit(SyncTable.occurrenceLog, itemId, {
+        'occurrence_at': occurrenceAt.toUtc().toIso8601String(),
+        'status': 'done',
+      });
+
+  Future<void> skipOccurrence(String itemId, DateTime occurrenceAt) => engine.edit(SyncTable.occurrenceLog, itemId, {
+        'occurrence_at': occurrenceAt.toUtc().toIso8601String(),
+        'status': 'skipped',
+      });
+
+  /// Hoàn tác "Xong" của 1 lần.
+  Future<void> reopenOccurrence(String itemId, DateTime occurrenceAt) =>
+      engine.delete(SyncTable.occurrenceLog, itemId, occurrenceAt: occurrenceAt);
 
   /// Clock hiện tại của notes (truyền lại vào [setNotes]).
   Future<String?> notesClock(String id) async {

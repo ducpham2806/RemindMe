@@ -83,6 +83,7 @@ class Items extends Table with SyncCols {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('RecurrenceRow')
 class Recurrences extends Table with SyncCols {
   TextColumn get itemId => text()();
   TextColumn get kind => text().nullable()();
@@ -168,4 +169,21 @@ class SyncIssues extends Table {
   TextColumn get kind => text()();
   TextColumn get detail => text().nullable()();
   IntColumn get createdAt => integer()();
+}
+
+/// Thông báo đã đăng ký với OS (reminder-engine.md §1). `notificationId` = hash xác định của (reminder, lần), để diff ổn định.
+@DataClassName('ScheduledNotificationRow')
+class ScheduledNotifications extends Table {
+  IntColumn get notificationId => integer()();
+  TextColumn get reminderId => text()();
+  TextColumn get itemId => text()();
+  /// Thời điểm của lần (UTC ms) mà nhắc này thuộc về.
+  IntColumn get occurrenceAt => integer()();
+  /// Thời điểm kêu (UTC ms).
+  IntColumn get fireAt => integer()();
+  /// Hash tiêu đề + nội dung + kiểu kêu: đổi thì hủy và lập lại.
+  TextColumn get contentHash => text()();
+  TextColumn get locale => text()();
+  @override
+  Set<Column> get primaryKey => {notificationId};
 }
