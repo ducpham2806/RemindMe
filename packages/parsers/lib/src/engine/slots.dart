@@ -31,8 +31,18 @@ class Slots {
   Slot<String>? seat;
   Slot<String>? carriage;
   Slot<String>? travelClass;
+  /// Tên khách sạn, nơi khám, tên sự kiện: thành `title`.
   Slot<String>? property;
+  /// Địa chỉ, nơi tổ chức: thành `location_text`.
   Slot<String>? address;
+  /// Ga/điểm đón, ga/điểm trả theo tên (tàu, xe không có mã chuẩn như IATA).
+  Slot<String>? originName;
+  Slot<String>? destinationName;
+  /// Nhà xe, hãng tàu.
+  Slot<String>? provider;
+  Slot<String>? department;
+  Slot<String>? queueNumber;
+  Slot<String>? preparation;
   Slot<DocDate>? departureDate;
   Slot<DocTime>? departureTime;
   Slot<DocDate>? arrivalDate;
@@ -67,8 +77,132 @@ class CandidateAssembler {
   Candidate? assemble(DocType type, Slots s, {required String source}) => switch (type) {
         DocType.flight => _flight(s, source),
         DocType.hotel => _hotel(s, source),
-        _ => null,
+        DocType.train => _ground(s, source, BookingType.train),
+        DocType.bus => _ground(s, source, BookingType.bus),
+        DocType.medical => _appointment(s, source),
+        DocType.event => _event(s, source),
+        DocType.todoList || DocType.unknown => null,
       };
+
+  /// Ngày + giờ bắt đầu; [tz] null = giờ tường theo máy khi ghi (tàu/xe chưa có từ điển ga → múi giờ).
+  (LocalTime, double) _start(Slot<DocDate> date, Slot<DocTime>? time, List<String> issues, {String? tz}) {
+    final iso = date.value.iso(reference);
+    if (date.value.orderAmbiguous) issues.add('date_order_ambiguous');
+    if (iso.compareTo(_iso(reference)) < 0) issues.add('past_date');
+    return (LocalTime(time == null ? iso : '${iso}T${time.value.hm}', tz: tz), _min([date.confidence, ?time?.confidence]));
+  }
+
+  Candidate? _ground(Slots s, String source, BookingType type) {
+    final date = s.departureDate, o = s.originName, d = s.destinationName;
+    if (date == null || o == null || d == null || foldForSearch(o.value) == foldForSearch(d.value)) return null;
+    final issues = <String>[];
+    final conf = <String, double>{};
+    final (startsAt, c) = _start(date, s.departureTime, issues);
+    conf['starts_at'] = c;
+    LocalTime? endsAt;
+    final arr = s.arrivalTime, dep = s.departureTime;
+    if (arr != null && dep != null) {
+      var arrDate = s.arrivalDate?.value.iso(reference) ?? date.value.iso(reference);
+      var ac = _min([arr.confidence, s.arrivalDate?.confidence ?? date.confidence]);
+      if (s.arrivalDate == null && (s.arrivalNextDay || arr.value.minutes < dep.value.minutes)) {
+        arrDate = _addDay(arrDate);
+        if (!s.arrivalNextDay) {
+          issues.add('arrival_next_day');
+          ac = _min([ac, Slot.inferred]);
+        }
+      }
+      endsAt = LocalTime('${arrDate}T${arr.value.hm}');
+      conf['ends_at'] = ac;
+    }
+    void put(String k, Slot<Object?>? v) {
+      if (v != null) conf[k] = v.confidence;
+    }
+
+    put('origin', o);
+    put('destination', d);
+    put('number', s.number);
+    put('provider', s.provider);
+    put('confirmation_code', s.confirmationCode);
+    put('carriage', s.carriage);
+    put('seat', s.seat);
+    put('price', s.price);
+    return Candidate(
+      kind: CandidateKind.booking,
+      bookingType: type,
+      source: source,
+      confidence: _min([c, o.confidence, d.confidence]),
+      fieldConfidence: conf,
+      issues: issues,
+      fields: CandidateFields(
+        provider: s.provider?.value,
+        confirmationCode: s.confirmationCode?.value,
+        number: s.number?.value,
+        origin: Place(name: o.value),
+        destination: Place(name: d.value),
+        startsAt: startsAt,
+        endsAt: endsAt,
+        carriage: s.carriage?.value,
+        seat: s.seat?.value,
+        price: s.price?.value,
+      ),
+    );
+  }
+
+  Candidate? _appointment(Slots s, String source) {
+    final date = s.departureDate;
+    if (date == null) return null;
+    final issues = <String>[];
+    final (startsAt, c) = _start(date, s.departureTime, issues);
+    final conf = <String, double>{'starts_at': c};
+    if (s.property != null) conf['title'] = s.property!.confidence;
+    if (s.department != null) conf['department'] = s.department!.confidence;
+    if (s.queueNumber != null) conf['queue_number'] = s.queueNumber!.confidence;
+    if (s.preparation != null) conf['preparation'] = s.preparation!.confidence;
+    if (s.address != null) conf['location_text'] = s.address!.confidence;
+    return Candidate(
+      kind: CandidateKind.appointment,
+      source: source,
+      confidence: c,
+      fieldConfidence: conf,
+      issues: issues,
+      fields: CandidateFields(
+        title: s.property?.value,
+        startsAt: startsAt,
+        department: s.department?.value,
+        queueNumber: s.queueNumber?.value,
+        preparation: s.preparation?.value,
+        locationText: s.address?.value,
+      ),
+    );
+  }
+
+  Candidate? _event(Slots s, String source) {
+    final date = s.departureDate;
+    if (date == null || (s.property == null && s.address == null)) return null;
+    final issues = <String>[];
+    final (startsAt, c) = _start(date, s.departureTime, issues);
+    final conf = <String, double>{'starts_at': c};
+    if (s.property != null) conf['title'] = s.property!.confidence;
+    if (s.address != null) conf['location_text'] = s.address!.confidence;
+    if (s.seat != null) conf['seat'] = s.seat!.confidence;
+    if (s.confirmationCode != null) conf['confirmation_code'] = s.confirmationCode!.confidence;
+    return Candidate(
+      kind: CandidateKind.event,
+      bookingType: BookingType.eventTicket,
+      source: source,
+      confidence: c,
+      fieldConfidence: conf,
+      issues: issues,
+      fields: CandidateFields(
+        title: s.property?.value,
+        startsAt: startsAt,
+        locationText: s.address?.value,
+        seat: s.seat?.value,
+        confirmationCode: s.confirmationCode?.value,
+        price: s.price?.value,
+      ),
+    );
+  }
 
   Candidate? _flight(Slots s, String source) {
     final o = s.origin?.value, d = s.destination?.value, date = s.departureDate;

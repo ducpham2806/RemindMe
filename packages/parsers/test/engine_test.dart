@@ -150,6 +150,40 @@ void main() {
     });
   });
 
+  group('tàu, xe, lịch khám, sự kiện', () {
+    test('tàu không có nhãn ga: dòng có mũi tên; đến sớm hơn giờ đi thì hôm sau (cảnh báo)', () {
+      final c = run('VÉ TÀU - Đường sắt Ví Dụ\nTàu: SE1   Ngày đi: 01/01/2027\nHà Nội 19:30 → Vinh 01:10\nToa 3 Giường 12', lang: 'vi').candidates.single;
+      expect((c.bookingType, c.fields.number, c.fields.origin!.name, c.fields.destination!.name), (BookingType.train, 'SE1', 'Hà Nội', 'Vinh'));
+      expect((c.fields.startsAt!.local, c.fields.endsAt!.local), ('2027-01-01T19:30', '2027-01-02T01:10'));
+      expect(c.issues, contains('arrival_next_day'));
+      expect((c.fields.carriage, c.fields.seat), ('3', '12'));
+    });
+
+    test('xe: điểm đón = điểm trả thì bỏ', () {
+      expect(run('Nhà xe: Ví Dụ\nBến xe khách\nĐiểm đón: Bến xe A, 07:30 ngày 03/01/2027\nĐiểm trả: Bến xe A', lang: 'vi').candidates, isEmpty);
+    });
+
+    test('lịch khám: ngày sinh không bao giờ là ngày hẹn, kể cả khi ngày hẹn không có nhãn', () {
+      final c = run('PHÒNG KHÁM VÍ DỤ\nPhiếu hẹn - Bệnh nhân: NGUYEN VAN A\nNgày sinh: 01/02/1990\nTái khám 05/01/2027 lúc 9:00\nBác sĩ dặn: không ăn sáng',
+              lang: 'vi')
+          .candidates
+          .single;
+      expect((c.kind, c.fields.title, c.fields.startsAt!.local), (CandidateKind.appointment, 'PHÒNG KHÁM VÍ DỤ', '2027-01-05T09:00'));
+      expect(c.fields.preparation, 'Bác sĩ dặn: không ăn sáng');
+      expect(c.fieldConfidence['starts_at'], Slot.pattern);
+      expect(c.toJson().toString(), isNot(contains('NGUYEN')), reason: 'không trả tên bệnh nhân');
+    });
+
+    test('sự kiện cần tên hoặc nơi tổ chức', () {
+      expect(run('Showtime: 19 Dec 2026, 7:15 PM\nSeat: G12\nCinema ticket', lang: 'en').candidates, isEmpty);
+    });
+
+    test('anchor mờ không nhận nhầm nhãn của trường khác ("điểm đón" ≠ "điểm đến")', () {
+      final hits = AnchorReader(TextDocument.fromText('Điểm đón: A\nĐiểm đến: B'), [vi]).hitsFor('destination');
+      expect(hits.map((h) => h.line), [1]);
+    });
+  });
+
   group('mẫu nhà cung cấp', () {
     final template = ProviderTemplate.parse(File('test/templates/zz.eticket.v1.json').readAsStringSync());
     const ticket = 'ZZ AIR e-ticket\nRecord locator\nQWE7RT\nSegment 1\nZZ 101  (SGN) - (BKK)\nDate 01/02/2027\n'

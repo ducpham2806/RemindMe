@@ -1,0 +1,27 @@
+{
+  "doc_type": "medical",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "appointment",
+      "required": {
+        "title": "BỆNH VIỆN ĐA KHOA VÍ DỤ",
+        "starts_at": {
+          "local": "2027-01-07T08:30"
+        },
+        "department": "Tim mạch",
+        "queue_number": "015"
+      },
+      "optional": {
+        "preparation": "Nhịn ăn 8 tiếng trước khi lấy máu",
+        "location_text": "1 Đường Ví Dụ, Quận 1, TP. Hồ Chí Minh"
+      },
+      "must_not_fill": [
+        "confirmation_code",
+        "seat",
+        "passenger_count"
+      ]
+    }
+  ]
+}

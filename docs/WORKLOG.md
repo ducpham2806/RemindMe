@@ -12,6 +12,19 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · T2: tàu/xe, lịch khám, vé sự kiện · Claude Code
+- **Làm:** `GenericExtractor` thêm `_ground` (tàu/xe: ga/điểm đón theo nhãn hoặc dòng có mũi tên, giờ + "(+1)" cùng vùng, số hiệu tàu, toa, chỗ, nhà xe),
+  `_medical` (nơi khám không nhãn: dòng ngắn hoặc cụm viết hoa quanh từ trong `facility_words`; khoa, số thứ tự, dặn dò), `_event`; `AnchorReader.hitsFor`,
+  `excludeField` + `excluded_dates` (ngày sinh, ngày đặt vé). `CandidateFields` thêm `department`, `queueNumber`, `preparation`; `Slots` thêm tên ga, nhà xe.
+  Mẫu nhà cung cấp nhận thêm `origin_name`, `destination_name`, `operator`, `department`, `queue_number`, `preparation`, `event_name`.
+  Fixtures: `synthetic-train-text-0001`, `synthetic-bus-text-0001`, `synthetic-medical-text-0001` (vi), `synthetic-email-medical-0001`, `synthetic-event-text-0001` (en).
+  App: `ImportNoteLabels` (ghi chú: dặn dò, mã đặt chỗ, toa, ghế, khoa, số thứ tự qua ARB, 4 key mới), `fallbackTitle` dùng khoa khi không có tên.
+- **Quyết định:** tàu/xe chưa có từ điển ga nên giờ ghi theo múi giờ máy; tàu/xe chỉ 1 chặng. Dặn dò chép nguyên văn (glossary `med_fasting`: không diễn giải).
+- **Lỗi bắt được nhờ test:** harness coi T2 rỗng là "chưa có tầng xử lý" (che mất 1 mẫu trượt) → nay chấm là thiếu; anchor mờ nhận "điểm đón" là "điểm đến"
+  (bỏ dấu khác 1 ký tự) → bỏ hit gần đúng trùng nhãn trường khác; "chỗ" trong "Mã đặt chỗ" bị đọc là ghế → loại theo nhãn mã đặt chỗ.
+- **Kiểm chứng:** parsers 70 (eval 15 mẫu: bắt buộc 100% 88/88, tùy chọn 100% 53/53, điền sai 0); app 55; core 40, platform 2, data 40; analyze 0; lint/ARB/docs 0 lỗi.
+- **Tiếp theo:** màn Xem lại sửa từng trường + tô vàng (E5.1); dedupe + gom trip (S6); ga → múi giờ; mẫu thật.
+
 ## 2026-11-24 · Tầng luật T2: anchor mờ, extractor chung bay/khách sạn, mẫu nhà cung cấp (E3, E4.1) · Claude Code
 - **Làm:** `packages/parsers/lib/src/engine/`: `document.dart` (`TextDocument`/`TextLine`/`TextBox`, `FoldedText` giữ vị trí gốc, anchor mờ Sellers,
   vùng phải/dưới theo bbox), `values.dart` (`ValueReader`: ngày/giờ bằng mẫu `dates`/`times` của gói, khớp dài nhất, thứ tự ngày theo vùng; tiền; số chuyến; mã sân bay),

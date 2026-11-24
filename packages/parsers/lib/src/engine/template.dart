@@ -13,11 +13,12 @@ import 'vocabulary.dart';
 const templateFieldNames = {
   'confirmation_code', 'flight_number', 'carrier_code', 'number', 'origin', 'destination', 'terminal', 'gate', 'seat', 'carriage',
   'class', 'passenger_count', 'total', 'departure_date', 'departure_time', 'arrival_date', 'arrival_time', 'check_in_date',
-  'check_in_time', 'check_out_date', 'check_out_time', 'property', 'address',
+  'check_in_time', 'check_out_date', 'check_out_time', 'property', 'address', 'origin_name', 'destination_name', 'operator',
+  'department', 'queue_number', 'preparation', 'event_name',
 };
 
 /// Trường dùng chung cho mọi khối lặp (in 1 lần ở đầu tài liệu): không thấy trong khối thì tìm cả tài liệu.
-const _headerFields = {'confirmation_code', 'passenger_count', 'total', 'property', 'address', 'class'};
+const _headerFields = {'confirmation_code', 'passenger_count', 'total', 'property', 'address', 'class', 'operator'};
 
 enum TemplateValueType { text, date, time, iata, money, int, flightNumber }
 
@@ -204,6 +205,20 @@ class TemplateReader {
           s.property = Slot(v as String, c);
         case 'address':
           s.address = Slot(v as String, c);
+        case 'origin_name':
+          s.originName = Slot(v as String, c);
+        case 'destination_name':
+          s.destinationName = Slot(v as String, c);
+        case 'operator':
+          s.provider = Slot(v as String, c);
+        case 'department':
+          s.department = Slot(v as String, c);
+        case 'queue_number':
+          s.queueNumber = Slot(v as String, c);
+        case 'preparation':
+          s.preparation = Slot(v as String, c);
+        case 'event_name':
+          s.property = Slot(v as String, c);
       }
     }
     return s;

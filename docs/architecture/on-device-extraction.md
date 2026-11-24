@@ -139,11 +139,14 @@ Mẫu dạng JSON khai báo, không phải code, nên **cập nhật qua CDN mà
 **Đã có (E3.1-E3.4 phần đầu, E4.1):** `packages/parsers/lib/src/engine/`. `TextDocument` (dòng + bbox tùy chọn, dạng chung cho text email/PDF và OCR),
 anchor mờ (bỏ dấu, lỗi OCR ≤ 1 ký tự/6, trọn từ trừ CJK), vùng phải/dưới theo bbox; `ValueReader` (ngày/giờ bằng mẫu của gói NLU, thứ tự `03/04` theo vùng,
 khớp dài nhất khi chồng nhau; tiền theo ISO 4217, `$`/`¥` một mình không đoán; số chuyến bay; mã sân bay); `DocClassifier`; extractor chung cho bay
-(nhiều chặng, giờ đi/đến theo vị trí mã sân bay, "+1", qua đêm suy theo UTC) và khách sạn (tên/địa chỉ chỉ lấy sau nhãn); `CandidateAssembler`
+(nhiều chặng, giờ đi/đến theo vị trí mã sân bay, "+1", qua đêm suy theo UTC), khách sạn (tên/địa chỉ chỉ lấy sau nhãn), tàu/xe (ga/điểm đón theo tên
+qua nhãn hoặc dòng có mũi tên, toa, chỗ, nhà xe), lịch khám (nơi khám không nhãn: dòng ngắn hoặc cụm viết hoa quanh "Clinic"/"Bệnh viện"; khoa, số thứ tự,
+dặn dò chép nguyên văn; ngày sinh/ngày đặt vé thuộc nhãn `excluded_dates` không bao giờ là ngày hẹn; không trả tên bệnh nhân) và vé sự kiện; `CandidateAssembler`
 (kiểm tra logic, `Candidate.fieldConfidence`, `issues`); `ProviderTemplate` + `TemplateReader` (khối lặp, trường đầu tài liệu dùng chung); `RuleEngine`
 (mẫu khớp nhất, không có thì extractor chung). App: email không có dữ liệu có cấu trúc và tệp `.txt` dạng vé chạy qua T2, màn Xem lại hiện cảnh báo
-và "hãy kiểm tra lại" khi có trường < 0,7. Eval 10 mẫu tổng hợp: 100% trường bắt buộc, 100% tùy chọn, 0 điền sai.
-Chưa có: tàu/xe/khám bệnh/sự kiện (chỉ phân loại), SĐT, địa chỉ ngoài nhãn, tên thành phố → sân bay, dedupe với dữ liệu sẵn có, gom trip, mẫu thật (E4.3), ký mẫu (E4.4), học mapping (§4.5).
+và "hãy kiểm tra lại" khi có trường < 0,7. Eval 15 mẫu tổng hợp (T2 rỗng vẫn bị chấm là thiếu): 100% trường bắt buộc, 100% tùy chọn, 0 điền sai.
+Anchor mờ không nhận đoạn chữ khớp đúng nhãn của trường khác (bỏ dấu xong "điểm đón" chỉ khác "điểm đến" 1 ký tự).
+Chưa có: tàu/xe nhiều chặng, ga → múi giờ (tàu/xe dùng giờ tường theo máy), SĐT, địa chỉ ngoài nhãn, tên thành phố → sân bay, dedupe với dữ liệu sẵn có, gom trip, mẫu thật (E4.3), ký mẫu (E4.4), học mapping (§4.5).
 
 ### 4.5 Học từ người dùng mà không cần AI
 - **Nhớ mapping**: người dùng sửa cột xlsx hoặc chọn đúng loại tài liệu thì lưu theo "chữ ký" (hash header / tập anchor), lần sau tự áp dụng.

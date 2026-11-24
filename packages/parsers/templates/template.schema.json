@@ -4,39 +4,128 @@
   "title": "Mẫu nhà cung cấp cho tầng luật T2",
   "description": "on-device-extraction.md §4.2. Dữ liệu khai báo, không phải code: engine ở lib/src/engine/template.dart.",
   "type": "object",
-  "required": ["id", "doc_type", "version", "match", "fields"],
+  "required": [
+    "id",
+    "doc_type",
+    "version",
+    "match",
+    "fields"
+  ],
   "additionalProperties": false,
   "properties": {
-    "id": { "type": "string", "pattern": "^[a-z0-9]+(\\.[a-z0-9_-]+)+$", "description": "nhà-cung-cấp.loại-tài-liệu.vN, ví dụ 'example.eticket.v1'" },
-    "doc_type": { "enum": ["flight", "train", "bus", "hotel", "medical", "event", "todo_list"] },
-    "version": { "type": "integer", "minimum": 1, "description": "Tăng mỗi lần sửa; telemetry ghi id@version" },
-    "date_order": { "enum": ["dmy", "mdy", "ymd"], "description": "Thứ tự ngày số của nhà cung cấp, thắng thứ tự theo vùng người dùng" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9_-]+)+$",
+      "description": "nhà-cung-cấp.loại-tài-liệu.vN, ví dụ 'example.eticket.v1'"
+    },
+    "doc_type": {
+      "enum": [
+        "flight",
+        "train",
+        "bus",
+        "hotel",
+        "medical",
+        "event",
+        "todo_list"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Tăng mỗi lần sửa; telemetry ghi id@version"
+    },
+    "date_order": {
+      "enum": [
+        "dmy",
+        "mdy",
+        "ymd"
+      ],
+      "description": "Thứ tự ngày số của nhà cung cấp, thắng thứ tự theo vùng người dùng"
+    },
     "match": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "any_text": { "type": "array", "items": { "type": "string" }, "description": "Regex; mỗi cái khớp +1 điểm" },
-        "sender_domains": { "type": "array", "items": { "type": "string" }, "description": "Tên miền người gửi email (gồm tên miền con); khớp +2 điểm" },
-        "min_score": { "type": "integer", "minimum": 1, "default": 2 }
+        "any_text": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Regex; mỗi cái khớp +1 điểm"
+        },
+        "sender_domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tên miền người gửi email (gồm tên miền con); khớp +2 điểm"
+        },
+        "min_score": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 2
+        }
       }
     },
     "fields": {
       "type": "object",
       "minProperties": 1,
       "propertyNames": {
-        "enum": ["confirmation_code", "flight_number", "carrier_code", "number", "origin", "destination", "terminal", "gate", "seat",
-                 "carriage", "class", "passenger_count", "total", "departure_date", "departure_time", "arrival_date", "arrival_time",
-                 "check_in_date", "check_in_time", "check_out_date", "check_out_time", "property", "address"]
+        "enum": [
+          "confirmation_code",
+          "flight_number",
+          "carrier_code",
+          "number",
+          "origin",
+          "destination",
+          "terminal",
+          "gate",
+          "seat",
+          "carriage",
+          "class",
+          "passenger_count",
+          "total",
+          "departure_date",
+          "departure_time",
+          "arrival_date",
+          "arrival_time",
+          "check_in_date",
+          "check_in_time",
+          "check_out_date",
+          "check_out_time",
+          "property",
+          "address",
+          "origin_name",
+          "destination_name",
+          "operator",
+          "department",
+          "queue_number",
+          "preparation",
+          "event_name"
+        ]
       },
-      "additionalProperties": { "$ref": "#/$defs/field" }
+      "additionalProperties": {
+        "$ref": "#/$defs/field"
+      }
     },
     "repeat_block": {
       "type": "object",
-      "required": ["start"],
+      "required": [
+        "start"
+      ],
       "additionalProperties": false,
       "properties": {
-        "start": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Nhãn mở đầu mỗi khối (chặng); mỗi khối ra 1 đề xuất" },
-        "as": { "type": "string" }
+        "start": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Nhãn mở đầu mỗi khối (chặng); mỗi khối ra 1 đề xuất"
+        },
+        "as": {
+          "type": "string"
+        }
       }
     }
   },
@@ -45,12 +134,47 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "anchors": { "type": "array", "items": { "type": "string" }, "description": "Nhãn in trên tài liệu, so không dấu và chịu lỗi OCR. Rỗng = tìm pattern/type trong cả khối" },
-        "dir": { "enum": ["right", "below", "right|below"], "default": "right|below" },
-        "pattern": { "type": "string", "description": "Regex trong vùng giá trị; giá trị = nhóm 'group' hoặc nhóm 1 hoặc cả chuỗi khớp" },
-        "group": { "type": "integer", "minimum": 0 },
-        "type": { "enum": ["text", "date", "time", "iata", "money", "int", "flight_number"], "default": "text" },
-        "nth": { "type": "integer", "minimum": 1, "default": 1, "description": "Lần khớp thứ n (khi không có anchor)" }
+        "anchors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Nhãn in trên tài liệu, so không dấu và chịu lỗi OCR. Rỗng = tìm pattern/type trong cả khối"
+        },
+        "dir": {
+          "enum": [
+            "right",
+            "below",
+            "right|below"
+          ],
+          "default": "right|below"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Regex trong vùng giá trị; giá trị = nhóm 'group' hoặc nhóm 1 hoặc cả chuỗi khớp"
+        },
+        "group": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "type": {
+          "enum": [
+            "text",
+            "date",
+            "time",
+            "iata",
+            "money",
+            "int",
+            "flight_number"
+          ],
+          "default": "text"
+        },
+        "nth": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Lần khớp thứ n (khi không có anchor)"
+        }
       }
     }
   }

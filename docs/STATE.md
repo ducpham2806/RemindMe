@@ -30,9 +30,9 @@
   (hàng `imports` + item có `import_id`, list theo tên, checklist, địa điểm, lặp, nhắc). Đặt chỗ tạm lưu thành sự kiện; csv tính như xlsx (chủ dự án đồng ý).
 - Tầng luật T2 (E3 phần đầu + E4.1, `packages/parsers/lib/src/engine/`, on-device-extraction.md §4.4 "Đã có"): `TextDocument` (dòng + bbox), anchor mờ,
   `ValueReader` (ngày/giờ qua mẫu gói NLU, tiền ISO 4217, số chuyến, mã sân bay), phân loại theo mục `document:` của gói, extractor chung bay (nhiều chặng, "+1",
-  qua đêm theo UTC) + khách sạn, validator (`fieldConfidence`, `issues`), mẫu nhà cung cấp JSON + schema (CI kiểm), `RuleEngine`. Dữ liệu IATA → tz
-  `data/airports.tsv` (ADR-016). App: email không JSON-LD và `.txt` dạng vé đi qua T2, màn Xem lại có cảnh báo + "hãy kiểm tra lại". Eval 10 mẫu: 100%, 0 điền sai.
-- Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước, T2 cho tàu/xe/khám bệnh/sự kiện,
+  qua đêm theo UTC), khách sạn, tàu/xe, lịch khám (bỏ ngày sinh, không trả tên bệnh nhân), vé sự kiện; validator (`fieldConfidence`, `issues`), mẫu nhà cung cấp JSON + schema (CI kiểm), `RuleEngine`. Dữ liệu IATA → tz
+  `data/airports.tsv` (ADR-016). App: email không JSON-LD và `.txt` dạng vé đi qua T2, màn Xem lại có cảnh báo + "hãy kiểm tra lại"; ghi chú item có mã đặt chỗ, toa, ghế, khoa, số thứ tự, dặn dò. Eval 15 mẫu: 100%, 0 điền sai.
+- Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), màn Xem lại đầy đủ (E5.1: sửa từng trường, tô vàng), auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
@@ -58,7 +58,7 @@
   method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
   onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
   hủy thông báo khi `session_revoked` (chờ luồng sync thật), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
-- T2: chưa có dedupe với item đã có + gom trip (S6), tên thành phố → sân bay, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
+- T2: chưa có dedupe với item đã có + gom trip (S6), tên thành phố → sân bay, ga → múi giờ, tàu/xe nhiều chặng, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
   nên không tính `smart_imports_per_month` (cần chủ dự án chốt: văn bản dán vào có tính là nhập thông minh không).
 - Nhập từ tệp: chưa thử `file_picker` trên máy thật; hạn mức `smart_imports_per_month` chưa kiểm khi offline (chưa có cache `quota_status`);
   đặt chỗ chưa thành `booking_details` + chuyến đi (S6); lặp âm lịch từ dòng chữ trong tệp .txt chưa giữ (chỉ RRULE).

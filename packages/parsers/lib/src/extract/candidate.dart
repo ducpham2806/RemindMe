@@ -71,6 +71,9 @@ class CandidateFields {
     this.locationText,
     this.price,
     this.due,
+    this.department,
+    this.queueNumber,
+    this.preparation,
   });
 
   final String? title;
@@ -91,6 +94,10 @@ class CandidateFields {
   final String? locationText;
   final Price? price;
   final LocalTime? due;
+  /// Lịch khám: khoa, số thứ tự, dặn dò in trên phiếu ("Nhịn ăn 8 tiếng"): chỉ chép lại, không diễn giải.
+  final String? department;
+  final String? queueNumber;
+  final String? preparation;
 
   Map<String, Object?> toJson() => {
         'title': ?title,
@@ -111,6 +118,9 @@ class CandidateFields {
         'location_text': ?locationText,
         if (price != null) 'price': {'amount': price!.amount, 'currency': price!.currency},
         'due': ?due?.toJson(),
+        'department': ?department,
+        'queue_number': ?queueNumber,
+        'preparation': ?preparation,
       };
 }
 

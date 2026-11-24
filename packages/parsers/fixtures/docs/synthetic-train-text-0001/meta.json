@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-train-text-0001",
+  "source_kind": "pdf_text",
+  "market": "VN",
+  "doc_language": "vi",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Vé tàu tổng hợp: ga theo tên (không có mã), đến hôm sau '(+1)', 'Ngày đặt' không phải ngày đi, 'chỗ' nằm cả trong 'Mã đặt chỗ'. Hãng và mọi dữ liệu đều giả."
+}

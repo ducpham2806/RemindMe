@@ -8,11 +8,11 @@ final packs = [for (final l in ['vi', 'en']) GrammarPack.fromYaml(File('nlu/pack
 final airports = AirportIndex.parse(File('data/airports.tsv').readAsStringSync());
 
 /// Tầng luật T2 trên text (email không có dữ liệu có cấu trúc, text tự do; ảnh chờ OCR thật ở spike E0).
-List<Candidate>? rules(String text, Map<String, Object?> meta, DateTime reference, {String? senderDomain}) {
+List<Candidate> rules(String text, Map<String, Object?> meta, DateTime reference, {String? senderDomain}) {
   final lang = meta['doc_language'] as String?;
   final engine = RuleEngine(packs: [...packs.where((p) => p.lang == lang), ...packs.where((p) => p.lang != lang)], airports: airports, region: meta['market'] as String?);
-  final c = engine.extract(TextDocument.fromText(text, senderDomain: senderDomain, language: lang), reference: reference).candidates;
-  return c.isEmpty ? null : c;
+  // Rỗng vẫn chấm (thiếu candidate = trượt): T2 là tầng cuối cho text, không phải "chưa có tầng xử lý".
+  return engine.extract(TextDocument.fromText(text, senderDomain: senderDomain, language: lang), reference: reference).candidates;
 }
 
 List<Candidate> tableTasks(TableSheet sheet, String source, DateTime reference, String market) {

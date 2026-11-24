@@ -1,0 +1,36 @@
+{
+  "doc_type": "bus",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "booking",
+      "booking_type": "bus",
+      "required": {
+        "confirmation_code": "BX7K29",
+        "origin": {
+          "name": "Bến xe Mỹ Đình"
+        },
+        "destination": {
+          "name": "Thị xã Sa Pa"
+        },
+        "starts_at": {
+          "local": "2027-01-03T07:30"
+        }
+      },
+      "optional": {
+        "provider": "Xe Ví Dụ Limousine",
+        "seat": "A12",
+        "price": {
+          "amount": "350000",
+          "currency": "VND"
+        }
+      },
+      "must_not_fill": [
+        "carriage",
+        "number",
+        "ends_at"
+      ]
+    }
+  ]
+}

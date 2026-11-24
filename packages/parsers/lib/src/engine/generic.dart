@@ -50,25 +50,46 @@ class AnchorReader {
   final TextDocument doc;
   final List<GrammarPack> packs;
 
+  final _others = <String, Set<String>>{};
+
+  Set<String> _otherLabels(String field) => _others[field] ??= {
+        for (final p in packs)
+          for (final e in p.document.anchors.entries)
+            if (e.key != field)
+              for (final a in e.value) FoldedText(a).text,
+      }..removeAll({for (final a in anchorsFor(field)) FoldedText(a).text});
+
   List<String> anchorsFor(String field) {
     final all = {for (final p in packs) ...?p.document.anchors[field]}.toList()..sort((a, b) => b.length.compareTo(a.length));
     return all;
   }
 
-  /// Giá trị đầu tiên [parse] đọc được sau 1 nhãn của [field] trong dòng [from, to).
-  /// [asLabel]: chỉ nhận chỗ nhãn đứng như nhãn (theo sau là `:`, `/`, `-` hoặc hết dòng), dùng cho trường chữ tự do
-  /// (tên khách sạn, địa chỉ) để không lấy nhầm câu văn "đã đặt phòng tại khách sạn ...".
-  ({T value, double score})? read<T>(String field, T? Function(String text) parse,
-      {int from = 0, int? to, bool below = true, bool asLabel = false}) {
-    final anchors = anchorsFor(field);
+  /// Chỗ xuất hiện các nhãn của [field] theo thứ tự đọc; nhãn ngắn nằm trong nhãn dài đã thấy ("ghế" trong "số ghế") bị bỏ.
+  /// Hit gần đúng (lỗi OCR) mà đoạn chữ khớp đúng nhãn của trường khác thì bỏ: bỏ dấu xong "điểm đón" chỉ khác "điểm đến" 1 ký tự.
+  List<AnchorHit> hitsFor(String field, {int from = 0, int? to}) {
     final hits = <AnchorHit>[];
-    for (final a in anchors) {
+    for (final a in anchorsFor(field)) {
       for (final h in doc.findAnchor(a, from: from, to: to)) {
-        // Nhãn ngắn nằm trong nhãn dài đã tìm thấy ("ghế" trong "số ghế"): bỏ.
+        if (h.score < 1 && _otherLabels(field).contains(FoldedText(doc.lines[h.line].text.substring(h.start, h.end)).text)) continue;
         if (!hits.any((o) => o.line == h.line && h.start < o.end && o.start < h.end)) hits.add(h);
       }
     }
     hits.sort((a, b) => a.line != b.line ? a.line.compareTo(b.line) : a.start.compareTo(b.start));
+    return hits;
+  }
+
+  /// Giá trị đầu tiên [parse] đọc được sau 1 nhãn của [field] trong dòng [from, to).
+  /// [asLabel]: chỉ nhận chỗ nhãn đứng như nhãn (theo sau là `:`, `/`, `-` hoặc hết dòng), dùng cho trường chữ tự do
+  /// (tên khách sạn, địa chỉ) để không lấy nhầm câu văn "đã đặt phòng tại khách sạn ...".
+  /// [excludeField]: bỏ chỗ nhãn nằm trong nhãn của trường này ("date" trong "booking date", "ngày" trong "ngày sinh").
+  ({T value, double score})? read<T>(String field, T? Function(String text) parse,
+      {int from = 0, int? to, bool below = true, bool asLabel = false, String? excludeField}) {
+    final anchors = anchorsFor(field);
+    final excluded = excludeField == null ? const <AnchorHit>[] : hitsFor(excludeField, from: from, to: to);
+    final hits = [
+      for (final h in hitsFor(field, from: from, to: to))
+        if (!excluded.any((x) => x.line == h.line && h.start < x.end && x.start < h.end)) h,
+    ];
     for (final h in hits) {
       if (asLabel && !RegExp(r'^\s*(?:[:：/|=–—-]|$)').hasMatch(doc.lines[h.line].text.substring(h.end))) continue;
       final right = doc.rightOf(h);
@@ -134,7 +155,10 @@ class GenericExtractor {
     return switch (type) {
       DocType.flight => _flights(doc, reader, anchors),
       DocType.hotel => [_hotel(doc, reader, anchors)],
-      _ => const [],
+      DocType.train || DocType.bus => [_ground(doc, reader, anchors)],
+      DocType.medical => [_medical(doc, reader, anchors)],
+      DocType.event => [_event(doc, reader, anchors)],
+      DocType.todoList || DocType.unknown => const [],
     };
   }
 
@@ -305,6 +329,237 @@ class GenericExtractor {
     if (v.length < 2 || !RegExp(r'\p{L}', unicode: true).hasMatch(v)) return null;
     if (reader.dates(v).isNotEmpty) return null;
     return v;
+  }
+
+  // ---- Tàu, xe khách -------------------------------------------------------------------------------------------------
+
+  Slots _ground(TextDocument doc, ValueReader reader, AnchorReader anchors) {
+    final s = _header(doc, reader, anchors, flight: false);
+    final no = anchors.read('train_number', _trainNumber);
+    if (no != null) s.number = Slot(no.value, Slot.anchored * no.score);
+    final op = anchors.read('operator', (t) => _name(t, reader), asLabel: true);
+    if (op != null) s.provider = Slot(op.value, Slot.anchored * op.score);
+
+    // Ga/điểm đi, đến theo nhãn: tên + giờ (+ ngày) in cùng vùng ("Ga đi: Sài Gòn 22:00").
+    ({String name, DocTime? time, DocDate? date, bool nextDay})? stop(String t) => _stop(t, reader);
+    final from = anchors.read('origin', stop, asLabel: true);
+    final to = anchors.read('destination', stop, asLabel: true);
+    if (from != null && to != null) {
+      s.originName = Slot(from.value.name, Slot.anchored * from.score);
+      s.destinationName = Slot(to.value.name, Slot.anchored * to.score);
+      if (from.value.time != null) s.departureTime = Slot(from.value.time!, Slot.anchored * from.score);
+      if (from.value.date != null) s.departureDate = Slot(from.value.date!, Slot.anchored * from.score);
+      if (to.value.time != null) s.arrivalTime = Slot(to.value.time!, Slot.anchored * to.score);
+      if (to.value.date != null) s.arrivalDate = Slot(to.value.date!, Slot.anchored * to.score);
+      s.arrivalNextDay = to.value.nextDay;
+    } else {
+      _route(doc, reader, s);
+    }
+
+    s.departureDate ??= _anchoredDate(anchors, reader, 'departure_date') ?? _firstFreeDate(doc, reader, anchors);
+    if (s.departureTime == null) {
+      final t = anchors.read('departure_time', (t) => reader.times(t).firstOrNull);
+      if (t != null) s.departureTime = Slot(t.value, Slot.anchored * t.score);
+    }
+    if (s.arrivalTime == null) {
+      final t = anchors.read('arrival_time', (t) => reader.times(t).firstOrNull);
+      if (t != null) s.arrivalTime = Slot(t.value, Slot.anchored * t.score);
+    }
+    final car = anchors.read('carriage', _carriage);
+    if (car != null) s.carriage = Slot(car.value, Slot.anchored * car.score);
+    // "chỗ" cũng nằm trong "Mã đặt chỗ".
+    final seat = anchors.read('seat', _groundSeat, excludeField: 'confirmation_code');
+    if (seat != null) s.seat = Slot(seat.value, Slot.anchored * seat.score);
+    return s;
+  }
+
+  /// Không có nhãn ga: dòng "Sài Gòn 22:00 → Đà Nẵng 15:40" (mũi tên giữa 2 tên có chữ).
+  void _route(TextDocument doc, ValueReader reader, Slots s) {
+    final arrow = RegExp(r'\s(?:→|->|⇒|—>|➝|➔)\s');
+    for (var i = 0; i < doc.lines.length; i++) {
+      final text = doc.lines[i].text;
+      final m = arrow.firstMatch(text);
+      if (m == null) continue;
+      final a = _stop(text.substring(0, m.start), reader), b = _stop(text.substring(m.end), reader);
+      if (a == null || b == null) continue;
+      s.originName = Slot(a.name, Slot.pattern);
+      s.destinationName = Slot(b.name, Slot.pattern);
+      if (a.time != null) s.departureTime = Slot(a.time!, Slot.pattern);
+      if (b.time != null) s.arrivalTime = Slot(b.time!, Slot.pattern);
+      if (a.date != null) s.departureDate = Slot(a.date!, Slot.pattern);
+      s.arrivalNextDay = b.nextDay;
+      return;
+    }
+  }
+
+  /// "Sài Gòn  22:00" → tên + giờ; "Đà Nẵng 15:40 (+1)" → hôm sau. Tên là phần chữ trước ngày/giờ đầu tiên.
+  static ({String name, DocTime? time, DocDate? date, bool nextDay})? _stop(String t, ValueReader reader) {
+    final dates = reader.dates(t);
+    final times = reader.times(t, dates: dates);
+    final cut = [t.length, ?dates.firstOrNull?.start, ?times.firstOrNull?.start].reduce((a, b) => a < b ? a : b);
+    final name = t.substring(0, cut).replaceAll(RegExp(r'^[\s:/\-–—|·•,()]+|[\s:/\-–—|·•,(]+$'), '');
+    if (name.length < 2 || !RegExp(r'\p{L}', unicode: true).hasMatch(name) || name.length > 60) return null;
+    final time = times.firstOrNull;
+    final next = time != null && RegExp(r'^\s*\(?\s*\+\s?1\b').hasMatch(t.substring(time.end));
+    return (name: name, time: time, date: dates.firstOrNull, nextDay: next);
+  }
+
+  static String? _trainNumber(String t) => RegExp(r'^([A-Z]{1,4}\s?\d{1,5}[A-Z]?|\d{1,5})(?![A-Za-z0-9])').firstMatch(t)?[1];
+
+  static String? _carriage(String t) => RegExp(r'^0*(\d{1,3}[A-Z]?)(?![A-Za-z0-9])').firstMatch(t)?[1];
+
+  /// Chỗ/giường tàu, ghế xe: số, có thể kèm chữ ("23", "A12", "12B").
+  static String? _groundSeat(String t) => RegExp(r'^([A-Z]?\d{1,3}[A-Z]?)(?![A-Za-z0-9])').firstMatch(t)?[1];
+
+  // ---- Ngày không có nhãn của loại --------------------------------------------------------------------------------
+
+  Slot<DocDate>? _anchoredDate(AnchorReader anchors, ValueReader reader, String field) {
+    final d = anchors.read(field, (t) => reader.dates(t).firstOrNull, excludeField: 'excluded_dates');
+    return d == null ? null : Slot(d.value, Slot.anchored * d.score);
+  }
+
+  /// Ngày đầu tiên trong tài liệu không thuộc nhãn loại trừ (ngày sinh, ngày đặt vé): độ tin cậy "chỉ pattern".
+  Slot<DocDate>? _firstFreeDate(TextDocument doc, ValueReader reader, AnchorReader anchors) {
+    final first = _freeDates(doc, reader, anchors).firstOrNull;
+    return first == null ? null : Slot(first.$2, Slot.pattern);
+  }
+
+  List<(int, DocDate)> _freeDates(TextDocument doc, ValueReader reader, AnchorReader anchors) {
+    final excluded = anchors.hitsFor('excluded_dates');
+    final out = <(int, DocDate)>[];
+    final skip = <(int, int)>{};
+    for (final x in excluded) {
+      final onLine = reader.dates(doc.lines[x.line].text).where((d) => d.start >= x.end).firstOrNull;
+      if (onLine != null) {
+        skip.add((x.line, onLine.start));
+      } else if (doc.lines[x.line].text.substring(x.end).replaceAll(RegExp(r'[\s:：]'), '').isEmpty) {
+        for (var i = x.line + 1; i < doc.lines.length; i++) {
+          final d = reader.dates(doc.lines[i].text).firstOrNull;
+          if (doc.lines[i].text.trim().isEmpty) continue;
+          if (d != null) skip.add((i, d.start));
+          break;
+        }
+      }
+    }
+    for (var i = 0; i < doc.lines.length; i++) {
+      for (final d in reader.dates(doc.lines[i].text)) {
+        if (!skip.contains((i, d.start))) out.add((i, d));
+      }
+    }
+    return out;
+  }
+
+  /// Ngày + giờ của lịch hẹn/sự kiện: nhãn ngày (giờ cùng vùng hoặc nhãn giờ riêng), không thì ngày tự do đầu tiên và giờ cùng dòng.
+  void _when(TextDocument doc, ValueReader reader, AnchorReader anchors, Slots s, {required String dateField, String? timeField}) {
+    ({DocDate date, DocTime? time})? dateTime(String t) {
+      final ds = reader.dates(t);
+      if (ds.isEmpty) return null;
+      return (date: ds.first, time: reader.times(t, dates: ds).firstOrNull);
+    }
+
+    final d = anchors.read(dateField, dateTime, excludeField: 'excluded_dates', asLabel: true) ??
+        anchors.read(dateField, dateTime, excludeField: 'excluded_dates');
+    if (d != null) {
+      s.departureDate = Slot(d.value.date, Slot.anchored * d.score);
+      if (d.value.time != null) s.departureTime = Slot(d.value.time!, Slot.anchored * d.score);
+    }
+    if (s.departureTime == null && timeField != null) {
+      final t = anchors.read(timeField, (t) => reader.times(t).firstOrNull, asLabel: true);
+      if (t != null) s.departureTime = Slot(t.value, Slot.anchored * t.score);
+    }
+    if (s.departureDate == null) {
+      final free = _freeDates(doc, reader, anchors).firstOrNull;
+      if (free != null) {
+        s.departureDate = Slot(free.$2, Slot.pattern);
+        if (s.departureTime == null) {
+          final line = doc.lines[free.$1].text;
+          final t = reader.times(line).where((t) => t.start >= free.$2.end).firstOrNull;
+          if (t != null) s.departureTime = Slot(t, Slot.pattern);
+        }
+      }
+    }
+  }
+
+  // ---- Lịch khám -----------------------------------------------------------------------------------------------------
+
+  Slots _medical(TextDocument doc, ValueReader reader, AnchorReader anchors) {
+    final s = Slots();
+    _when(doc, reader, anchors, s, dateField: 'appointment_date', timeField: 'appointment_time');
+    final facility = anchors.read('facility', (t) => _name(t, reader), asLabel: true);
+    if (facility != null) {
+      s.property = Slot(facility.value, Slot.anchored * facility.score);
+    } else {
+      final line = _lineWith(doc, {for (final p in packs) ...p.document.facilityWords}, reader);
+      if (line != null) s.property = Slot(line, Slot.pattern);
+    }
+    final dept = anchors.read('department', (t) => _name(t, reader), asLabel: true);
+    if (dept != null) s.department = Slot(dept.value, Slot.anchored * dept.score);
+    final queue = anchors.read('queue_number', (t) => RegExp(r'^([A-Z]?\d{1,4}[A-Z]?)(?![A-Za-z0-9])').firstMatch(t)?[1]);
+    if (queue != null) s.queueNumber = Slot(queue.value, Slot.anchored * queue.score);
+    final prep = anchors.read('preparation', (t) => _name(t, reader), asLabel: true);
+    if (prep != null) {
+      s.preparation = Slot(prep.value, Slot.anchored * prep.score);
+    } else {
+      final words = {for (final p in packs) ...p.document.preparationWords};
+      for (var i = 0; i < doc.lines.length && s.preparation == null; i++) {
+        if (words.any((w) => doc.folded(i).approximateMatches(w, 0).isNotEmpty)) s.preparation = Slot(doc.lines[i].text.trim(), Slot.pattern);
+      }
+    }
+    final addr = anchors.read('address', (t) => _name(t, reader), asLabel: true) ?? anchors.read('venue', (t) => _name(t, reader), asLabel: true);
+    if (addr != null) s.address = Slot(addr.value, Slot.anchored * addr.score);
+    return s;
+  }
+
+  /// Tên nơi khám không có nhãn: dòng ngắn (≤ 60 ký tự, không `:`, không ngày giờ) chứa 1 trong [words] ("BỆNH VIỆN ĐA KHOA X");
+  /// không có thì cụm từ viết hoa quanh từ đó trong câu ("... at Riverside Dental Clinic.").
+  static String? _lineWith(TextDocument doc, Set<String> words, ValueReader reader) {
+    for (var i = 0; i < doc.lines.length; i++) {
+      final t = doc.lines[i].text.trim();
+      if (t.isEmpty || t.length > 60 || t.contains(':') || reader.dates(t).isNotEmpty || reader.times(t).isNotEmpty) continue;
+      if (words.any((w) => doc.folded(i).approximateMatches(w, 0).isNotEmpty)) return t;
+    }
+    for (var i = 0; i < doc.lines.length; i++) {
+      for (final w in words) {
+        for (final m in doc.folded(i).approximateMatches(w, 0)) {
+          final name = _capitalizedAround(doc.lines[i].text, m.start, m.end);
+          if (name != null) return name;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Mở rộng [start, end) sang trái/phải theo các từ viết hoa liền kề. Cần ít nhất 1 từ viết hoa ngoài chính từ khóa.
+  static String? _capitalizedAround(String text, int start, int end) {
+    final upper = RegExp(r'^\p{Lu}', unicode: true);
+    final word = RegExp(r'[\p{L}\p{N}&\x27-]+', unicode: true);
+    final tokens = word.allMatches(text).toList();
+    var first = tokens.indexWhere((t) => t.end > start), last = tokens.lastIndexWhere((t) => t.start < end);
+    if (first < 0 || last < first || !upper.hasMatch(tokens[first][0]!)) return null;
+    final core = (first, last);
+    bool joined(int a, int b) => RegExp(r'^ $').hasMatch(text.substring(tokens[a].end, tokens[b].start));
+    while (first > 0 && upper.hasMatch(tokens[first - 1][0]!) && joined(first - 1, first)) {
+      first--;
+    }
+    while (last + 1 < tokens.length && upper.hasMatch(tokens[last + 1][0]!) && joined(last, last + 1)) {
+      last++;
+    }
+    if ((first, last) == core) return null;
+    return text.substring(tokens[first].start, tokens[last].end);
+  }
+
+  // ---- Vé sự kiện -----------------------------------------------------------------------------------------------------
+
+  Slots _event(TextDocument doc, ValueReader reader, AnchorReader anchors) {
+    final s = _header(doc, reader, anchors, flight: false);
+    _when(doc, reader, anchors, s, dateField: 'event_date');
+    final name = anchors.read('event_name', (t) => _name(t, reader), asLabel: true);
+    if (name != null) s.property = Slot(name.value, Slot.anchored * name.score);
+    final venue = anchors.read('venue', (t) => _name(t, reader), asLabel: true) ?? anchors.read('address', (t) => _name(t, reader), asLabel: true);
+    if (venue != null) s.address = Slot(venue.value, Slot.anchored * venue.score);
+    final seat = anchors.read('seat', _groundSeat, excludeField: 'confirmation_code');
+    if (seat != null) s.seat = Slot(seat.value, Slot.anchored * seat.score);
+    return s;
   }
 }
 

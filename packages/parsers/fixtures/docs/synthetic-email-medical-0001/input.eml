@@ -1,0 +1,21 @@
+From: Example Dental <appointments@example.com>
+To: patient@example.org
+Subject: Appointment reminder
+Date: Mon, 23 Nov 2026 10:00:00 -0800
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Hi,
+
+This is a reminder of your upcoming appointment at Riverside Dental Clinic.
+
+Patient: Jane Example
+Date of birth: 04/07/1985
+Appointment date: Tuesday, December 15, 2026
+Time: 2:45 PM
+Department: Hygiene
+Location: 200 Example Ave, Suite 3, Springfield
+
+Before your visit: please bring your insurance card.
+
+To reschedule, reply to this email.

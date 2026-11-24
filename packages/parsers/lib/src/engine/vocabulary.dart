@@ -19,6 +19,8 @@ class DocVocabulary {
     this.travelClasses = const {},
     this.passengerUnits = const [],
     this.codeStopwords = const {},
+    this.facilityWords = const [],
+    this.preparationWords = const [],
   });
 
   /// Loại → (từ khóa đã fold → trọng số).
@@ -33,6 +35,10 @@ class DocVocabulary {
   final List<String> passengerUnits;
   /// Từ in hoa dễ bị nhầm là mã đặt chỗ ("NUMBER", "TICKET").
   final Set<String> codeStopwords;
+  /// Từ mở đầu tên cơ sở khám ("Bệnh viện", "Clinic"): dòng bắt đầu bằng từ này là tên nơi khám khi không có nhãn.
+  final List<String> facilityWords;
+  /// Từ của dặn dò trước khi khám ("nhịn ăn", "fasting"): dòng chứa từ này là `preparation` khi không có nhãn.
+  final List<String> preparationWords;
 
   bool get isEmpty => classify.isEmpty && anchors.isEmpty;
 
@@ -56,6 +62,8 @@ class DocVocabulary {
       },
       passengerUnits: [for (final x in (m['passenger_units'] as List<Object?>? ?? const [])) fold(x)],
       codeStopwords: {for (final x in (m['code_stopwords'] as List<Object?>? ?? const [])) '$x'.toUpperCase()},
+      facilityWords: [for (final x in (m['facility_words'] as List<Object?>? ?? const [])) fold(x)],
+      preparationWords: [for (final x in (m['preparation_words'] as List<Object?>? ?? const [])) fold(x)],
     );
   }
 }
