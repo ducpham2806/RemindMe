@@ -135,5 +135,9 @@
   "importIssueNextDay": "[Àŕŕîṽéš ţĥé ñéẋţ đàý~~~~~~~]",
   "importIssueDateOrder": "[Çĥéçķ ţĥé đàţé: đàý àñđ ɱöñţĥ ɱàý ƀé šŵàþþéđ~~~~~~~~~~~~~~]",
   "importIssueCheckOut": "[Çĥéçķ-öûţ đàţé ñöţ ŕéàđ, àđđ îţ ýöûŕšéļƒ~~~~~~~~~~~~~]",
-  "importCheckFields": "[Ŕéàđ ƒŕöɱ ţĥé ţéẋţ, çĥéçķ ţĥé đéţàîļš~~~~~~~~~~~~]"
+  "importCheckFields": "[Ŕéàđ ƒŕöɱ ţĥé ţéẋţ, çĥéçķ ţĥé đéţàîļš~~~~~~~~~~~~]",
+  "importSeat": "[Šéàţ: ~~{seat}]",
+  "importCarriage": "[Çöàçĥ: ~~{carriage}]",
+  "importDepartment": "[Đéþàŕţɱéñţ: ~~~~{name}]",
+  "importQueueNumber": "[Ǫûéûé ñûɱƀéŕ: ~~~~{number}]"
 }

@@ -22,6 +22,7 @@ ImportRequest req(String path, {String? name, String? region = 'VN', String? dat
     );
 
 String code(String c) => 'code $c';
+final labels = ImportNoteLabels(bookingCode: code, seat: (s) => 'seat $s', carriage: (c) => 'car $c', department: (d) => 'dept $d', queueNumber: (n) => 'no $n');
 
 void main() {
   setUpAll(TimeZones.ensureInitialized);
@@ -59,22 +60,22 @@ void main() {
       final c = decodeImport(req('$docs/synthetic-jsonld-flight-0001/input.eml')).candidates.single;
       final title = fallbackTitle(c)!;
       expect(title, 'ZZ 245 · SGN → HAN');
-      final i = toImportedItem(c, title: title, deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code);
+      final i = toImportedItem(c, title: title, deviceTz: 'Asia/Ho_Chi_Minh', labels: labels);
       expect((i.kind, i.startsAt, i.tz, i.endsAt, i.notes),
-          ('event', DateTime.utc(2026, 12, 21, 3, 30), 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 21, 5, 40), 'code XQ7K2M'));
+          ('event', DateTime.utc(2026, 12, 21, 3, 30), 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 21, 5, 40), 'code XQ7K2M\nseat 14C'));
       expect(i.reminderOffsets, [0]);
     });
 
     test('Markdown: việc cả ngày có lặp, việc con, đã xong, list', () {
       final cs = decodeImport(req('$docs/synthetic-md-todo-0001/input.md')).candidates;
-      final bill = toImportedItem(cs[3], title: cs[3].fields.title!, deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code);
+      final bill = toImportedItem(cs[3], title: cs[3].fields.title!, deviceTz: 'Asia/Ho_Chi_Minh', labels: labels);
       expect((bill.startDate, bill.tz, bill.recurrenceStart, bill.listName), ('2026-12-05', 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 4, 17), 'Định kỳ'));
       expect(bill.recurrence, {'kind': 'rrule', 'rrule': 'FREQ=MONTHLY;BYMONTHDAY=5'});
-      final gate = toImportedItem(cs[2], title: 'x', deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code);
+      final gate = toImportedItem(cs[2], title: 'x', deviceTz: 'Asia/Ho_Chi_Minh', labels: labels);
       expect(gate.checklist, [(text: 'Mua sơn chống gỉ', done: false), (text: 'Mua cọ', done: false)]);
-      expect(toImportedItem(cs[1], title: 'x', deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code).done, isTrue);
+      expect(toImportedItem(cs[1], title: 'x', deviceTz: 'Asia/Ho_Chi_Minh', labels: labels).done, isTrue);
       final none = toImportedItem(const Candidate(kind: CandidateKind.task, source: 'md', fields: CandidateFields(title: 'a')),
-          title: 'a', deviceTz: 'Asia/Ho_Chi_Minh', confirmationLine: code);
+          title: 'a', deviceTz: 'Asia/Ho_Chi_Minh', labels: labels);
       expect((none.startsAt, none.startDate, none.tz), (null, null, null));
       expect(none.reminderOffsets, isEmpty);
     });
@@ -124,7 +125,7 @@ void main() {
       final c = txt.candidates.single;
       expect(fallbackTitle(c), 'ZZ 245 · SGN → HAN');
       expect(c.fieldConfidence['starts_at'], lessThan(0.7));
-      final i = toImportedItem(c, title: 'ZZ 245', deviceTz: 'Europe/London', confirmationLine: code);
+      final i = toImportedItem(c, title: 'ZZ 245', deviceTz: 'Europe/London', labels: labels);
       expect((i.startsAt, i.tz, i.endsAt), (DateTime.utc(2026, 12, 21, 3, 30), 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 21, 5, 40)));
 
       final email = decodeImport(req('$docs/synthetic-email-flight-text-0001/input.eml', region: 'US'));
@@ -134,6 +135,21 @@ void main() {
 
       final hotel = decodeImport(req('$docs/synthetic-hotel-text-0001/input.txt'));
       expect((hotel.docType, hotel.candidates.single.fields.title), (DocType.hotel, 'Khách sạn Hoa Sen Hội An'));
+    });
+
+    test('T2 tàu + lịch khám: ga theo tên làm địa điểm, chi tiết vào ghi chú, dặn dò lên đầu, giờ tường theo máy', () {
+      final train = decodeImport(req('$docs/synthetic-train-text-0001/input.txt')).candidates.single;
+      expect(fallbackTitle(train), 'SE3 · Sài Gòn → Đà Nẵng');
+      final t = toImportedItem(train, title: 'SE3', deviceTz: 'Asia/Ho_Chi_Minh', labels: labels);
+      expect((t.kind, t.locationText, t.notes, t.tz), ('event', 'Sài Gòn', 'code TQ8L4P\ncar 5\nseat 23', 'Asia/Ho_Chi_Minh'));
+      expect((t.startsAt, t.endsAt), (DateTime.utc(2026, 12, 28, 15), DateTime.utc(2026, 12, 29, 8, 40)));
+
+      final slip = decodeImport(req('$docs/synthetic-medical-text-0001/input.txt'));
+      expect(slip.docType, DocType.medical);
+      final m = toImportedItem(slip.candidates.single, title: slip.candidates.single.fields.title!, deviceTz: 'Asia/Ho_Chi_Minh', labels: labels);
+      expect((m.kind, m.title, m.startsAt), ('appointment', 'BỆNH VIỆN ĐA KHOA VÍ DỤ', DateTime.utc(2027, 1, 7, 1, 30)));
+      expect(m.notes, 'Nhịn ăn 8 tiếng trước khi lấy máu\ndept Tim mạch\nno 015');
+      expect(m.locationText, '1 Đường Ví Dụ, Quận 1, TP. Hồ Chí Minh');
     });
   });
 }

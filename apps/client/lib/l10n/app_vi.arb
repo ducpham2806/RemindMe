@@ -135,5 +135,9 @@
   "importIssueNextDay": "Đến vào hôm sau",
   "importIssueDateOrder": "Kiểm tra lại ngày: ngày và tháng có thể bị đảo",
   "importIssueCheckOut": "Chưa đọc được ngày trả phòng, hãy tự thêm",
-  "importCheckFields": "Đọc từ chữ trên tài liệu, hãy kiểm tra lại"
+  "importCheckFields": "Đọc từ chữ trên tài liệu, hãy kiểm tra lại",
+  "importSeat": "Ghế: {seat}",
+  "importCarriage": "Toa: {carriage}",
+  "importDepartment": "Khoa: {name}",
+  "importQueueNumber": "Số thứ tự: {number}"
 }

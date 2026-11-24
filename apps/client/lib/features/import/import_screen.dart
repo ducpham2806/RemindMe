@@ -80,10 +80,17 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     final l = AppLocalizations.of(context);
     final preview = _preview!;
     final tz = ref.read(deviceTimeZoneProvider);
+    final labels = ImportNoteLabels(
+      bookingCode: l.importBookingCode,
+      seat: l.importSeat,
+      carriage: l.importCarriage,
+      department: l.importDepartment,
+      queueNumber: l.importQueueNumber,
+    );
     final drafts = [
       for (var i = 0; i < preview.candidates.length; i++)
         if (_selected[i] && _titleOf(i) != null)
-          toImportedItem(preview.candidates[i], title: _titleOf(i)!, deviceTz: tz, confirmationLine: l.importBookingCode),
+          toImportedItem(preview.candidates[i], title: _titleOf(i)!, deviceTz: tz, labels: labels),
     ];
     setState(() => _busy = true);
     final result = await ref.read(importsRepositoryProvider).commit(

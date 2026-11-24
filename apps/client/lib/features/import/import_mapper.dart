@@ -54,16 +54,33 @@ String? fallbackTitle(Candidate c) {
   final route = from != null && to != null ? '$from → $to' : null;
   final parts = [if (number.isNotEmpty) number, ?route];
   if (parts.isNotEmpty) return parts.join(' · ');
-  return f.provider ?? f.confirmationCode;
+  return f.provider ?? f.department ?? f.confirmationCode;
+}
+
+/// Dòng ghi chú theo ngôn ngữ giao diện (ARB) cho chi tiết của đặt chỗ/lịch khám; mapper không chứa chuỗi hiển thị.
+class ImportNoteLabels {
+  const ImportNoteLabels({
+    required this.bookingCode,
+    required this.seat,
+    required this.carriage,
+    required this.department,
+    required this.queueNumber,
+  });
+
+  final String Function(String code) bookingCode;
+  final String Function(String seat) seat;
+  final String Function(String carriage) carriage;
+  final String Function(String name) department;
+  final String Function(String number) queueNumber;
 }
 
 /// Đề xuất (đã chỉnh ở màn Xem lại) → hàng để ghi. [title] là tên người dùng đã sửa (hoặc tên gốc).
-/// [confirmationLine] định dạng dòng "Mã đặt chỗ: X" theo ngôn ngữ giao diện cho ghi chú.
+/// [labels] định dạng các dòng ghi chú ("Mã đặt chỗ: X", "Toa: 5") theo ngôn ngữ giao diện.
 ImportedItem toImportedItem(
   Candidate c, {
   required String title,
   required String deviceTz,
-  required String Function(String code) confirmationLine,
+  required ImportNoteLabels labels,
 }) {
   TimeZones.ensureInitialized();
   final f = c.fields;
@@ -75,8 +92,14 @@ ImportedItem toImportedItem(
   if (rrule != null && start != null) {
     recurrenceStart = start.utc ?? TimeZones.toUtc(CivilDateTime(CivilDate.parse(start.date!)), deviceTz).utc;
   }
+  // Dặn dò của phiếu khám chép nguyên văn lên đầu (không diễn giải, glossary med_fasting).
   final notes = [
-    if (f.confirmationCode != null && !isTask) confirmationLine(f.confirmationCode!),
+    ?f.preparation,
+    if (f.confirmationCode != null && !isTask) labels.bookingCode(f.confirmationCode!),
+    if (f.carriage != null) labels.carriage(f.carriage!),
+    if (f.seat != null) labels.seat(f.seat!),
+    if (f.department != null) labels.department(f.department!),
+    if (f.queueNumber != null) labels.queueNumber(f.queueNumber!),
     ?c.notes,
   ].join('\n');
   final location = f.locationText ?? (f.origin?.name ?? f.origin?.code);

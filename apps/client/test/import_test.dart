@@ -97,7 +97,7 @@ void main() {
     final db = c.read(appDatabaseProvider);
     final (items, reminders) = (await tester.runAsync(() async => (await db.select(db.items).get(), await db.select(db.reminders).get())))!;
     expect((items.single.kind, items.single.title, items.single.notes, items.single.source),
-        ('event', 'ZZ 245 · SGN → HAN', 'Booking code: XQ7K2M', 'email'));
+        ('event', 'ZZ 245 · SGN → HAN', 'Booking code: XQ7K2M\nSeat: 14C', 'email'));
     expect(reminders.single.offsetMinutes, 0, reason: 'nhắc đúng giờ bay (ngoài cửa sổ 14 ngày nên OS chưa có)');
   });
 

@@ -755,5 +755,45 @@
   "importCheckFields": "Read from the text, check the details",
   "@importCheckFields": {
     "description": "Review screen hint: some fields were found by on-device text rules with lower confidence; the user should check them before saving."
+  },
+  "importSeat": "Seat: {seat}",
+  "@importSeat": {
+    "description": "Line added to the item notes for a ticket. Glossary trip_seat (seat or berth).",
+    "placeholders": {
+      "seat": {
+        "type": "String",
+        "example": "14C"
+      }
+    }
+  },
+  "importCarriage": "Coach: {carriage}",
+  "@importCarriage": {
+    "description": "Line added to the item notes for a train ticket. Glossary trip_carriage: en-GB 'Coach', en-US 'Car'.",
+    "placeholders": {
+      "carriage": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "importDepartment": "Department: {name}",
+  "@importDepartment": {
+    "description": "Line added to the notes of a medical appointment. Glossary med_department.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Cardiology"
+      }
+    }
+  },
+  "importQueueNumber": "Queue number: {number}",
+  "@importQueueNumber": {
+    "description": "Line added to the notes of a medical appointment: number printed on the slip. Glossary med_queue_number.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "015"
+      }
+    }
   }
 }
