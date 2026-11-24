@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "app.remindme.remindme_client"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications 23 + androidx.core 1.19 cần compileSdk ≥ 37 (chỉ là API để biên dịch; targetSdk giữ mặc định của Flutter).
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
