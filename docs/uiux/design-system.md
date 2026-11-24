@@ -1,12 +1,12 @@
 # Design system
 
 > TL;DR: Token màu/chữ/khoảng cách/bo góc cho Flutter `ThemeData` (Material 3) + tùy biến nhẹ cho iOS.
-> Hỗ trợ sáng/tối/theo hệ thống, cỡ chữ động tới 200%, tiếng Việt có dấu không bị cắt.
-> Persona: *UI Designer*, *UX Architect*, *Accessibility Auditor* (Agency).
+> Hỗ trợ sáng/tối/theo hệ thống, cỡ chữ động tới 200%, mọi hệ chữ của các locale phát hành (dấu chồng không bị cắt), sẵn sàng RTL.
+> Quy tắc bản địa hóa (định dạng, dịch, RTL chi tiết): `docs/architecture/i18n-l10n.md`.
 
 ## 1. Nguyên tắc
 1. **Nhập nhanh hơn ghi giấy.** Nút "+" luôn trong tầm ngón cái; mọi phương thức nhập (gõ, nói, ảnh, file) cách 1 chạm.
-2. **Giờ là thông tin quan trọng nhất.** Giờ luôn hiển thị đậm, bên trái, dạng 24h (VN) hoặc theo locale.
+2. **Giờ là thông tin quan trọng nhất.** Giờ luôn hiển thị đậm, bên trái, theo định dạng 12/24h của vùng.
 3. **Máy đề xuất, người dùng quyết định.** Kết quả đọc tự động (luật, mẫu, AI trên máy) luôn qua màn Xem lại, chỗ nghi ngờ được đánh dấu rõ.
 4. **Bình tĩnh.** Ít màu, màu chỉ để báo trạng thái (quá hạn, chuyến bay sắp tới, ưu tiên).
 5. **Dùng được bằng 1 tay và với người lớn tuổi.** Vùng chạm ≥ 48dp, chữ tối thiểu 14sp, có chế độ "Chữ lớn".
@@ -33,11 +33,14 @@ Tương phản tối thiểu WCAG AA: chữ thường 4,5:1, chữ lớn 3:1. Ki
 Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương phản trên cả 2 nền.
 
 ## 3. Chữ
-- Font: **Be Vietnam Pro** (thiết kế cho tiếng Việt, dấu đẹp, Google Fonts, OFL), fallback hệ thống (SF Pro, Roboto).
+- Font: **Be Vietnam Pro** (Latin + tiếng Việt, Google Fonts, OFL) cho các locale chữ Latin. Hệ chữ khác dùng font hệ thống:
+  CJK (PingFang / Noto Sans CJK), Thái (Thonburi / Noto Sans Thai), Ả Rập (SF Arabic / Noto Sans Arabic), Devanagari (Kohinoor / Noto Sans Devanagari).
+  Khai báo `fontFamilyFallback` theo thứ tự này; không nhúng font CJK.
   Số giờ dùng `FontFeature.tabularFigures()` để thẳng cột.
 - Thang chữ (sp): `display 32/40 semibold`, `title 22/28 semibold`, `headline 18/24 semibold`, `body 16/24 regular`,
   `bodySmall 14/20`, `label 13/16 medium`, `caption 12/16`.
-- Line-height tối thiểu 1,35 để dấu chồng (ệ, ẫ, ỗ) không bị cắt. Không dùng `maxLines: 1` với chiều cao cố định cho tiêu đề tiếng Việt.
+- Line-height tối thiểu 1,35 để dấu chồng (tiếng Việt ệ/ẫ, tiếng Thái) không bị cắt. Không dùng `maxLines: 1` với chiều cao cố định cho tiêu đề.
+  CJK không dùng chữ nghiêng; tiếng Đức/Phần Lan có thể dài hơn tiếng Anh ~35%.
 
 ## 4. Khoảng cách, bo góc, đổ bóng
 - Lưới 4dp: `space.1=4, 2=8, 3=12, 4=16, 5=20, 6=24, 8=32, 10=40`. Lề màn hình 16dp.
@@ -75,10 +78,12 @@ Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương
 - Không truyền tải thông tin chỉ bằng màu (quá hạn có thêm chữ "Quá hạn").
 - Chế độ "Chữ lớn & đơn giản" (persona Bà Hoa): ẩn tag/ưu tiên, nút to, chỉ 3 tab.
 
-## 9. Bản địa hóa
-- `intl` + ARB: `vi` (mặc định), `en`. Không ghép chuỗi; dùng ICU plural/select.
-- Định dạng: `vi-VN` ngày `T5, 26/11`, giờ 24h, tiền `1.890.000 ₫`. `en` theo locale máy.
-- Độ dài chuỗi tiếng Việt dài hơn tiếng Anh ~20-30%, nên chừa chỗ trong nút.
+## 9. Bản địa hóa (phần hình ảnh)
+- Mọi padding/alignment dùng bản directional (`EdgeInsetsDirectional`, `AlignmentDirectional`). Icon có hướng dùng `matchTextDirection`;
+  swipe Xong/Hoãn, timeline chuyến đi, thanh tiến trình đảo chiều ở RTL.
+- Chừa chỗ cho chuỗi dài: nút cho phép 2 dòng; `TaskTile` xuống dòng giờ khi chữ lớn hoặc chuỗi dài.
+- Số giờ và mã (PNR, số hiệu chuyến) luôn hiển thị LTR, kể cả trong giao diện RTL.
+- Các mục khác (định dạng, dịch, cổng chất lượng): `docs/architecture/i18n-l10n.md`.
 
 ## 10. Bàn giao cho Flutter
 `lib/core/theme/tokens.dart` (hằng số), `app_theme.dart` (ThemeData light/dark từ token), `ThemeExtension<RemindColors>`

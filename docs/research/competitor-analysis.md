@@ -1,5 +1,9 @@
 # RemindMe – Phân tích đối thủ & thị trường (cuối 2026)
 
+> TL;DR: 15+ đối thủ (todo, du lịch, AI planner, app VN). Chưa ai gộp todo + nhắc + lịch trình + lịch khám đa nền tảng; import ảnh/PDF của đối thủ
+> hầu như chỉ trên iOS; Microsoft To Do ngừng app 30/06/2027. Phạm vi: **thị trường VN sâu, global ở mức đối thủ toàn cầu và giá USD**;
+> nghiên cứu theo từng thị trường global khác còn thiếu (việc Phase 0). Giá/giới hạn đã chốt nằm ở `docs/product/pricing-entitlements.md`, không ở đây.
+
 > Persona: Product Trend Researcher. Dữ liệu thu thập 23–24/11/2026. Giá VND lấy trực tiếp từ App Store VN (storefront `vn`) ngày 24/11/2026; giá USD lấy từ trang chính thức khi có, nếu không thì từ nguồn thứ ba. Tỷ giá tham chiếu: ~25.900 VND/USD (Vietcombank bán ra 16/11/2026).
 > Ký hiệu: **(chưa xác minh)** = chỉ có nguồn thứ ba, các nguồn mâu thuẫn, hoặc là suy luận của người viết.
 
@@ -144,7 +148,7 @@
 ## 5. Khoảng trống thị trường & cơ hội khác biệt
 
 1. **Một timeline cho mọi thứ có giờ giấc:** task, nhắc việc, chuyến bay, xe khách, tàu, khách sạn, lịch khám. Hiện người dùng phải dùng Todoist + TripIt + app bệnh viện + Zalo cùng lúc. Chưa đối thủ nào kết hợp được, và đây là định vị cốt lõi.
-2. **AI import trên Android, dùng được trên mọi máy.** Import ảnh/PDF của TripIt và Tripsy phụ thuộc Apple Intelligence. RemindMe nên làm OCR trên thiết bị (ML Kit hoặc Vision) kết hợp LLM trên server hoặc on-device, chạy được cả trên máy Android tầm trung (Xiaomi, OPPO).
+2. **AI import trên Android, dùng được trên mọi máy.** Import ảnh/PDF của TripIt và Tripsy phụ thuộc Apple Intelligence. RemindMe nên làm OCR trên thiết bị (ML Kit hoặc Vision) kết hợp luật/mẫu và LLM có sẵn của OS (ADR-010), chạy được cả trên máy Android tầm trung (Xiaomi, OPPO).
 3. **Parser chuyên cho định dạng VN:** e-ticket Vietjet, Vietnam Airlines, Bamboo; vé Vexere (hơn 500 nhà xe) và Đường sắt VN; xác nhận Traveloka, Agoda, Booking bằng tiếng Việt; phiếu khám Medpro, BookingCare và app bệnh viện; đơn thuốc (lịch uống thuốc). App ngoại gần như chắc chắn không tối ưu cho các định dạng này (suy luận, chưa xác minh).
 4. **Nhắc theo âm lịch (recurring lunar):** giỗ, rằm, mùng 1, sinh nhật âm. Hiện chỉ app lịch vạn niên có tính năng này, không app todo nào có (chưa xác minh với TickTick, vốn có hiển thị âm lịch). Tính năng làm ít mà hiệu quả cao ở VN.
 5. **Kênh nhắc qua Zalo**, tương tự bot WhatsApp của Any.do: gửi nhắc quan trọng hoặc gửi cho người thân (cha mẹ uống thuốc) qua Zalo OA/ZNS. ZNS tính phí theo tin, nên chỉ phù hợp với gói trả phí (giá ZNS chưa xác minh).
@@ -181,43 +185,10 @@
 - Gói Family, chia sẻ trip.
 - Tối ưu parser cho các OTA toàn cầu (Booking, Agoda, Expedia, Trip.com).
 
-### 6.2 Giá đề xuất
-
-| Gói | VN (VND) | Tương đương USD | Global (USD) | Ghi chú |
-|---|---|---|---|---|
-| Tháng | **59.000đ** | khoảng $2,3 | $4,99 | Thấp hơn TickTick (69k), cao hơn mức sàn của Structured; nằm trong dải 49–79k được gợi ý |
-| Quý | **149.000đ** (khoảng 49,7k/tháng, -16%) | khoảng $5,8 | $12,99 | Điểm khác biệt, phù hợp chi tiêu ngắn hạn |
-| Năm | **449.000đ** (khoảng 37,4k/tháng, -37%; bằng 7,6× giá tháng) | khoảng $17,3 | $39,99 | Rẻ hơn TickTick 639k, Any.do 839k, TripIt 1.099k |
-| (Tuỳ chọn) Học sinh/sinh viên | 299.000đ/năm | n/a | n/a | Học theo mô hình Scholarship của Structured |
-
-- Trial 7 ngày cho gói năm. Không bán lifetime ở giai đoạn đầu, vì chi phí AI/OCR là chi phí biến đổi.
-- Chọn tier App Store và Play gần nhất với các mức trên (mức thực tế phụ thuộc bảng tier VND, chưa xác minh). Giữ tối đa 3–4 SKU.
-- Global: $4,99 / $12,99 / $39,99, thấp hơn Todoist ($7/$60) và Any.do ($7,99/$59,88), ngang Wanderlog và Tripsy.
-
-### 6.3 Giới hạn free tier đề xuất (áp dụng cho **mọi loại**, kể cả booking)
-
-> Bản chốt (nguồn sự thật) nằm ở `docs/product/pricing-entitlements.md`. Ở đó gói trả phí tên là **Plus**.
-
-| Hạn mức | Free | Pro | Lý do |
-|---|---|---|---|
-| Nhắc nhở mỗi ngày (số nhắc được lên lịch để kêu trong một ngày) | **10/ngày** | Không giới hạn | Đủ cho nhu cầu cá nhân cơ bản. Người dùng nặng sẽ chạm giới hạn trong khoảng 1–2 tuần |
-| Recurring đang hoạt động | **5** | Không giới hạn | Không khoá hẳn như Any.do. 5 slot đủ cho uống thuốc, giỗ, hoá đơn |
-| Cuộc hẹn/booking **đang hoạt động** (chuyến bay, xe, tàu, khách sạn, trip, lịch khám; chỉ tính mục chưa diễn ra) | **10** | Không giới hạn | Mục đã qua tự lưu trữ và không tính vào hạn mức, nên người dùng không bị "phạt" vì dùng lâu |
-| Smart Import (OCR/AI parse ảnh, PDF, xlsx, md) | **10 lượt/tháng** | 300/tháng (fair use) | Theo chuẩn 10/tháng của Todoist; kiểm soát chi phí LLM |
-| Voice input | **20 phiên/tháng** | Không giới hạn (fair use) | STT tiếng Việt có chi phí |
-| Đồng bộ Google | 1 tài khoản Calendar + Tasks | 3 tài khoản, có tự quét Gmail | Theo kiểu Todoist (1 vs 3) và Wanderlog (quét Gmail ở Pro) |
-| Watch | Nhận thông báo, xem danh sách, đánh dấu xong | Complication/tile đầy đủ, voice trên watch, Live Activities chuyến bay | Watch là điểm khác biệt, nên bản free vẫn phải dùng được |
-| Theo dõi trạng thái chuyến bay | Không | Có | Giá trị kiểu TripIt Pro |
-| Nhắc qua Zalo / cho người thân | Không | Có | Có chi phí ZNS |
-
-**Nguyên tắc:** nhắc đã tạo thì **luôn kêu**, không bao giờ chặn lúc đến giờ. Giới hạn chỉ áp dụng khi tạo mới. Hiện bộ đếm hạn mức rõ ràng (ví dụ "7/10 nhắc hôm nay"). Khi chạm giới hạn, gợi ý gói quý.
-
-### 6.4 KPI theo dõi giai đoạn đầu (đề xuất)
-- Tỷ lệ thông báo đến đúng giờ (±1 phút) theo hãng máy: mục tiêu ≥ 99% trên Xiaomi/OPPO.
-- Độ chính xác parse booking (tỷ lệ trường dữ liệu đúng, không phải sửa ở bước review): mục tiêu ≥ 90% với 10 mẫu vé VN phổ biến.
-- Tỷ lệ chuyển free sang trả phí: tham chiếu SEA thấp hơn US; đặt mục tiêu 2–4% trong 90 ngày (chưa xác minh benchmark).
-
----
+### 6.2-6.4 Giá, giới hạn free tier, KPI
+Đã chuyển thành quyết định: giá và giới hạn ở `docs/product/pricing-entitlements.md`, KPI ở `docs/product/PRD.md` §2.
+Ghi nhận từ nghiên cứu (24/11/2026) làm căn cứ: neo giá VN (TickTick 69k/tháng, 639k/năm; Any.do 139k/839k; Todoist 199k/1.999k; TripIt 1.099k/năm);
+không đối thủ chính nào có gói quý; free tier của đối thủ ngày càng chặt với AI (Todoist 10 lượt AI/tháng, Any.do free không có lặp).
 
 ## 7. Nguồn (truy cập 23–24/11/2026)
 

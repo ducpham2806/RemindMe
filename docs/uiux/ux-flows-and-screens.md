@@ -1,7 +1,8 @@
 # UX: kiến trúc thông tin, luồng, màn hình
 
 > TL;DR: 4 tab (Hôm nay · Lịch · Chuyến đi · Tôi) + FAB "+" mở Quick Add đa phương thức.
-> Luồng quan trọng: Onboarding + xin quyền, Quick Add, Import → Xem lại, Thông báo → hành động, Paywall, Chuyển nhà từ To Do.
+> **6 luồng P0** (nguồn chuẩn, prototype Phase 0 theo danh sách này): Onboarding + xin quyền, Quick Add (gõ/nói), Import → Xem lại,
+> Thông báo → hành động, Paywall, Chuyển nhà từ To Do. Ví dụ màn hình viết bằng tiếng Việt; mọi chuỗi thật lấy từ ARB theo locale.
 > Wireframe ASCII bên dưới là chuẩn bố cục, chi tiết hình ảnh theo `design-system.md`.
 
 ## 1. Kiến trúc thông tin
@@ -16,12 +17,14 @@ App
 ├── Chuyến đi
 │   ├── Sắp tới · Đã qua
 │   └── Chi tiết chuyến: timeline segment, tài liệu, checklist hành lý
+├── 🔍 Tìm kiếm (icon trên thanh tiêu đề Hôm nay/Lịch): item, chuyến đi, ghi chú, mã đặt chỗ; không phân biệt dấu/hoa thường theo locale
 ├── Tôi
 │   ├── Danh sách (lists) & Hộp thư (Inbox)
 │   ├── Hộp đề xuất (kết quả từ email/import chưa duyệt)
 │   ├── Tích hợp (Google, Microsoft, Notion, email forward, feed ICS, đồng hồ)
 │   ├── Gói & mức sử dụng (QuotaMeter)
-│   └── Cài đặt (thông báo, giờ yên lặng, âm lịch, giao diện, chữ lớn, độ tin cậy nhắc, dữ liệu & quyền riêng tư)
+│   └── Cài đặt (thông báo, giờ yên lặng, thiết bị nhận nhắc, **ngôn ngữ & vùng** [giao diện · định dạng · giọng nói · quốc gia ngày lễ · hệ lịch phụ],
+│       giao diện, chữ lớn, độ tin cậy nhắc, dữ liệu & quyền riêng tư [xuất, xóa tài khoản, chỉ nhận dạng trên máy])
 └── FAB "+" → Quick Add sheet
 ```
 Điều hướng: `go_router`, deep link `remindme://item/<id>`, `remindme://trip/<id>`, `remindme://import/<id>`.
@@ -101,9 +104,10 @@ Tháng: chấm màu theo loại, ngày âm nhỏ dưới ngày dương (bật/t�
 ## 3. Luồng quan trọng
 
 ### 3.1 Onboarding (≤ 4 màn, bỏ qua được)
-1. Giá trị: "Chụp vé, nói một câu, RemindMe lo phần nhắc."
-2. Chọn mục tiêu (nhiều lựa chọn): Công việc · Du lịch · Sức khỏe/thuốc · Gia đình & giỗ chạp · Học tập. Dùng để cá nhân hóa list mẫu và nhắc mặc định.
-3. Thử ngay: ô Quick Add với câu gợi ý "Mai 8h uống thuốc". Tạo nhắc đầu tiên.
+1. Giá trị: "Chụp vé, nói một câu, RemindMe lo phần nhắc." Ngôn ngữ, định dạng, múi giờ lấy từ máy; có link nhỏ "Đổi ngôn ngữ".
+2. Chọn mục tiêu (nhiều lựa chọn): Công việc · Du lịch · Sức khỏe/thuốc · Gia đình & dịp lễ · Học tập. Dùng để cá nhân hóa list mẫu, nhắc mặc định,
+   và gợi ý bật hệ lịch phụ theo vùng (âm lịch ở VN/TQ/HQ/SG, Hijri ở Trung Đông/ID/MY).
+3. Thử ngay: ô Quick Add với câu gợi ý theo ngôn ngữ ("Mai 8h uống thuốc" / "Take pills tomorrow at 8am"). Tạo nhắc đầu tiên.
 4. **Xin quyền đúng lúc** (priming screen trước dialog hệ thống): thông báo (sau khi tạo nhắc đầu tiên), exact alarm (Android, khi tạo nhắc có giờ),
    micro (khi bấm mic lần đầu), camera (khi bấm chụp), lịch (khi bật đồng bộ).
 5. Android OEM có nguy cơ kill: màn "Đảm bảo nhắc nhở luôn kêu" với hướng dẫn từng bước theo hãng + nút mở đúng trang cài đặt + nút "Gửi thông báo thử sau 1 phút".
@@ -120,14 +124,18 @@ Còn 1 lần hôm nay
 
 ### 3.3 Chạm giới hạn → Paywall
 Thông điệp theo ngữ cảnh (`pricing-entitlements.md` mục 4) → `PaywallSheet` → mua → xác nhận "Đã mở khóa Plus" → quay lại đúng hành động dở (tạo item tiếp).
-Đóng paywall: item ở trạng thái nháp, không mất dữ liệu người dùng đã nhập.
+Đóng paywall: item lưu ở `pending_quota`, không mất dữ liệu người dùng đã nhập (`pricing-entitlements.md` §3).
 
 ### 3.4 Chuyển nhà từ Microsoft To Do
 Tôi → Tích hợp → "Chuyển từ Microsoft To Do" → đăng nhập Microsoft → chọn list → xem trước số lượng → Import → báo cáo.
-Vượt giới hạn Free: import đủ nhưng các mục vượt ở trạng thái `archived`, kèm ưu đãi "Plus 1 tháng miễn phí cho người chuyển từ To Do" (thử nghiệm).
+Vượt giới hạn Free: import đủ nhưng các mục vượt ở `archived` (`archived_reason='quota'`), kèm ưu đãi "Plus 1 tháng miễn phí cho người chuyển từ To Do" (thử nghiệm).
 
 ### 3.5 Kết nối email forward
-Tôi → Tích hợp → Email → hiện địa chỉ riêng (nút Copy) → hướng dẫn 3 bước tạo filter Gmail (ảnh minh họa) → "Gửi email thử" → xác nhận nhận được.
+Tôi → Tích hợp → Email → hiện địa chỉ riêng (nút Copy) → hướng dẫn 3 bước tạo filter Gmail/Outlook (ảnh minh họa theo ngôn ngữ) → "Gửi email thử" → xác nhận nhận được.
+
+### 3.6 Xung đột ghi chú
+Khi 2 thiết bị sửa cùng ghi chú lúc offline (`system-architecture.md` §4): item hiện nhãn "Có 2 phiên bản"; mở ra thấy 2 bản cạnh nhau
+(thiết bị + thời gian sửa), nút "Giữ bản này", "Giữ bản kia", "Gộp cả hai" (nối 2 đoạn).
 
 ## 4. Đồng hồ (Phase 2)
 - watchOS: màn chính danh sách "Tiếp theo" (5 item), chạm → chi tiết + Xong/Hoãn; nút mic thêm nhanh; complication: item tiếp theo + giờ.
@@ -138,11 +146,27 @@ Tôi → Tích hợp → Email → hiện địa chỉ riêng (nút Copy) → h�
 Nhỏ: item tiếp theo. Vừa: 3-4 item hôm nay + checkbox (interactive). Lớn: hôm nay + chuyến đi sắp tới. Nút nhanh: "🎤 Nói để thêm".
 
 ## 6. Microcopy (giọng văn)
-- Xưng "bạn", câu ngắn, động từ trước: "Hoãn 10 phút", "Lưu tất cả", "Thử ảnh rõ hơn".
-- Không đổ lỗi người dùng; nói điều làm được tiếp theo.
-- Lỗi mạng: "Đang offline. Nhắc vẫn kêu đúng giờ, dữ liệu sẽ đồng bộ khi có mạng."
-- Mọi chuỗi qua `tools/unslop-docs.sh` cho docs; chuỗi UI rà bằng mắt (persona *Brand Guardian*).
+- Nguyên tắc chung mọi ngôn ngữ: câu ngắn, động từ trước ("Hoãn 10 phút" / "Snooze 10 min"), không đổ lỗi người dùng, nói điều làm được tiếp theo.
+- Xưng hô, độ trang trọng từng ngôn ngữ: style guide theo locale (`architecture/i18n-l10n.md` §8). Tiếng Việt xưng "bạn".
+- Chuỗi tiếng Anh (ngôn ngữ nguồn) và store listing tiếng Anh chạy `tools/unslop-docs.sh` rồi người duyệt.
+
+## 6b. Trạng thái lỗi và trống (mỗi màn phải có)
+| Tình huống | Hiển thị | Hành động |
+|---|---|---|
+| Offline | Banner nhỏ "Đang offline. Nhắc vẫn kêu đúng giờ, dữ liệu sẽ đồng bộ khi có mạng." | Không chặn thao tác |
+| Sync lỗi lặp lại | Icon cảnh báo ở Tôi → Đồng bộ, chi tiết lỗi | "Thử lại", "Gửi báo lỗi" |
+| Thiếu quyền thông báo / exact alarm | Thẻ đỏ trên Hôm nay "Nhắc nhở có thể không kêu" | Mở đúng trang cài đặt |
+| Hết quota | `QuotaMeter` + paywall theo ngữ cảnh | Nâng cấp / lưu trữ bớt |
+| OCR không đọc được | "Không đọc được ảnh này" | Thử ảnh khác / nhập tay với ảnh tham chiếu |
+| Locale giọng nói không khả dụng | "Ngôn ngữ này chưa nhận dạng được trên máy bạn" | Đổi ngôn ngữ giọng nói / tải nhận dạng nâng cao |
+| Danh sách trống (Hôm nay, Chuyến đi, Hộp đề xuất) | `EmptyState` + 1 câu + 1 CTA (ví dụ "Chia sẻ ảnh vé vào RemindMe") | |
+| Tích hợp hết hạn token | Thẻ ở Tích hợp | "Kết nối lại" |
+
+## 6c. Hỗ trợ người dùng
+Tôi → Trợ giúp: FAQ theo ngôn ngữ (help center), "Gửi phản hồi / báo lỗi" (kèm log kỹ thuật nếu người dùng đồng ý, không kèm nội dung item),
+hướng dẫn hoàn tiền (chuyển sang trang của App Store/Play), trang trạng thái dịch vụ.
 
 ## 7. Kiểm thử UX
-- 5 người/persona, bài test: tạo nhắc lặp âm lịch, import ảnh vé, hoãn từ thông báo, tìm mã đặt chỗ khi ở sân bay (≤ 2 chạm từ thông báo).
+- 5 người/persona, mỗi thị trường đợt 1 ít nhất 1 vòng; bài test: tạo nhắc lặp (âm lịch với persona châu Á), import ảnh vé, hoãn từ thông báo,
+  tìm mã đặt chỗ khi ở sân bay (≤ 2 chạm từ thông báo), nhập bằng giọng vùng của mình.
 - Persona *Persona Walkthrough Specialist* và *UX Researcher* chạy walkthrough trên prototype trước khi code từng luồng P0.

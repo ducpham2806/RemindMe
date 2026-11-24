@@ -60,7 +60,7 @@ Cách dùng trong prompt: *"Dùng agency agent Backend Architect, thiết kế R
 | Email inbound, Gmail | Email Intelligence Engineer |
 | Thanh toán, paywall | Payments & Billing Engineer, Pricing Analyst |
 | Bảo mật, pháp lý | Security Architect, Privacy Engineer, Data Privacy Officer, Legal Compliance Checker, AppSec Engineer |
-| i18n tiếng Việt/Anh | Internationalization Engineer, Language Translator |
+| i18n/l10n, gói ngôn ngữ, văn hóa từng thị trường | Internationalization Engineer, Language Translator, Cultural Intelligence Strategist, App Store Optimizer (ASO theo nước) |
 | Hạ tầng, CI/CD, release | DevOps Automator, Mobile Release Engineer, SRE |
 | Kiểm thử | Test Automation Engineer, API Tester, Performance Benchmarker, Evidence Collector, Reality Checker |
 | Review code | Code Reviewer, Minimal Change Engineer, AI-Generated Code Security Auditor |

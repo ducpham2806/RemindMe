@@ -12,6 +12,26 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · Global từ launch, giọng nói đa vùng, rà soát chồng chéo toàn bộ docs · Claude Code
+- **Làm:**
+  - Tài liệu mới: `architecture/i18n-l10n.md` (cấp locale A/B/C, CLDR, hệ lịch, RTL, quy trình dịch, cổng chất lượng),
+    `architecture/voice-and-text-input.md` (STT theo biến thể vùng, bias, PhoWhisper/Whisper tùy chọn, gói ngữ pháp có từ địa phương Bắc/Trung/Nam),
+    `product/analytics-events.md` (danh mục event + consent theo vùng), `engineering/testing-and-release.md` (ma trận thiết bị, tầng test, CI/CD, rollout).
+  - Một subagent rà độc lập toàn bộ docs (mâu thuẫn, trùng lặp, tham chiếu hỏng, thiếu sót, giả định chỉ-VN). Đã sửa các phát hiện mức Cao và phần lớn mức TB.
+  - Viết lại: data-model (SYNC_COLS + `field_clock`, cascade xóa, bỏ default vi-VN, `recurrences.kind` rrule/calendar/after_completion, `plan_products`,
+    trạng thái subscription đầy đủ, `occurrence_log`, `local_files`), pricing (nhóm giá T1/T2/T3, `feature_watch_app` theo cấp, khuyến mãi theo thị trường),
+    plan (global ở Phase 1, gantt 43 tuần, auth/entitlement lên S1-S2, nhánh việc E/V/L), PRD (persona global, quy ước P0-P3), api-spec (sync là RPC Postgres, bỏ Gmail server),
+    security (pháp lý theo thị trường, bên thứ ba đầy đủ, khóa ký mẫu, xóa/xuất dữ liệu).
+  - Sửa: ADR-001/002/004/005/007/008, thêm ADR-011 (global, region, OS tối thiểu, điều kiện xem lại ADR-010) và ADR-012 (đường ghi duy nhất);
+    reminder-engine (DST là nguồn chuẩn, nhiều thiết bị, lập lịch lại khi đổi ngôn ngữ); extraction (OCR đa hệ chữ + PP-OCRv5, mẫu theo thị trường);
+    integration, UX (tìm kiếm, cài đặt ngôn ngữ & vùng, xung đột ghi chú, bảng lỗi/trống, hỗ trợ), design system (font theo hệ chữ, RTL), competitor (TL;DR, bỏ bảng giá cũ).
+  - INDEX thêm cột "Nguồn chuẩn"; AGENTS thêm quy tắc không giả định locale, không chuỗi hard-code, một nguồn chuẩn; CLAUDE.md rút còn import.
+- **Quyết định:** ADR-011, ADR-012. Gmail Phase 3 chạy trên máy. Live Activities Phase 3. Feed ICS Phase 2.
+- **Kiểm chứng (tra web 24/11/2026):** PhoWhisper (VinAI) huấn luyện trên dữ liệu nhiều giọng vùng, repo Apache-2.0 (model card ghi không thống nhất);
+  Android có `EXTRA_BIASING_STRINGS` (API 33), `EXTRA_ENABLE_LANGUAGE_SWITCH` (API 34); iOS có `contextualStrings`, `SFCustomLanguageModelData`;
+  ML Kit Text v2 không có Ả Rập/Kirin/Thái nên dùng PP-OCRv5 mobile (~8 MB/hệ chữ); có package Flutter cho whisper.cpp.
+- **Dở dang / tiếp theo:** xem `docs/STATE.md`. Chưa sửa các phát hiện mức Thấp như cắt bớt phần nguồn của competitor doc.
+
 ## 2026-11-24 · Bỏ AI API trả phí, chuyển trích xuất sang chạy trên máy · Claude Code
 - **Làm:**
   - Viết `docs/architecture/on-device-extraction.md`, thay cho `ai-ingestion.md` (đã xóa). Thiết kế 5 tầng: decoder, OCR của OS,
@@ -32,7 +52,8 @@
   - Dựng context phân tầng cho AI: `AGENTS.md` (Codex) + `CLAUDE.md` (import AGENTS + STATE).
   - Cài và thử graphify 0.9.118 + unslop 0.7.0; viết script wrapper trong `tools/`.
 - **Quyết định:**
-  - Stack: Flutter + watch native, Supabase + worker TS, offline-first, Claude API phía server, RevenueCat (ADR-001..009).
+  - Stack: Flutter + watch native, Supabase + worker TS, offline-first, Claude API phía server (**đã thay bởi ADR-010**), RevenueCat (ADR-001..009).
+  - (Ghi chú sau: thị trường "VN trước" đã thay bởi global từ launch, ADR-011; giới hạn/giá dưới đây đã chỉnh, xem pricing.)
   - Giá đề xuất 59.000đ/tháng, 149.000đ/quý, 449.000đ/năm.
   - Free: 10 nhắc/ngày, 5 chuỗi lặp, 10 lịch hẹn đang hoạt động (gồm booking), 1 chuyến đi, 10 import AI/tháng.
   - Email forward trước, Gmail API sau (tránh CASA sớm). Import Microsoft To Do vào MVP, vì app To Do ngừng 30/06/2027 (đã kiểm chứng qua nhiều nguồn tin 11/2026).

@@ -1,9 +1,11 @@
 # Kế hoạch triển khai
 
-> TL;DR: 5 phase trong ~9 tháng. Phase 1 (MVP) là sprint 1-8 (16 tuần), launch beta VN tháng 4/2027, trước khi
-> Microsoft To Do ngừng app (30/06/2027). Đội tối thiểu: 2 Flutter (1 người kiêm native iOS/Android), 1 backend + "parser/mẫu",
-> 1 designer bán thời gian, 1 PM/QA. Đọc file/ảnh chạy trên máy, không dùng AI API trả phí (ADR-010); kế hoạch chi tiết ở mục "Trích xuất on-device".
-> Khung quy trình: NEXUS-Sprint của Agency (`docs/guides/ai-dev-workflow.md`). Mỗi phase có quality gate.
+> TL;DR: 5 phase trong ~10 tháng (43 tuần). **Global ngay từ Phase 1**: launch đồng thời đợt locale 1 (`i18n-l10n.md` §2).
+> Phase 1 (MVP) = 8 sprint x 2 tuần, beta công khai đa quốc gia khoảng tháng 4/2027, trước khi Microsoft To Do ngừng app (30/06/2027).
+> Đội tối thiểu: 2 Flutter (1 người kiêm native iOS/Android), 1 backend + parser/mẫu, 1 designer bán thời gian, 1 PM/QA,
+> dịch giả bản ngữ thuê theo locale. Không dùng AI API trả phí theo đầu người dùng (ADR-010).
+> Ba nhánh việc có kế hoạch chi tiết bên dưới: **E** (trích xuất tài liệu), **V** (giọng nói + NLU), **L** (bản địa hóa).
+> Kiểm thử và phát hành: `docs/engineering/testing-and-release.md`. Khung quy trình: NEXUS-Sprint (`docs/guides/ai-dev-workflow.md`).
 
 ## Tổng quan
 ```mermaid
@@ -11,144 +13,163 @@ gantt
   dateFormat YYYY-MM-DD
   title RemindMe roadmap
   section Phase 0
-  Tài liệu, thiết kế, tài khoản store        :p0, 2026-11-24, 3w
-  section Phase 1 MVP
-  Nền tảng + nhắc nhở                         :p1a, after p0, 6w
-  Trích xuất on-device + chuyến đi            :p1b, after p1a, 6w
-  Thanh toán + hoàn thiện + beta              :p1c, after p1b, 4w
+  Docs, thiết kế, spike, tài khoản store        :p0, 2026-11-24, 3w
+  section Phase 1 MVP (global)
+  S1-S3 nền tảng, sync, todo, nhắc nhở           :p1a, after p0, 6w
+  S4-S6 lặp/lịch, giọng nói, trích xuất, chuyến đi:p1b, after p1a, 6w
+  S7-S8 thanh toán, To Do import, hardening, beta :p1c, after p1b, 4w
   section Phase 2
-  Watch, widget, Google Calendar, Notion      :p2, after p1c, 8w
+  Watch, widget, Google Calendar, LLM của OS, đợt locale 2 :p2, after p1c, 8w
   section Phase 3
-  Gmail, trạng thái chuyến bay, Zalo, Live Act:p3, after p2, 8w
+  Gmail trên máy, flight status, kênh nhắn tin, đợt locale 3 (RTL) :p3, after p2, 8w
   section Phase 4
-  Global, web, chia sẻ gia đình               :p4, after p3, 8w
+  Web app, chia sẻ gia đình, gói Family          :p4, after p3, 8w
 ```
+Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Phase 3, **P3** = Phase 4 trở đi.
 
 ## Phase 0: Khám phá & nền móng (3 tuần, đang làm)
-- [x] Tài liệu hệ thống, UI/UX, nghiên cứu đối thủ, kế hoạch (bộ docs này)
-- [ ] Phỏng vấn 10-15 người dùng tiềm năng (5 persona), xác nhận giả thuyết PRD mục 6
-- [ ] Prototype Figma (hoặc HTML) cho 6 luồng P0, test với 5 người
-- [ ] Đăng ký Apple Developer (tổ chức), Google Play Console, domain, email, Firebase, Supabase (staging/prod)
-- [ ] Thu thập ≥ 300 mẫu booking/vé/giấy hẹn ẩn danh (≥ 20 nhà cung cấp) cho eval set và để viết mẫu
-- [ ] Spike kỹ thuật OCR (xem mục E0 bên dưới)
-- [ ] Khung repo: monorepo, CI (GitHub Actions), lint, format, commit convention
-- **Gate:** PRD đã chốt sau phỏng vấn; prototype pass test (≥ 4/5 người hoàn thành tác vụ chính không cần trợ giúp)
+- [x] Tài liệu hệ thống, UI/UX, nghiên cứu đối thủ, kế hoạch
+- [ ] Nghiên cứu thị trường global: doanh thu app productivity theo quốc gia, chốt đợt locale 1 (*Trend Researcher*)
+- [ ] Phỏng vấn 15-20 người dùng (VN + ≥ 2 thị trường đợt 1), xác nhận giả thuyết PRD §6
+- [ ] Prototype 6 luồng P0 (`uiux/ux-flows-and-screens.md` mục đầu), test với 5 người, có bản tiếng Anh
+- [ ] Đăng ký Apple Developer (tổ chức, D-U-N-S), Google Play Console, domain, email, Firebase, Supabase (staging/prod); chuẩn bị hồ sơ OAuth Google (nộp ở Phase 1)
+- [ ] Thu ≥ 300 mẫu tài liệu ẩn danh, ≥ 20 nhà cung cấp, **≥ 3 thị trường** (E0.4)
+- [ ] Spike E0 (OCR), V0 (giọng nói/NLU), L0 (bản địa hóa)
+- [ ] Khung repo: monorepo, CI, lint (gồm lint chặn chuỗi hard-code), commit convention
+- **Gate:** PRD chốt sau phỏng vấn; prototype pass (≥ 4/5 người hoàn thành tác vụ chính); spike có kết luận engine OCR/STT cho từng nền tảng.
 
-## Phase 1: MVP (16 tuần = 8 sprint x 2 tuần)
+## Phase 1: MVP (16 tuần = 8 sprint)
 | Sprint | Mục tiêu | Deliverable chính |
 |---|---|---|
-| S1 | Bootstrap | Flutter app (flavors staging/prod), theme từ token, go_router, Drift schema, Supabase migrations + RLS + pgTAP, worker skeleton + CI deploy |
-| S2 | Todo core | Lists, items CRUD, Hôm nay, chi tiết item, Quick Add (gõ) + `QuickParser` vi/en (fixtures), sync push/pull |
-| S3 | Reminder engine | Scheduler rolling window, Android exact alarm + boot/tz receivers, iOS categories/actions, snooze, telemetry, onboarding OEM |
-| S4 | Lặp & âm lịch & giọng nói | RRULE UI + engine, âm lịch (thuật toán + test 2020-2050), STT on-device, đa việc trong 1 câu |
-| S5 | Trích xuất nền tảng | E1 decoder T0 + E2 OCR plugin + E3 bộ máy luật/extractor chung + eval CI (xem mục Trích xuất on-device) |
-| S6 | Mẫu, chuyến đi & email | E4 mẫu top-10 nhà cung cấp + CDN, E5 màn Xem lại, trips + timeline, nhắc mặc định booking, E6 hộp thư email, share extension, Hộp đề xuất |
-| S7 | Monetization & import To Do | RevenueCat, paywall, entitlements + quota (client + server), Microsoft To Do importer (Graph), Lịch (tháng/tuần) |
-| S8 | Hardening & beta | Auth Apple/Google/email/anonymous, xóa/xuất dữ liệu, accessibility pass, hiệu năng, Sentry/PostHog, store listing, TestFlight + Play closed test |
-- **Gate (Reality Checker mặc định "NEEDS WORK" tới khi có bằng chứng):** NFR ở `system-architecture.md` mục 5 đạt trên
-  ≥ 6 máy thật (Xiaomi, OPPO, vivo, Samsung, iPhone cũ/mới); eval booking ≥ 95% trường bắt buộc; crash-free ≥ 99,5%; 0 lỗi P0 mở.
-- Launch: beta công khai VN (Play open testing + TestFlight public link), rồi production.
+| S1 | Bootstrap | Flutter (flavors), theme từ token, go_router, Drift schema, Supabase migrations + RLS + pgTAP, **auth (anonymous + Google + Apple + email OTP)**, khung i18n (L1), CI build/test |
+| S2 | Todo core + sync | Lists, items, Hôm nay, chi tiết item, **RPC `sync_push`/`sync_pull` + entitlement cơ bản (`plan_entitlements`, cache client)**, Quick Add gõ (V1 gói `en`, `vi`), tìm kiếm |
+| S3 | Reminder engine | Rolling window, Android exact alarm + receivers, iOS categories/actions, snooze, DST/tz (`reminder-engine.md` §5), nhiều thiết bị, telemetry, onboarding OEM |
+| S4 | Lặp, hệ lịch, giọng nói | RRULE UI + engine, âm lịch VN/TQ/HQ, ngày lễ/cuối tuần theo quốc gia (L3), STT của OS + bias (V2), đa việc trong 1 câu; E3.2/E4.3 bắt đầu song song |
+| S5 | Trích xuất nền tảng | E1 decoder, E2 OCR plugin, E3 bộ máy luật + eval CI |
+| S6 | Mẫu, chuyến đi, email | E4 mẫu đợt 1 + CDN, E5 màn Xem lại, trips + timeline, nhắc mặc định booking, E6 hộp thư, share extension, Hộp đề xuất, "Thêm vào lịch máy" (EventKit/CalendarContract) |
+| S7 | Thanh toán & To Do | RevenueCat, paywall theo ngữ cảnh, giá theo storefront, Microsoft To Do importer, Lịch tháng/tuần, gói NLU cấp B (V1) |
+| S8 | Hardening & beta | Xóa/xuất dữ liệu, LQA mọi locale đợt 1 (L4), accessibility test plan, hiệu năng, Sentry/PostHog + consent, store listing đa ngôn ngữ, TestFlight + Play closed test |
+- **Gate (Reality Checker mặc định "NEEDS WORK" tới khi có bằng chứng):** NFR `system-architecture.md` §5 đạt trên ≥ 6 máy thật
+  (Xiaomi, OPPO, vivo, Samsung, Pixel, iPhone cũ/mới); eval trích xuất đạt `on-device-extraction.md` §11; mọi locale đợt 1 qua cổng `i18n-l10n.md` §9;
+  crash-free ≥ 99,5%; 0 lỗi P0 mở.
+- Launch: beta công khai (Play open testing + TestFlight public link) ở các storefront của đợt locale 1, rồi production.
 
 ## Phase 2: Hệ sinh thái (8 tuần)
-Apple Watch app + complication, Wear OS app + Tile, widget iOS/Android (interactive), Google Calendar 2 chiều (sau OAuth verification),
-E7 LLM của OS (Foundation Models, Gemini Nano) làm tầng T3, mở rộng mẫu lên 25+ nhà cung cấp,
-feed ICS, Notion sync, Google Tasks, import Todoist/TickTick, nhắc kiểu báo thức, nhắc vị trí, Siri/App Intents.
+Apple Watch app + complication, Wear OS app + Tile, widget iOS/Android, Google Calendar 2 chiều (sau OAuth verification), Google Tasks, Notion,
+feed ICS, import Todoist/TickTick, nhắc kiểu báo thức, nhắc vị trí, Siri/App Intents, E7 (LLM của OS), V3 (model giọng nói tải về),
+mẫu cho thị trường đợt 2, **đợt locale 2** (`i18n-l10n.md` §2), Hijri.
 
 ## Phase 3: Thông minh hơn (8 tuần)
-Gmail scan chạy trên máy (kiểm tra yêu cầu thẩm định khi không qua server), E8 thử nghiệm model mở tải về (T4) nếu eval cho thấy cần, trạng thái chuyến bay + Live Activities, Zalo ZNS, digest email, gợi ý tự động
-("Bạn có 3 việc trùng giờ"), thống kê thói quen.
+Gmail chạy trên máy, trạng thái chuyến bay + Live Activities, kênh nhắn tin (Zalo/LINE/Kakao/WhatsApp), digest email, gợi ý ("3 việc trùng giờ"),
+thống kê thói quen, E8 nếu cần, **đợt locale 3 (gồm RTL `ar`, `he`)**, Hebrew/Persian/lịch Ấn Độ.
 
 ## Phase 4: Mở rộng
-Bản global (en, thanh toán USD, marketing ASO), web app (Flutter web hoặc Next.js) đọc/sửa, chia sẻ chuyến đi/list cho gia đình,
-gói Family.
+Web app (Flutter web hoặc Next.js) đọc/sửa, chia sẻ chuyến đi/list cho gia đình, gói Family, data residency EU nếu cần (ADR-011).
 
-## Trích xuất on-device: kế hoạch chi tiết
-Ước lượng theo ngày công (d) của 1 dev, chưa gồm review/QA. Mỗi đầu việc có tiêu chí nghiệm thu (AC) đo được.
+## E. Trích xuất tài liệu trên máy (chi tiết)
+Ước lượng theo ngày công (d) của 1 dev, chưa gồm review/QA. Thiết kế: `architecture/on-device-extraction.md`.
 
 ### E0. Spike & dữ liệu (Phase 0, ~8d)
 | # | Việc | d | AC |
 |---|---|---|---|
-| E0.1 | App thử (Flutter) chụp/chọn ảnh → OCR ML Kit (Android, iOS) + Vision (iOS), xuất `ocr.json` | 3 | Chạy trên ≥ 4 máy thật (Xiaomi, Samsung, iPhone 12, iPhone 15 Pro) |
-| E0.2 | Kiểm tra tiếng Việt: `supportedRecognitionLanguages` của Vision, độ chính xác có dấu trên 50 ảnh | 2 | Bảng so sánh CER (tỷ lệ lỗi ký tự) ML Kit vs Vision; chọn engine mặc định cho iOS |
-| E0.3 | Kiểm tra Foundation Models (iOS 26.1+, tiếng Việt) và Gemini Nano Prompt API trên máy có sẵn | 2 | Ghi nhận: có/không, độ trễ, chất lượng trên 20 mẫu |
-| E0.4 | Quy trình thu & ẩn danh mẫu: form nhận mẫu, script che dữ liệu, cấu trúc `fixtures/docs/<id>/{input, ocr.android.json, ocr.ios.json, expected.json}` | 1 | ≥ 300 mẫu, ≥ 20 nhà cung cấp, đủ 6 loại tài liệu |
+| E0.1 | App thử chụp/chọn ảnh → OCR ML Kit (Android, iOS) + Vision (iOS), xuất `ocr.json` | 3 | Chạy trên ≥ 4 máy thật (Xiaomi, Samsung, iPhone 12, iPhone 15 Pro) |
+| E0.2 | Đo chất lượng OCR theo hệ chữ của đợt 1 (Latin gồm tiếng Việt, CJK): `supportedRecognitionLanguages` của Vision, CER trên 50 ảnh/hệ chữ | 2 | Bảng CER ML Kit vs Vision; chọn engine mặc định cho iOS |
+| E0.3 | Thử Foundation Models (iOS 26.1+) và Gemini Nano Prompt API | 2 | Có/không, độ trễ, chất lượng trên 20 mẫu |
+| E0.4 | Quy trình thu & ẩn danh mẫu, cấu trúc `fixtures/docs/<id>/{input, ocr.android.json, ocr.ios.json, expected.json}` | 1 | ≥ 300 mẫu, ≥ 20 nhà cung cấp, ≥ 3 thị trường, đủ 6 loại tài liệu |
 
 ### E1. Decoder T0 (S5, ~7d), `packages/parsers/decoders/`
 | # | Việc | d | AC |
 |---|---|---|---|
 | E1.1 | `.pkpass`, `.ics` (VEVENT/VTODO/RRULE/VALARM) | 1,5 | 20 file mẫu pass |
-| E1.2 | MIME (`enough_mail`) + HTML → text sạch + JSON-LD/Microdata schema.org Reservation | 2 | 30 email mẫu (OTA quốc tế + hãng VN) |
-| E1.3 | PDF text layer có tọa độ (`pdfrx`) → cùng model `OcrDocument`; phát hiện PDF scan → render ảnh | 1,5 | PDF 20 trang < 3 s trên máy tầm trung |
-| E1.4 | Parser IATA BCBP từ barcode (PDF417/Aztec/QR) | 1 | Đúng 100% trên 20 boarding pass mẫu + test vector chuẩn |
-| E1.5 | xlsx/csv: header detection, từ điển cột, suy kiểu, serial date | 1 | 15 file mẫu; 5.000 dòng < 3 s |
-| (S2) | Markdown/Obsidian Tasks | (đã làm cùng Quick Add) | |
+| E1.2 | MIME + HTML → text sạch + JSON-LD/Microdata schema.org Reservation | 2 | 30 email mẫu (OTA global + hãng VN) |
+| E1.3 | PDF text layer có tọa độ (`pdfrx`) → `OcrDocument`; phát hiện PDF scan → render ảnh | 1,5 | PDF 20 trang < 3 s |
+| E1.4 | Parser IATA BCBP từ barcode | 1 | 100% đúng trên 20 boarding pass + test vector chuẩn |
+| E1.5 | xlsx/csv: header detection, từ điển cột đa ngôn ngữ, suy kiểu, serial date | 1 | 15 file mẫu (≥ 3 ngôn ngữ); 5.000 dòng < 3 s |
 
-### E2. Plugin OCR native (S5, ~6d)
+### E2. Plugin OCR native (S5, ~7d)
 | # | Việc | d | AC |
 |---|---|---|---|
-| E2.1 | Interface Dart `OcrEngine` + model `OcrDocument` (blocks/lines/bbox/conf), chạy nền | 1 | Unit test model |
-| E2.2 | Android: ML Kit Text v2 (unbundled + fallback bundled), Barcode, Document Scanner | 2 | 1 ảnh < 1,5 s; máy không GMS vẫn chạy |
-| E2.3 | iOS: Vision `RecognizeTextRequest`/`RecognizeDocumentsRequest` + VisionKit camera, hoặc ML Kit nếu E0.2 chọn | 2 | Như trên |
-| E2.4 | Tiền xử lý ảnh (resize, EXIF), hậu xử lý NFC + chuẩn hóa bỏ dấu cho so khớp | 1 | Fixtures chuẩn hóa |
+| E2.1 | Interface `OcrEngine` + `OcrDocument`, chạy nền | 1 | Unit test |
+| E2.2 | Android: ML Kit Text v2 (Latin + CJK, unbundled + fallback), Barcode, Document Scanner | 2 | 1 ảnh < 1,5 s; máy không GMS vẫn chạy |
+| E2.3 | iOS: Vision / VisionKit, hoặc ML Kit nếu E0.2 chọn | 2 | Như trên |
+| E2.4 | Tiền xử lý ảnh; hậu xử lý NFC + chuẩn hóa so khớp theo hệ chữ | 1 | Fixtures chuẩn hóa |
+| E2.5 | Khung tải model OCR bổ sung theo hệ chữ (Ả Rập, Kirin, Thái: PP-OCRv5 mobile) | 1 | Dùng ở đợt 2-3; ở Phase 1 chỉ cần interface + tải thử 1 model |
 
-### E3. Bộ máy luật T2 (S5, ~10d), `packages/parsers/engine/`
+### E3. Bộ máy luật T2 (S4-S5, ~10d), `packages/parsers/engine/`
 | # | Việc | d | AC |
 |---|---|---|---|
-| E3.1 | Tìm anchor mờ (bỏ dấu, Levenshtein ≤ 1) + lấy vùng phải/dưới theo bbox | 2 | 50 case unit test |
-| E3.2 | Extractor chung: ngày/giờ VN-EN, IATA + tz, số chuyến bay, PNR, ghế/toa, mã tàu, tiền, SĐT, địa chỉ | 3 | Mỗi extractor ≥ 30 case |
-| E3.3 | Bộ phân loại tài liệu (trọng số JSON) + script huấn luyện trọng số offline từ fixtures | 1,5 | ≥ 95% phân loại đúng trên eval |
-| E3.4 | Validator + confidence + kiểm tra logic + dedupe + gom trip | 2 | Không có trường "điền sai" do lỗi logic trên eval |
-| E3.5 | Harness eval CI (`dart test` trên `ocr.json`) + báo cáo theo trường/nhà cung cấp | 1,5 | Chạy < 2 phút trên CI, chặn merge khi giảm |
+| E3.1 | Tìm anchor mờ + lấy vùng phải/dưới theo bbox | 2 | 50 case |
+| E3.2 | Extractor chung: ngày/giờ (dùng gói NLU, §V), IATA (đủ dataset) + tz, số chuyến bay, PNR, ghế/toa, mã tàu, tiền (CLDR), SĐT (libphonenumber), địa chỉ | 3 | Mỗi extractor ≥ 30 case, ≥ 3 ngôn ngữ |
+| E3.3 | Phân loại tài liệu: từ khóa theo gói ngôn ngữ + script huấn luyện trọng số | 1,5 | ≥ 95% đúng trên eval |
+| E3.4 | Validator + confidence + kiểm tra logic + dedupe + gom trip | 2 | Không có "điền sai" do lỗi logic |
+| E3.5 | Harness eval CI + báo cáo theo trường/nhà cung cấp/thị trường | 1,5 | < 2 phút trên CI, chặn merge khi giảm |
 
-### E4. Mẫu nhà cung cấp (S6 rồi liên tục, ~12d cho 10 mẫu đầu)
+### E4. Mẫu nhà cung cấp (S4-S6 rồi liên tục)
 | # | Việc | d | AC |
 |---|---|---|---|
-| E4.1 | Định dạng JSON mẫu + JSON Schema + engine đọc mẫu (anchor, pattern, repeat_block) | 2 | Validate schema trong CI |
-| E4.2 | `template_lab`: CLI chạy 1 mẫu trên thư mục fixtures, in diff với expected | 1 | Dev viết mẫu mới < 0,5 ngày |
-| E4.3 | 10 mẫu ưu tiên: Vietnam Airlines, Vietjet, Bamboo, Traveloka, Agoda, Booking.com, Đường sắt VN, FUTA, Vexere, Medpro | 7 | Mỗi mẫu ≥ 95% trường bắt buộc đúng trên ≥ 10 mẫu thật |
-| E4.4 | Phát hành mẫu: ký Ed25519, `manifest.json` trên CDN, app tải + xác minh + rollback về bản đóng gói | 2 | Mẫu sai chữ ký bị từ chối; cập nhật không cần phát hành app |
+| E4.1 | Định dạng JSON mẫu + JSON Schema + engine đọc mẫu | 2 | Validate trong CI |
+| E4.2 | `template_lab` CLI | 1 | Viết mẫu mới < 0,5 ngày |
+| E4.3 | **Đợt 1: 12 mẫu** = VN (Vietnam Airlines, Vietjet, Đường sắt VN, FUTA, Medpro) + global (Booking.com, Agoda, Expedia, Airbnb, Trip.com) + 2 mẫu cho thị trường đợt 1 lớn nhất khác (chốt sau nghiên cứu thị trường) | 8 | Mỗi mẫu ≥ 95% trường bắt buộc đúng trên ≥ 10 mẫu thật |
+| E4.4 | Phát hành mẫu: ký Ed25519, `templates/manifest.json` trên CDN, xác minh + rollback | 2 | Mẫu sai chữ ký bị từ chối |
+- Sau launch: 1 người phụ trách mẫu liên tục, mục tiêu +5 mẫu/tháng theo telemetry "loại tài liệu chưa có mẫu".
+- Nhiều tài liệu global có sẵn dữ liệu chuẩn (JSON-LD trong email OTA, boarding pass BCBP, `.ics`, `.pkpass`), nên số mẫu cần viết ít hơn so với vé nội địa VN.
 
 ### E5. Màn Xem lại & vòng cải thiện (S6, ~7d)
 | # | Việc | d | AC |
 |---|---|---|---|
-| E5.1 | Thẻ candidate, tô vàng trường thấp, evidence, gộp trip, hiển thị quota | 3 | Test với 5 người: sửa 1 trường < 5 s |
-| E5.2 | "Nhập tay với ảnh tham chiếu": chạm dòng OCR để điền trường | 2 | Nhập 1 vé lạ < 30 s |
-| E5.3 | Nhớ mapping cột xlsx / loại tài liệu theo chữ ký | 1 | Lần import thứ 2 cùng định dạng không phải sửa |
-| E5.4 | Telemetry ẩn danh + "Gửi mẫu để cải thiện" (che dữ liệu, xem trước) | 1 | Không có giá trị trường trong payload (test tự động) |
+| E5.1 | Thẻ candidate, tô vàng, evidence, gộp trip, hiển thị quota | 3 | Sửa 1 trường < 5 s (test 5 người) |
+| E5.2 | "Nhập tay với ảnh tham chiếu" | 2 | 1 vé lạ < 30 s |
+| E5.3 | Nhớ mapping cột / loại tài liệu | 1 | Lần 2 không phải sửa |
+| E5.4 | Telemetry ẩn danh + "Gửi mẫu để cải thiện" | 1 | Không có giá trị trường trong payload |
 
 ### E6. Hộp thư email (S6, ~4d)
 | # | Việc | d | AC |
 |---|---|---|---|
-| E6.1 | Webhook inbound → kiểm SPF/DKIM, rate limit, kích thước → lưu MIME mã hóa → push `inbox.new` | 2 | 31 email/ngày thì email thứ 31 bị từ chối; quá 50 MB xóa cũ nhất |
-| E6.2 | App: tải MIME, chạy pipeline, Hộp đề xuất, `ack` để xóa trên server | 2 | Email tới → đề xuất hiện trên máy < 1 phút khi online |
+| E6.1 | Webhook inbound → kiểm tra → lưu MIME mã hóa → push `inbox.new` | 2 | Đúng giới hạn ở `on-device-extraction.md` §8 (test vượt ngưỡng) |
+| E6.2 | App: tải MIME, chạy pipeline, Hộp đề xuất, `ack` | 2 | Email tới → đề xuất < 1 phút khi online |
 
-### E7. LLM của hệ điều hành, T3 (Phase 2, ~8d)
-| # | Việc | d | AC |
-|---|---|---|---|
-| E7.1 | Swift: Foundation Models, `@Generable ExtractionResult`, chia khối theo context, iOS 27 đầu vào ảnh | 3 | Chạy được trên iPhone 15 Pro+, tự tắt trên máy không hỗ trợ |
-| E7.2 | Kotlin: ML Kit GenAI Prompt API, JSON + validate, xử lý busy/foreground | 3 | Như trên, trên ≥ 1 máy Android có Gemini Nano |
-| E7.3 | Eval T3 trên tài liệu không có mẫu; remote config bật/tắt theo nền tảng | 2 | Chỉ bật nếu tăng ≥ 10 điểm % trường đúng trên tài liệu lạ và điền sai không tăng |
+### E7. LLM của hệ điều hành (Phase 2, ~8d) · E8. Model mở tải về (Phase 3, thử nghiệm)
+E7: Foundation Models (`@Generable`, iOS 27 nhận ảnh) + Gemini Nano Prompt API; chỉ bật nếu tăng ≥ 10 điểm % trường đúng trên tài liệu lạ và điền sai không tăng.
+E8: Gemma nhỏ qua LiteRT-LM cho máy RAM ≥ 8 GB không có LLM của OS; chỉ làm nếu E7 chứng minh có ích.
 
-### E8. Model mở tải về, T4 (Phase 3, thử nghiệm, ~10d)
-Gemma (bản nhỏ, qua LiteRT-LM/`flutter_gemma`) cho máy RAM ≥ 8 GB không có LLM của OS. Chỉ làm nếu E7.3 cho thấy T3 có ích
-và phần lớn người dùng không có T3. Điều kiện: người dùng đồng ý tải model qua Wi-Fi, kiểm tra giấy phép model, đo pin/nhiệt.
+**Tổng E0-E6: ~56 ngày công.** E0 ở Phase 0; E3.2 và E4.3 bắt đầu từ S4 (khi có fixtures); phần còn lại trong S5-S6.
 
-**Tổng phần trích xuất cho MVP (E0-E6): ~54 ngày công.** E0 làm ở Phase 0 (8d). E1-E6 (46d) vượt sức chứa của 2 người trong S5-S6 (~40d),
-nên người backend/parser bắt đầu E3.2 và E4.3 song song từ S3-S4 (khi đã có fixtures), phần còn lại làm trong S5-S6.
+## V. Giọng nói & NLU (chi tiết)
+Thiết kế: `architecture/voice-and-text-input.md`.
+| # | Việc | Khi | d | AC |
+|---|---|---|---|---|
+| V0 | Spike: liệt kê locale STT on-device/online trên ≥ 6 máy; thử chrono-port vs QuickJS cho NLU; đo PhoWhisper base trên máy tầm trung | Phase 0 | 4 | Báo cáo locale khả dụng theo máy; chọn hướng NLU |
+| V1 | Engine NLU + gói `en`, `vi` (cấp A, gồm từ địa phương Bắc/Trung/Nam), sau đó gói cấp B đợt 1 | S2 (A), S7 (B) | 8 + 1,5/gói B | Fixtures ≥ 300 câu/gói A, ≥ 150/gói B; đạt ngưỡng `voice-and-text-input.md` §7 |
+| V2 | Plugin STT native (iOS SpeechAnalyzer/SFSpeechRecognizer, Android SpeechRecognizer), chọn locale giọng nói, bias, language switch, n-best | S4 | 5 | Mic → chip < 1,5 s sau khi nói xong; bias cải thiện tên list (đo trên bộ thử) |
+| V3 | "Nhận dạng nâng cao": tải PhoWhisper/Whisper qua whisper.cpp | Phase 2 | 5 | Bật cho locale/vùng có intent accuracy thấp hơn ngưỡng với STT của OS |
+| V4 | Bộ câu nói đánh giá theo vùng (vi: Bắc/Trung/Nam; en: US/UK/AU/IN; es: ES/MX) | Phase 0 → S8 | 3 + thu dữ liệu | ≥ 300 câu, ≥ 20 người nói mỗi locale cấp A |
+
+## L. Bản địa hóa (chi tiết)
+Thiết kế: `architecture/i18n-l10n.md`.
+| # | Việc | Khi | d | AC |
+|---|---|---|---|---|
+| L0 | Chọn TMS, glossary đa ngôn ngữ, style guide giọng văn cho từng locale, quy trình thuê dịch giả | Phase 0 | 2 | Glossary ≥ 100 thuật ngữ; hợp đồng dịch giả đợt 1 |
+| L1 | Khung i18n: ARB + gen-l10n, locale model 3 thiết lập, fallback chain, pseudo-locale, lint chuỗi hard-code, CI kiểm tra ARB | S1 | 3 | Build pseudo-locale chạy được mọi màn hình |
+| L2 | Định dạng CLDR mọi nơi (ngày, giờ 12/24, đầu tuần, số, tiền, tương đối), UI hướng trung lập (sẵn sàng RTL) | S1-S3 | (trong việc UI) | Test golden 3 locale (en-US, de-DE, vi-VN) |
+| L3 | Hệ lịch (âm lịch VN/TQ/HQ) + gói ngày lễ/cuối tuần theo quốc gia, cập nhật qua CDN | S4 | 4 | Đúng 2020-2050 so với bảng tra từng nước |
+| L4 | Dịch + LQA đợt 1: UI, thông báo, watch/widget, chuỗi quyền, email, store listing (ASO), help center, Privacy/Terms | S6-S8 | (dịch giả) + 3 | Qua cổng `i18n-l10n.md` §9 |
+| L5 | Ảnh chụp màn hình theo locale tự động (integration test) cho dịch giả + golden test | S7 | 2 | Mỗi locale có bộ ảnh mọi màn hình chính |
 
 ## Checklist tích hợp theo phase
 | Phase | Tích hợp | Tài liệu |
 |---|---|---|
-| 0 | Tài khoản Apple/Google/Firebase/Supabase/domain, nộp OAuth sớm | `integration-guide.md` mục 0 |
-| 1 | FCM/APNs, RevenueCat + store, Supabase Auth, share sheet, email forward, Microsoft Graph (To Do), ML Kit / Vision / VisionKit | mục 1-4, 7, 12 |
-| 2 | Google Calendar, Notion, Google Tasks, WatchConnectivity, Wear Data Layer, WidgetKit/Glance, Foundation Models, Gemini Nano | mục 5, 7, 8, 9, 12 |
-| 3 | Gmail + CASA, flight status API, Zalo ZNS, ActivityKit push | mục 6, 10, 11 |
+| 0 | Tài khoản Apple/Google/Firebase/Supabase/domain, chuẩn bị hồ sơ OAuth, TMS | `integration-guide.md` §0 |
+| 1 | FCM/APNs, RevenueCat + store (giá theo storefront), Supabase Auth, share sheet, email forward, Microsoft Graph (To Do), ML Kit / Vision / VisionKit, Speech | §1-4, 7, 12 |
+| 2 | Google Calendar, Google Tasks, Notion, WatchConnectivity, Wear Data Layer, WidgetKit/Glance, Foundation Models, Gemini Nano | §5, 7, 8, 9, 12 |
+| 3 | Gmail (trên máy), flight status API, kênh nhắn tin, ActivityKit push | §6, 10, 11 |
 
 ## Rủi ro kế hoạch
 | Rủi ro | Ảnh hưởng | Phương án |
 |---|---|---|
+| Launch nhiều locale cùng lúc quá sức đội nhỏ | Trễ S8, chất lượng dịch không đều | Cấp A chỉ `en` + `vi`; cấp B chỉ UI + NLU cơ bản; locale không qua cổng thì lùi sang đợt sau |
 | Duyệt OAuth Google kéo dài | Trễ Calendar sync | Nộp từ Phase 1; email forward + ICS thay thế |
-| Microsoft công bố ngày tắt API To Do sớm | Mất kênh import | Ưu tiên importer ở S7, có thể kéo lên S5; hỗ trợ file export |
-| Đọc kém với vé nội địa VN / bố cục lạ | Trải nghiệm chính hỏng | Eval set ≥ 300 mẫu từ Phase 0; mẫu cho top nhà cung cấp; "nhập tay với ảnh tham chiếu" thật nhanh |
-| Khối lượng viết mẫu lớn hơn dự kiến | Trễ S6, chất lượng không đều | Bắt đầu viết mẫu song song từ S3 khi có mẫu thật; dev dùng AI coding assistant để viết mẫu (chi phí cố định, không theo user) |
-| Đội nhỏ, watch native tốn công | Trễ Phase 2 | Phase 1 chỉ cần mirror; Wear OS trước nếu đa số người dùng Android |
+| Microsoft công bố ngày tắt API To Do sớm | Mất kênh import | Importer ở S7, có thể kéo lên S5; hỗ trợ file export |
+| Đọc kém với bố cục lạ / thị trường chưa có mẫu | Trải nghiệm chính hỏng | JSON-LD/BCBP/ics phủ phần lớn tài liệu global; "nhập tay với ảnh tham chiếu" thật nhanh; xem lại ADR-010 nếu eval tài liệu lạ < 60% (`decisions.md` ADR-011) |
+| STT của OS kém với giọng vùng | Nhập giọng nói gây bực | Bias + từ địa phương; V3 model tải về |
+| Khối lượng viết mẫu và gói ngữ pháp lớn | Trễ S6/S7 | Song song từ S4; dev dùng AI coding assistant viết mẫu/gói (chi phí cố định) |
+| Đội nhỏ, watch native tốn công | Trễ Phase 2 | Phase 1 chỉ cần mirror |

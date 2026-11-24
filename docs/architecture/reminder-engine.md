@@ -6,7 +6,8 @@
 
 ## 1. Rolling window scheduler
 Hàm trung tâm: `ReminderScheduler.reschedule()` (Dart), gọi khi: app mở, sau mỗi thay đổi item/reminder,
-sau sync pull, khi nhận silent push, BGAppRefresh/WorkManager, `BOOT_COMPLETED`, `TIMEZONE_CHANGED`, `TIME_SET`.
+sau sync pull, khi nhận silent push, BGAppRefresh/WorkManager, `BOOT_COMPLETED`, `TIMEZONE_CHANGED`, `TIME_SET`,
+**đổi ngôn ngữ app** (nội dung thông báo đã lập lịch là chuỗi đã dịch, nên phải lập lại) và đổi định dạng 12/24h.
 
 ```
 1. occurrences = expand(all active reminders, from=now, to=now+HORIZON)   # HORIZON = 14 ngày
@@ -43,43 +44,67 @@ Plugin: `flutter_local_notifications` + method channel riêng cho `setAlarmClock
 | Mức gián đoạn | `.timeSensitive` cho nhắc quan trọng/chuyến đi (cần capability Time Sensitive Notifications); `.active` mặc định |
 | Critical alert | Chỉ khi Apple cấp entitlement (cân nhắc cho nhắc uống thuốc). Không phụ thuộc vào nó |
 | Action | `UNNotificationCategory` với Done/Snooze 10'/Snooze 1h/Open; xử lý trong `didReceive` khi background |
-| Live Activities | Phase 2: đếm ngược tới giờ bay/check-in trên Lock Screen và Dynamic Island (ActivityKit, cập nhật qua push) |
+| Live Activities | Phase 3 (cùng trạng thái chuyến bay): đếm ngược tới giờ bay/check-in trên Lock Screen và Dynamic Island (ActivityKit, cập nhật qua push) |
 | Nạp lại | `BGAppRefreshTask` + silent push (`content-available: 1`, không đảm bảo, chỉ là lưới an toàn) |
 
 ## 4. Lặp lại (recurrence)
-- Thư viện: Dart `rrule` (pub.dev), TS `rrule` (npm). Test fixtures chung `packages/parsers/fixtures/rrule/*.json`.
-- Mẫu UI cần hỗ trợ: hằng ngày, các ngày trong tuần, mỗi N ngày/tuần/tháng, ngày X hằng tháng, thứ N cuối tháng,
-  hằng năm, ngày làm việc, **sau khi hoàn thành N ngày** (kiểu "tưới cây 3 ngày sau lần tưới trước": không phải RRULE,
-  lưu `rrule = null`, `lunar = null`, `settings.after_completion_days`).
-- **Âm lịch**: rằm (15), mùng 1, giỗ (ngày/tháng âm), Tết. Thuật toán Hồ Ngọc Đức (tính theo UTC+7). Tháng nhuận:
-  `leap: 'skip' | 'both' | 'first'`. Hiển thị ngày âm dưới ngày dương trong lịch (bật/tắt).
+- Thư viện: Dart `rrule` (pub.dev) trong app; TS `rrule` (npm) trong worker chỉ để xuất ICS/Google Calendar. Fixtures chung `packages/parsers/fixtures/recurrence/`.
+- Mẫu UI: hằng ngày, các ngày trong tuần, mỗi N ngày/tuần/tháng, ngày X hằng tháng, thứ N cuối tháng, hằng năm,
+  **ngày làm việc** (cuối tuần + ngày lễ của `workdays_region`, `i18n-l10n.md` §5),
+  **sau khi hoàn thành N ngày** (`kind = 'after_completion'`, `interval_days = N`: không phải RRULE).
+- **Hệ lịch khác** (`kind = 'calendar'`, ADR-007): âm lịch VN/TQ/HQ (thuật toán âm dương, tham số UTC+7/+8/+9), Hijri (Phase 2).
+  Tháng nhuận: `leap: 'skip' | 'both' | 'first'`. Lịch hiển thị ngày phụ dưới ngày dương khi người dùng bật hệ lịch đó.
 - Ngoại lệ: `exdates` cho "bỏ qua lần này"; sửa "chỉ lần này" thì tạo item con với `source_ref = <series_id>:<occurrence>`.
-- Hoàn thành 1 lần của chuỗi: lưu vào `occurrence_log(item_id, occurrence_at, status)` (không đóng cả chuỗi).
+- Hoàn thành 1 lần của chuỗi: ghi `occurrence_log` (không đóng cả chuỗi).
 
-## 5. Múi giờ và du lịch
-- Item thường: lưu `starts_at` UTC + `tz` = `home_tz` lúc tạo. Nhắc "8h sáng mỗi ngày" kiểu *floating*
-  (theo giờ nơi đang đứng) bật mặc định cho habit, tắt cho appointment.
-- Chuyến bay: `starts_at` tính từ giờ địa phương sân bay đi (`origin.tz`), `ends_at` theo `destination.tz`.
-  Hiển thị cả 2 giờ địa phương. Bảng IATA → tz lấy từ dữ liệu mở OurAirports (đóng gói vào app + worker).
-- Nhắc mặc định khi tạo booking (người dùng sửa được, mỗi cái tính vào quota nhắc/ngày):
-  | Loại | Nhắc mặc định |
-  |---|---|
-  | Bay nội địa | 24h trước (check-in online), 3h trước, 2h trước "ra sân bay" |
-  | Bay quốc tế | 24h, 4h, 3h trước |
-  | Tàu/xe | 2h trước, 30' trước |
-  | Khách sạn | 18:00 hôm trước check-in, 1h trước giờ check-out |
-  | Khám bệnh | 1 ngày trước (nhắc mang giấy tờ/nhịn ăn nếu có trong ghi chú), 1h trước |
+## 5. Múi giờ, DST và du lịch (nguồn chuẩn cho quy tắc thời gian)
+**Cố định hay trôi theo giờ địa phương** (`items.time_mode`):
+| Loại | Mặc định | Ý nghĩa |
+|---|---|---|
+| `habit`, task lặp ("8h sáng mỗi ngày") | `floating` | Kêu 08:00 theo múi giờ nơi người dùng đang đứng, kể cả khi đi du lịch |
+| `event`, `appointment`, `booking` | `fixed` | Gắn với `tz` của sự kiện; hiển thị cả giờ địa phương sự kiện và giờ hiện tại của người dùng nếu khác |
+| Item cả ngày, khách sạn chỉ có ngày | (dùng `start_date`/`end_date`) | Không có giờ, nhắc theo giờ mặc định của người dùng (ví dụ 09:00) tại múi giờ đang đứng |
+
+**DST** (Việt Nam không có DST, thị trường global thì có):
+- Giờ **không tồn tại** (ngày chuyển sang giờ mùa hè, ví dụ 02:30): kêu ở thời điểm hợp lệ kế tiếp (03:00), hiện ghi chú trong item.
+- Giờ **lặp 2 lần** (ngày lùi giờ, 01:30 hai lần): kêu ở lần đầu, không kêu lần hai.
+- Chuỗi lặp giữ **giờ địa phương** qua DST (theo `tz` của chuỗi hoặc tz hiện tại nếu `floating`), không giữ khoảng 24h tuyệt đối.
+- tzdata: lập lịch bằng tz của OS; tính toán trong Dart bằng package `timezone`, cập nhật tzdata mỗi bản phát hành.
+- Đổi `home_tz` (chuyển nơi ở): chỉ ảnh hưởng item tạo sau đó và cách đếm quota/ngày; không dời item `fixed` đã có.
+- Test bắt buộc: `America/New_York`, `Europe/London`, `Australia/Sydney` (DST ngược mùa), `Asia/Kolkata` (+5:30), `Asia/Kathmandu` (+5:45),
+  `Pacific/Chatham` (+12:45), `Asia/Ho_Chi_Minh`, và một ngày chuyển DST của mỗi vùng có DST.
+
+**Chuyến bay**: `starts_at` theo giờ địa phương sân bay đi (`origin.tz`), `ends_at` theo `destination.tz`; hiển thị cả 2.
+Bảng IATA → tz: toàn bộ dữ liệu mở OurAirports, đóng gói vào app.
+
+**Nhắc mặc định khi tạo booking** (người dùng sửa được; mỗi cái tính vào quota nhắc/ngày; có thể khác nhau theo thị trường qua gói dữ liệu):
+| Loại | Nhắc mặc định |
+|---|---|
+| Bay nội địa | 24h trước (check-in online), 3h trước, 2h trước "ra sân bay" |
+| Bay quốc tế | 24h, 4h, 3h trước |
+| Tàu/xe | 2h trước, 30' trước |
+| Khách sạn | 18:00 hôm trước check-in, 1h trước giờ check-out |
+| Khám bệnh | 1 ngày trước (nhắc mang giấy tờ/nhịn ăn nếu có trong ghi chú), 1h trước |
 
 ## 6. Đồng hồ thông minh
 | Giai đoạn | Apple Watch | Wear OS | Đồng hồ khác (Xiaomi, Huawei, Garmin, Samsung Tizen cũ) |
 |---|---|---|---|
 | Phase 1 | Thông báo iPhone tự mirror; action category hiện trên watch | Thông báo bridge tự động; thêm `WearableExtender` action | Mirror qua app của hãng; chỉ hiện text, nên tiêu đề phải ngắn, rõ, chứa giờ |
 | Phase 2 | App SwiftUI: danh sách Hôm nay, chuyến sắp tới, complication (WidgetKit), thêm nhanh bằng giọng nói; WatchConnectivity `transferUserInfo` | App Compose + Tile "Hôm nay" + Complication; Data Layer `DataClient` | (không có) |
-| Phase 3 | Thông báo trực tiếp trên watch độc lập (LTE) qua server push | Tương tự | (không có) |
 
-Quy tắc nội dung thông báo (vì watch hiển thị ít): `[⏰ 08:00] Uống thuốc huyết áp`, dòng 2 là ngữ cảnh ("Còn 2 lần hôm nay").
-Chuyến bay: `✈ VN245 SGN→HAN 10:30, cổng 12`, action "Mở vé".
+Quy tắc nội dung thông báo (watch hiển thị ít): giờ theo định dạng vùng + tiêu đề, dòng 2 là ngữ cảnh. Chuỗi lấy từ ARB với giới hạn độ dài
+(`i18n-l10n.md` §7), dịch theo ngôn ngữ app **tại thời điểm lập lịch**.
+Ví dụ: vi `⏰ 08:00 Uống thuốc huyết áp` / `Còn 2 lần hôm nay`; en-US `⏰ 8:00 AM Take blood pressure pill` / `2 more today`.
+Chuyến bay: `✈ VN245 SGN→HAN 10:30 · Gate 12`, action "Mở vé"/"Open ticket".
 
-## 7. Telemetry bắt buộc
-`notification_scheduled`, `notification_fired` (late_ms), `notification_action` (done/snooze/open), `reschedule_run`
-(count, horizon_end, truncated), `exact_alarm_permission` (granted/denied), `oem`. Dashboard theo OEM và phiên bản OS.
+## 7. Telemetry
+Tên event và thuộc tính: `docs/product/analytics-events.md` (nhóm "reminder"). Độ trễ kêu đo bằng `late_ms = fired_at - due_at`.
+Dashboard theo OEM, phiên bản OS, quốc gia.
+
+## 8. Nhiều thiết bị
+- Mỗi điện thoại/tablet tự lập lịch local. Mặc định mọi thiết bị có `devices.receives_reminders = true` đều kêu; người dùng có thể chọn
+  "Chỉ thiết bị chính" trong Cài đặt.
+- Watch không lập lịch riêng ở Phase 1-2: nhận mirror từ điện thoại ghép đôi, tránh kêu 2 lần.
+- Bấm **Xong/Hoãn** trên 1 thiết bị: ghi outbox → `sync_push` → server gửi `sync.tickle` → thiết bị khác pull và hủy/dời thông báo.
+  Nếu thiết bị khác offline, nó có thể kêu một lần thừa; khi online lại sẽ tự dọn.
+- Client báo `scheduled_until` qua `PUT /v1/devices/{id}` để server biết khi nào gửi push `reschedule` (iOS rolling window, §1).

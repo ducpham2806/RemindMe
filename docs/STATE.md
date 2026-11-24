@@ -3,31 +3,28 @@
 **Cập nhật:** 2026-11-24 · **Phase:** 0, tài liệu và thiết kế · **Nhánh:** `ccr-7a85f116-dswwig`
 
 ## Đã có
-- Bộ docs v1: PRD, giá/giới hạn, nghiên cứu đối thủ, kiến trúc + 10 ADR, data model, API, reminder engine,
-  trích xuất on-device, tích hợp, design system, UX flows, bảo mật, kế hoạch, quy trình AI (`docs/INDEX.md`).
-- **Quyết định mới (ADR-010):** không dùng AI API trả phí để đọc ảnh/file. Mọi trích xuất chạy trên máy (decoder + OCR của OS
-  + luật + mẫu nhà cung cấp); LLM của OS chỉ là tùy chọn. Kế hoạch chi tiết E0-E8 trong `plan/implementation-plan.md`.
-- Tooling: `tools/ai-tools-setup.sh`, `tools/graphify-docs.sh`, `tools/unslop-docs.sh`; `graphify-out/GRAPH_REPORT.md`.
-- Chưa có code.
+- Bộ docs v2 (`docs/INDEX.md`): sản phẩm, kiến trúc + 12 ADR, trích xuất trên máy, giọng nói/NLU đa vùng, i18n/l10n, analytics, kiểm thử/phát hành, kế hoạch E/V/L.
+- Quyết định chính: trích xuất trên máy, không AI API trả phí (ADR-010); global từ launch với cấp locale A/B/C (ADR-011); ghi chỉ qua `sync_push` (ADR-012).
+- Tooling: `tools/ai-tools-setup.sh`, `tools/graphify-docs.sh`, `tools/unslop-docs.sh`; `graphify-out/GRAPH_REPORT.md`. Chưa có code.
 
 ## Tiếp theo (ưu tiên)
-1. Chủ dự án duyệt docs, nhất là giá (59k/149k/449k) và giới hạn Free (`product/pricing-entitlements.md`).
-2. Đăng ký Apple Developer (tổ chức, D-U-N-S), Google Play Console, domain `remindme.app` (hoặc tên khác), Firebase, Supabase.
-3. Phỏng vấn 10-15 người dùng; thu thập ≥ 300 mẫu vé/booking ẩn danh (≥ 20 nhà cung cấp).
-4. Spike E0: OCR tiếng Việt ML Kit vs Vision trên máy thật; thử Foundation Models / Gemini Nano.
-5. Prototype 6 luồng P0 (Hôm nay, Quick Add, Import→Xem lại, Chuyến đi, Thông báo, Paywall).
-6. Sprint S1 bootstrap (`plan/implementation-plan.md`).
+1. Chủ dự án duyệt: giá theo nhóm thị trường và giới hạn Free (`product/pricing-entitlements.md`), đợt locale 1 (`architecture/i18n-l10n.md` §2).
+2. Nghiên cứu thị trường global (doanh thu productivity app theo quốc gia) để chốt đợt locale 1 và region dữ liệu (ADR-011).
+3. Đăng ký Apple Developer (tổ chức, D-U-N-S), Google Play Console, domain, Firebase, Supabase; hồ sơ thuế cho các storefront.
+4. Phỏng vấn 15-20 người dùng (VN + ≥ 2 thị trường đợt 1); thu ≥ 300 mẫu tài liệu (≥ 3 thị trường) và bộ câu nói theo vùng (V4).
+5. Spike E0 (OCR theo hệ chữ), V0 (STT/NLU), L0 (TMS, glossary, style guide).
+6. Prototype 6 luồng P0 (`uiux/ux-flows-and-screens.md`, có bản tiếng Anh), rồi Sprint S1.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
-- Tên thương mại/domain chính thức? (docs đang dùng `RemindMe`, `remindme.app`, bundle `app.remindme`, tất cả là giả định)
-- Có làm Zalo login/ZNS không? Có bán qua web (VNPay/MoMo) không?
-- Chấp nhận phí CASA cho Gmail API ở Phase 3?
-- Đội ngũ thực tế (số người, kỹ năng) để chỉnh timeline.
+- Tên thương mại/domain (docs dùng giả định `RemindMe`, `remindme.app`, bundle `app.remindme`).
+- Đợt locale 1 cuối cùng; region Supabase chính.
+- Đăng nhập theo thị trường (Zalo/LINE/Kakao) có làm ở Phase 1 không; có bán qua web không.
+- Ngân sách dịch giả bản ngữ cho cấp A/B; chấp nhận CASA cho Gmail nếu Google yêu cầu.
+- Đội ngũ thực tế để chỉnh timeline.
 
 ## Blocker
 - Không có.
 
-## Ghi chú kỹ thuật
-- graphify `section` cần tên heading đầy đủ kể cả số ("1. Rolling window scheduler").
-- unslop mặc định chỉ diff; có thể sửa sai tên riêng trong văn bản tiếng Việt.
-- Chưa xác minh: Vision iOS có tiếng Việt không; chất lượng tiếng Việt của Foundation Models và Gemini Nano; định dạng vé thật của các hãng VN.
+## Chưa xác minh (kiểm tra ở spike)
+Vision iOS với tiếng Việt và các hệ chữ khác; locale STT on-device thực tế trên máy; chất lượng Foundation Models/Gemini Nano theo ngôn ngữ;
+định dạng vé thật của các nhà cung cấp; price point từng storefront; giấy phép từng checkpoint PhoWhisper và dữ liệu ngày lễ.

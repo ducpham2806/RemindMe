@@ -15,7 +15,7 @@ flowchart LR
     Widget["Widget màn hình chính"]
     ShareExt["Share extension / Intent"]
   end
-  subgraph Supabase["Supabase (ap-southeast-1)"]
+  subgraph Supabase["Supabase (1 region, ADR-011)"]
     Auth["Auth\nGoogle, Apple, Email OTP"]
     PG[("Postgres\nRLS + pg-boss")]
     Store["Storage\nmailbox/ (MIME, TTL 7 ngày)\noriginals/ (Plus, tùy chọn)"]
@@ -24,7 +24,7 @@ flowchart LR
     API["HTTP API\n/v1/*"]
     Jobs["Job runners\nmailbox, gcal sync, push, digest, cleanup"]
   end
-  CDN["CDN tĩnh\ntemplates.json (ký Ed25519)"]
+  CDN["CDN tĩnh\npacks/manifest.json (ký Ed25519)"]
   FCM["FCM / APNs"]
   RC["RevenueCat"]
   Google["Google Calendar / Gmail API"]
@@ -34,7 +34,7 @@ flowchart LR
   App <--> Watch
   App --> Widget
   ShareExt --> App
-  App -- "PostgREST + RLS" --> PG
+  App -- "đọc: PostgREST + RLS\nghi: RPC sync_push" --> PG
   App -- "JWT" --> API
   App --> Auth
   App -- "tải MIME / lưu bản gốc" --> Store
@@ -63,12 +63,12 @@ flowchart LR
 ## 3. Luồng chính
 
 ### 3.1 Tạo nhắc nhở nhanh (offline được)
-1. Người dùng gõ/nói: "Mai 8h sáng nhắc uống thuốc, lặp mỗi ngày".
-2. `QuickParser` (Dart, luật, on-device) tách: tiêu đề, thời điểm, lặp, mức ưu tiên và hiện thành chip.
-   Phần không chắc để trống cho người dùng chạm chọn; không gọi server.
+1. Người dùng gõ/nói theo ngôn ngữ của mình: "Mai 8h sáng nhắc uống thuốc, lặp mỗi ngày" / "Take pills every day at 8am".
+2. NLU luật (Dart, gói ngữ pháp theo ngôn ngữ, `voice-and-text-input.md`) tách tiêu đề, thời điểm, lặp, ưu tiên thành chip.
+   Phần không chắc để trống hoặc hiện lựa chọn; không gọi server.
 3. Kiểm tra quota local (entitlement cache). Vượt thì hiện paywall theo ngữ cảnh.
 4. Ghi Drift, thêm vào `outbox`, gọi `ReminderScheduler.reschedule(window)`.
-5. Có mạng: outbox đẩy lên server; server xác thực quota; trả `version`.
+5. Có mạng: outbox gửi RPC `sync_push`; server kiểm quota và merge; trả `version`.
 
 ### 3.2 Import booking từ ảnh/pdf/xlsx/email (hoàn toàn trên máy)
 ```mermaid
@@ -100,27 +100,28 @@ Thông báo local có action: **Xong**, **Hoãn 10 phút**, **Hoãn 1 giờ**, *
 Đồng hồ nhận cùng thông báo (mirror) kèm action. Chi tiết: `reminder-engine.md`.
 
 ## 4. Đồng bộ (Sync)
-- Mỗi bảng đồng bộ có: `id uuid` (client sinh, UUIDv7), `user_id`, `updated_at`, `version bigint` (server gán từ sequence),
-  `deleted_at` (tombstone), `device_id` sửa cuối.
-- **Push:** client gửi batch mutation từ `outbox` → RPC `sync_push(mutations jsonb)`; server áp dụng trong transaction,
-  kiểm tra quota, trả `version` mới hoặc lỗi từng item (`quota_exceeded`, `conflict`).
-- **Pull:** `sync_pull(since_version)` trả mọi hàng có `version > since` (phân trang 500).
-  Kích hoạt: mở app, kéo để refresh, silent push `sync.tickle`, background fetch (iOS BGAppRefresh, Android WorkManager 15').
-- **Xung đột:** Last-Writer-Wins theo trường (field-level) dựa trên `updated_at` client + `device_id`, riêng `notes`
-  (văn bản dài) giữ cả 2 phiên bản và đánh dấu `conflict` cho người dùng chọn.
+- Cột đồng bộ chuẩn `SYNC_COLS` (`data-model.md` §3); `id` do client sinh (UUIDv7). Đường ghi duy nhất là RPC `sync_push` (ADR-012), spec ở `api-spec.md` §1.
+- **Push:** batch mutation từ `outbox` → `sync_push`; áp dụng trong transaction, kiểm quota, trả `version` hoặc lỗi từng item (`quota_exceeded`, `conflict`).
+- **Pull:** `sync_pull(since)` phân trang 500. Kích hoạt: mở app, kéo để refresh, silent push `sync.tickle`, background fetch (iOS BGAppRefresh, Android WorkManager 15').
+- **Xung đột:** Last-Writer-Wins **theo trường** bằng Hybrid Logical Clock lưu trong `field_clock`. Riêng `notes` (văn bản dài): nếu cả 2 phía sửa
+  từ cùng một bản gốc thì giữ cả 2 và hiện màn "Chọn bản ghi chú" (`uiux/ux-flows-and-screens.md` §3.6).
+- **Tài khoản ẩn danh → tài khoản thật:** nếu tài khoản đích chưa có dữ liệu thì chuyển nguyên; nếu đã có thì gộp (union), dedupe theo `source_ref`
+  và `(title, starts_at)`, quota tính sau khi gộp (phần vượt thành `archived_reason='quota'`), hiện tóm tắt cho người dùng.
 - Realtime (Supabase Realtime) chỉ bật khi app đang mở để giảm pin.
+- Nhiều thiết bị cùng kêu nhắc: `reminder-engine.md` §8.
 
 ## 5. Yêu cầu phi chức năng
 | Thuộc tính | Mục tiêu |
 |---|---|
-| Độ chính xác giờ kêu | 99,5% thông báo kêu trong ±60 giây (đo bằng telemetry `fired_at - due_at`) |
+| Độ chính xác giờ kêu | 99,5% thông báo kêu trong ±60 giây (`late_ms`, `docs/product/analytics-events.md`) |
 | Khởi động lạnh | < 1,5 s trên máy tầm trung (Android 2022) |
-| Import (trên máy) | p95 < 4 s cho 1 ảnh tới màn Xem lại (Android tầm trung); PDF 20 trang có text < 3 s |
-| Độ chính xác trích xuất | Nhà cung cấp có mẫu: ≥ 95% trường bắt buộc đúng; tài liệu lạ ≥ 60%; điền sai ≤ 2% |
+| Trích xuất (trên máy) | Tốc độ và độ chính xác: `on-device-extraction.md` §11-12 |
+| Hiểu ngôn ngữ (NLU, giọng nói) | Ngưỡng theo cấp locale: `voice-and-text-input.md` §7 |
 | Chi phí theo lượt import | 0 (không gọi API trả phí) |
 | Khả dụng API | 99,9%/tháng; app vẫn dùng được 100% chức năng cơ bản khi server chết |
-| Bảo mật | RLS mọi bảng; mã hóa at-rest (Supabase mặc định); TLS 1.2+; xóa tài khoản trong 30 ngày |
-| Quan sát | Sentry (app + worker), OpenTelemetry cho worker, PostHog cho product analytics (tự host hoặc EU) |
+| Bảo mật | `security-privacy.md` (RLS, mã hóa at-rest, TLS 1.2+, xóa tài khoản ≤ 30 ngày) |
+| Quan sát | Sentry (app + worker), OpenTelemetry cho worker, PostHog EU (consent theo `analytics-events.md`) |
+| Bản địa hóa | Mọi locale đã phát hành qua cổng `i18n-l10n.md` §9 |
 
 ## 6. Môi trường
 `local` (supabase CLI + worker dev) → `staging` (project Supabase riêng, TestFlight/Internal testing) → `prod`.
@@ -129,9 +130,10 @@ Secrets qua Secret Manager của Cloud Run và Supabase Vault; app chỉ có `SU
 ## 7. Rủi ro kỹ thuật chính
 | Rủi ro | Giảm thiểu |
 |---|---|
-| OEM Android (Xiaomi, Oppo, Vivo, Samsung) kill app, thông báo trễ | `setAlarmClock` cho nhắc quan trọng, hướng dẫn tắt tối ưu pin theo hãng, telemetry trễ |
-| iOS giới hạn 64 thông báo chờ | Rolling window + BGAppRefresh + silent push nạp lại (`reminder-engine.md`) |
+| OEM Android kill app, thông báo trễ | `reminder-engine.md` §2 |
+| iOS giới hạn 64 thông báo chờ | Rolling window (`reminder-engine.md` §1) |
 | Đọc sai giờ bay → lỡ chuyến | Bắt buộc màn Xem lại, đối chiếu IATA tz, cảnh báo khi giờ đến < giờ đi mà không qua đêm |
 | Bố cục tài liệu lạ đọc kém (không có LLM đám mây) | Mẫu cho top nhà cung cấp cập nhật qua CDN, LLM của OS khi có, vòng "Gửi mẫu để cải thiện" |
-| Spam qua email forward làm đầy storage | Rate limit 30 email/ngày, 50 MB/hộp thư, TTL 7 ngày |
+| Spam qua email forward làm đầy storage | Giới hạn ở `on-device-extraction.md` §8 |
+| Sai giờ do DST/múi giờ ở thị trường global | Quy tắc + bộ test ở `reminder-engine.md` §5 |
 | Duyệt OAuth Google chậm | Bắt đầu nộp verification sớm (Phase 1), dùng email forward trong lúc chờ |

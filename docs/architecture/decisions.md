@@ -1,7 +1,7 @@
 # Architecture Decision Records (ADR)
 
 > TL;DR: Danh sách quyết định kiến trúc. Mỗi ADR gồm bối cảnh, các phương án, quyết định, hệ quả.
-> Persona áp dụng: *Software Architect* (Agency). Quy tắc: luôn nêu ít nhất 2 phương án và trade-off.
+> Quy tắc: luôn nêu ít nhất 2 phương án và trade-off.
 > Thêm ADR mới ở cuối file, đánh số tăng dần. Đổi quyết định thì tạo ADR mới với trạng thái "Supersedes ADR-xxx".
 
 | # | Quyết định | Trạng thái |
@@ -10,12 +10,14 @@
 | 002 | Supabase + worker TypeScript thay vì backend tự dựng toàn bộ | Accepted |
 | 003 | Offline-first, nhắc nhở lập lịch local trên thiết bị | Accepted |
 | 004 | AI extraction qua Claude API phía server, structured outputs | Superseded by 010 |
-| 005 | Email chuyển tiếp trước, Gmail API sau | Accepted |
+| 005 | Email chuyển tiếp trước, Gmail API (chạy trên máy) sau | Accepted (sửa 24/11) |
 | 006 | RevenueCat cho subscription | Accepted |
-| 007 | Lặp lại: RFC 5545 RRULE + mở rộng âm lịch | Accepted |
+| 007 | Lặp lại: RFC 5545 RRULE + hệ lịch khác (âm lịch VN/TQ/HQ, Hijri) | Accepted (sửa 24/11) |
 | 008 | Entitlement do server quyết định, client chỉ cache | Accepted |
 | 009 | Hàng đợi job bằng pg-boss trên Postgres | Accepted |
 | 010 | Trích xuất chạy trên thiết bị, không dùng AI API trả phí | Accepted |
+| 011 | Global ngay từ launch: cấp hỗ trợ locale, 1 region dữ liệu, OS tối thiểu | Accepted |
+| 012 | Đường ghi duy nhất là RPC `sync_push` | Accepted |
 
 ---
 
@@ -30,28 +32,28 @@ và lịch. Đồng hồ (watchOS, Wear OS) không framework cross-platform nào
 | Đồng nhất UI | Rất cao (tự vẽ) | Trung bình | Thấp | Cao |
 | Tích hợp native (alarm, widget, share ext) | Platform channel, ổn | Native module, ổn | Tốt nhất | Tốt |
 | Chia sẻ code với backend TS | Không | Có (TS) | Không | Không |
-| Nguồn nhân lực VN | Nhiều | Nhiều | Trung bình | Ít |
+| Nguồn nhân lực (VN và global) | Nhiều | Nhiều | Trung bình | Ít |
 
 **Quyết định.** Flutter cho app chính. watchOS viết SwiftUI, Wear OS viết Jetpack Compose,
 giao tiếp với app qua WatchConnectivity / Wearable Data Layer. Widget màn hình chính viết native
 (WidgetKit, Glance) và đọc dữ liệu qua `home_widget`.
 
-**Hệ quả.** Phải duy trì 3 codebase UI nhỏ (Flutter + 2 watch). Logic parse dùng chung
-(rrule, âm lịch, ngày giờ tiếng Việt) viết bằng Dart trong app và TS trong worker, dùng chung
-bộ test fixtures JSON trong `packages/parsers/fixtures/` để 2 bản luôn cho cùng kết quả.
+**Hệ quả.** Phải duy trì 3 codebase UI nhỏ (Flutter + 2 watch). Toàn bộ NLU và trích xuất chỉ có bản Dart (ADR-010).
+Worker TS chỉ cần mở rộng lặp (RRULE + hệ lịch) để xuất feed ICS / đồng bộ Google Calendar; bản TS này dùng chung fixtures
+`packages/parsers/fixtures/recurrence/` với bản Dart để luôn cho cùng kết quả.
 
 ## ADR-002: Supabase + worker TypeScript
 **Bối cảnh.** Cần Auth (Google, Apple, email OTP), Postgres quan hệ (đếm giới hạn, quan hệ trip/booking),
-lưu file (ảnh, pdf người dùng upload), và tác vụ nền nặng (AI, email, Gmail watch).
+lưu file (MIME email, bản gốc tùy chọn), và tác vụ nền (hộp thư email, đồng bộ Google/Notion, push).
 
 **Phương án.** (a) Firebase: Auth tốt, Firestore khó đếm/aggregate và query quan hệ. (b) Tự dựng NestJS + Postgres +
 S3: linh hoạt nhưng tốn công vận hành. (c) Supabase cho Auth/DB/Storage/RLS + 1 worker TS cho phần nặng.
 
-**Quyết định.** (c). Supabase managed (region Singapore, gần VN). Worker chạy Cloud Run (hoặc Fly.io),
+**Quyết định.** (c). Supabase managed (region: ADR-011). Worker chạy Cloud Run (hoặc Fly.io) cùng region,
 kết nối Postgres trực tiếp. FCM vẫn dùng Firebase (chỉ Messaging + Crashlytics).
 
-**Hệ quả.** RLS là lớp bảo mật chính cho truy cập trực tiếp từ app. Logic có quyền cao (entitlement, AI)
-chỉ chạy trong worker bằng service role. Có thể rời Supabase sau này vì bên dưới là Postgres chuẩn.
+**Hệ quả.** RLS là lớp bảo mật chính cho đọc trực tiếp từ app; ghi đi qua RPC `sync_push` (ADR-012). Logic có quyền cao
+(webhook, OAuth server-side, hộp thư) chạy trong worker bằng service role. Có thể rời Supabase sau này vì bên dưới là Postgres chuẩn.
 
 ## ADR-003: Offline-first, nhắc nhở local
 **Bối cảnh.** Nhắc nhở phải kêu đúng giờ kể cả khi mất mạng, server chết, hoặc máy ở chế độ máy bay.
@@ -59,48 +61,39 @@ Push từ server không đảm bảo đúng giờ (Doze, APNs throttle).
 
 **Quyết định.** Nguồn sự thật cho lịch kêu là DB local (Drift). App tự lập lịch thông báo local
 (Android `AlarmManager.setExactAndAllowWhileIdle` / `setAlarmClock`; iOS `UNCalendarNotificationTrigger`).
-Server dùng push chỉ để: đồng bộ thay đổi từ thiết bị khác (silent push), nhắc qua email, và làm "lưới an toàn"
+Server dùng push chỉ để: đồng bộ thay đổi từ thiết bị khác (silent push), báo email forward mới, và làm "lưới an toàn"
 cho iOS khi vượt giới hạn 64 thông báo chờ (xem `reminder-engine.md`).
 
 **Hệ quả.** Cần thuật toán sync và giải quyết xung đột (`system-architecture.md` mục Sync).
 Cần xử lý reboot, đổi múi giờ, đổi giờ hệ thống, app bị OEM kill.
 
 ## ADR-004: AI extraction phía server (Superseded by ADR-010)
-**Bối cảnh.** Đọc vé/booking từ ảnh, pdf, xlsx, email cần LLM đa phương thức. Key không được nằm trong app.
-
-**Phương án.** (a) On-device OCR + rule: rẻ, riêng tư, kém với layout lạ. (b) Gửi thẳng ảnh/pdf cho Claude: chính xác,
-tốn phí. (c) Lai: tiền xử lý rẻ (pdf text layer, parse xlsx, đọc `.pkpass`, `.ics`, JSON-LD trong email),
-chỉ gọi LLM khi cần.
-
-**Quyết định.** (c). Mặc định `claude-opus-5-5` với `output_config.format` (JSON schema) và `fallbacks: "default"`.
-Model cấu hình theo route trong bảng `ai_routes` để chủ sản phẩm tự cân bằng chi phí/chất lượng
-(ví dụ có thể đổi sang `claude-sonnet-5-5` hoặc `claude-haiku-5-5` cho route xlsx đơn giản sau khi đo bằng eval).
-
-**Hệ quả.** Phải có eval set (ảnh vé thật đã ẩn danh) trước khi đổi model. Mọi kết quả AI đi qua màn hình
-"Xem lại" để người dùng xác nhận, không tự tạo nhắc nhở khi độ tin cậy thấp.
+Từng chọn gọi Claude API phía server để đọc ảnh/pdf/email (có bảng `ai_routes`, quota AI). Đã thay bằng ADR-010; không còn bảng hay endpoint nào của thiết kế này.
 
 ## ADR-005: Email chuyển tiếp trước, Gmail API sau
 **Bối cảnh.** Đọc Gmail cần scope `gmail.readonly`, thuộc nhóm *restricted*: Google bắt thẩm định bảo mật
 (CASA) hằng năm, tốn thời gian và chi phí. TripIt thành công với mô hình "forward email tới plans@...".
 
 **Quyết định.** MVP: mỗi user có địa chỉ riêng `u-<token>@in.remindme.app`, người dùng forward email booking
-hoặc tạo filter tự động forward. Phase 3: Gmail API (OAuth, chỉ đọc email khớp bộ lọc booking) sau khi qua CASA.
-Google Calendar (scope sensitive, không cần CASA) làm ở Phase 2.
+hoặc tạo filter tự động forward. Phase 3: Gmail API với OAuth **trên máy** (token chỉ trong Keychain/Keystore), máy tự đọc email khớp bộ lọc
+booking và xử lý cục bộ, server không thấy token hay nội dung. Kiểm tra lại với Google xem cách này có cần CASA không (yêu cầu thẩm định
+phụ thuộc việc dữ liệu restricted có qua server hay không). Google Calendar (scope sensitive, không cần CASA) làm ở Phase 2.
 
 ## ADR-006: RevenueCat cho subscription
 **Phương án.** (a) Tự xử lý StoreKit 2 + Play Billing + server notifications. (b) RevenueCat (miễn phí tới ngưỡng doanh thu
 nhất định, sau đó lấy % doanh thu; kiểm tra lại bảng giá hiện tại). **Quyết định.** (b) cho tốc độ; webhook RevenueCat ghi vào bảng
 `subscriptions`, server tính `entitlements`. Có thể tự làm sau nếu phí đáng kể.
 
-## ADR-007: Lặp lại RRULE + âm lịch
-**Quyết định.** Lưu quy tắc lặp dạng RRULE (RFC 5545) để tương thích Google Calendar/ICS.
-Thêm `recurrence_kind = 'lunar'` với cấu trúc riêng (`{lunar_month, lunar_day, leap_policy}`) cho giỗ, rằm, mùng 1.
-Thuật toán đổi âm-dương theo lịch Việt Nam (múi giờ UTC+7, khác lịch Trung Quốc ở vài năm). Khi đồng bộ ra Google Calendar,
-sự kiện âm lịch được "trải phẳng" thành các lần xuất hiện cụ thể trong 2 năm tới.
+## ADR-007: Lặp lại RRULE + hệ lịch khác
+**Quyết định.** Lưu quy tắc lặp dạng RRULE (RFC 5545) để tương thích Google Calendar/ICS. Hệ lịch khác dùng `recurrences.kind = 'calendar'`
+với `calendar = {system, month, day, leap}` (`system`: `lunar_vi`, `lunar_zh`, `lunar_ko`, `hijri`; cột cụ thể ở `data-model.md`).
+Âm lịch VN/TQ/HQ dùng chung 1 thuật toán âm dương, tham số múi giờ UTC+7/+8/+9 (vì vậy có năm lệch nhau). Hijri theo Umm al-Qura.
+Khi xuất ra Google Calendar/ICS, sự kiện theo hệ lịch khác được trải phẳng thành các lần xuất hiện cụ thể trong 2 năm tới.
+Chi tiết thực thi: `reminder-engine.md` §4; danh sách hệ lịch theo thị trường: `i18n-l10n.md` §5.
 
 ## ADR-008: Entitlement phía server
 **Quyết định.** Bảng `plan_entitlements` giữ giới hạn từng gói. Kiểm tra giới hạn ở 2 nơi: client (UX, chặn sớm, hiện paywall)
-và server (RPC `can_create(kind)` + trigger Postgres) để chống lách. Client cache entitlement 24h, dùng được khi offline;
+và server (trong RPC `sync_push` + trigger dự phòng, ADR-012) để chống lách. Client cache entitlement 24h, dùng được khi offline;
 khi offline vượt giới hạn, item tạo ra ở trạng thái `pending_quota` và bị từ chối khi sync nếu vẫn vượt.
 
 ## ADR-009: pg-boss
@@ -130,3 +123,31 @@ phát mẫu nhà cung cấp qua CDN tĩnh có chữ ký, sync và entitlement.
 **Hệ quả.** Cần đầu tư bộ mẫu cho top nhà cung cấp VN và eval set ≥ 300 mẫu ngay Phase 0. Tài liệu bố cục lạ sẽ cần người dùng
 sửa nhiều hơn, nên màn Xem lại phải sửa được nhanh. Giới hạn import của gói Free giờ chỉ là đòn bẩy bán hàng, không còn để bảo vệ chi phí.
 Nếu sau này cần LLM đám mây cho một tính năng trả phí, phải có ADR mới kèm quota cứng và tính chi phí.
+
+## ADR-011: Global ngay từ launch
+**Bối cảnh.** Chủ dự án nhắm thị trường toàn cầu từ đầu, không chỉ Việt Nam. Đội nhỏ không thể làm "đầy đủ" mọi ngôn ngữ cùng lúc.
+
+**Phương án.** (a) VN trước, global sau (thiết kế cũ): rẻ nhưng nợ kỹ thuật i18n lớn. (b) Mọi ngôn ngữ ngang nhau: quá sức đội nhỏ.
+(c) Global từ launch với **cấp hỗ trợ** theo locale (A/B/C) và cổng chất lượng.
+
+**Quyết định.** (c). Chi tiết: `i18n-l10n.md`. Kèm theo:
+- **Dữ liệu**: 1 region Supabase chính ở launch, chọn theo nơi có nhiều người dùng trả phí dự kiến nhất (chốt sau nghiên cứu thị trường Phase 0).
+  Offline-first nên độ trễ không ảnh hưởng UX. Chuyển dữ liệu xuyên biên giới bằng SCC/DPA. `profiles` có sẵn cột để sau này tách project EU
+  (data residency) khi doanh thu EU hoặc khách hàng doanh nghiệp yêu cầu.
+- **OS tối thiểu**: iOS 17+ (Vision `VNRecognizeTextRequest`, SFSpeechRecognizer; tính năng iOS 18/26/27 bật theo khả dụng), Android 8.0 (API 26)+.
+- **Không phát hành ở Trung Quốc đại lục** ở launch (không có FCM/Google Play services, cần đăng ký ICP).
+- **Điều kiện xem lại ADR-010**: nếu eval tài liệu không có mẫu ở các thị trường đợt 1 dưới 60% trường đúng sau Phase 1, chủ dự án quyết
+  có thêm một tầng LLM đám mây chỉ cho gói Plus với quota cứng hay không (cần ADR mới).
+
+**Hệ quả.** Mọi tài liệu và code không được giả định locale, múi giờ, định dạng hay đồng tiền mặc định. NLU, mẫu tài liệu, ngày lễ là gói dữ liệu theo locale.
+
+## ADR-012: Đường ghi duy nhất là RPC `sync_push`
+**Bối cảnh.** App có thể ghi thẳng qua PostgREST (RLS) hoặc qua sync. Hai đường ghi thì quota và merge xung đột có thể bị lách.
+
+**Phương án.** (a) Ghi PostgREST + trigger kiểm quota: đơn giản nhưng logic merge LWW nằm rải rác. (b) Endpoint sync trong worker:
+thêm một hop mạng và phụ thuộc worker. (c) RPC Postgres `sync_push`/`sync_pull` (`SECURITY DEFINER`) là đường ghi duy nhất; PostgREST chỉ đọc.
+
+**Quyết định.** (c). Policy RLS chỉ cho `SELECT` trên bảng đồng bộ; trigger từ chối ghi không đến từ `sync_push` (trừ service role).
+Quota và merge theo `field_clock` nằm trong 1 transaction. Spec: `api-spec.md` §1.
+
+**Hệ quả.** Logic sync viết bằng PL/pgSQL (hoặc plv8), test bằng pgTAP. Worker không nằm trên đường ghi, nên worker sập không ảnh hưởng sync.

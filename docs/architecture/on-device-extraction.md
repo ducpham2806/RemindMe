@@ -3,8 +3,8 @@
 > TL;DR: **Không gọi AI API trả phí.** Mọi việc đọc file chạy trên máy người dùng bằng code (decoder, OCR của OS/ML Kit,
 > luật + mẫu theo nhà cung cấp). LLM có sẵn trong OS (Apple Foundation Models, Gemini Nano) chỉ là lớp **tùy chọn** khi máy hỗ trợ.
 > Spam import chỉ tốn pin máy của chính người spam, không tốn tiền server. Kết quả luôn qua màn Xem lại.
-> Thay cho bản thiết kế cũ dùng Claude API (ADR-004 → ADR-010).
-> Persona: *AI Engineer*, *PDF Engine Architect*, *Voice AI Integration Engineer*, *Mobile App Builder* (Agency).
+> Đa ngôn ngữ: từ khóa phân loại, từ điển cột, extractor ngày giờ dùng **gói ngôn ngữ** chung với NLU (`voice-and-text-input.md` §5);
+> mẫu nhà cung cấp theo thị trường. Giọng nói và Quick Add: `voice-and-text-input.md`. Nguồn chuẩn cho giới hạn email (§8), eval (§11), hiệu năng (§12).
 
 ## 1. Kiến trúc 5 tầng
 
@@ -23,7 +23,7 @@ flowchart TD
 | Tầng | Chạy ở đâu | Chi phí server | Máy hỗ trợ | Vai trò |
 |---|---|---|---|---|
 | T0 Decoder | Dart isolate | 0 | 100% | Định dạng có cấu trúc: chính xác gần như tuyệt đối |
-| T1 OCR | Native (Vision / ML Kit) | 0 | 100% (iOS 16+, Android 7+) | Ảnh/PDF scan thành chữ + tọa độ |
+| T1 OCR | Native (Vision / ML Kit; model bổ sung theo hệ chữ) | 0 | 100% máy đạt OS tối thiểu (ADR-011) | Ảnh/PDF scan thành chữ + tọa độ |
 | T2 Luật + mẫu | Dart isolate | 0 (mẫu tải từ CDN tĩnh) | 100% | **Nguồn độ chính xác chính.** Phải tự đứng vững không cần T3 |
 | T3 LLM của OS | Native | 0 | Thiểu số: iPhone có Apple Intelligence; Android flagship có Gemini Nano | Lấp trường thiếu, phân loại tài liệu lạ |
 | T4 Model tải về | Native (LiteRT-LM) | 0 (CDN tải model 1 lần) | Máy RAM ≥ 8 GB, người dùng đồng ý tải | Thử nghiệm, chỉ làm nếu eval chứng minh lợi ích |
@@ -34,7 +34,7 @@ flowchart TD
 | `.pkpass` (Apple Wallet) | `archive` giải zip, đọc `pass.json` | boardingPass/eventTicket: giờ, cổng, ghế, mã vạch, relevantDate |
 | `.ics` | Parser iCalendar tự viết (~300 dòng) hoặc package | VEVENT/VTODO, RRULE, VALARM |
 | Email `.eml` / MIME | `enough_mail` (MIME), `html` (DOM) | Text, HTML, file đính kèm (pdf, ics, pkpass, ảnh) |
-| JSON-LD / Microdata trong HTML email | Tìm `<script type="application/ld+json">`, map schema.org `FlightReservation`, `LodgingReservation`, `TrainReservation`, `BusReservation`, `EventReservation`, `FoodEstablishmentReservation` | Gần như đủ trường. Các OTA quốc tế (Booking.com, Agoda, Trip.com...) hay nhúng; hãng nội địa VN cần kiểm tra mẫu thật |
+| JSON-LD / Microdata trong HTML email | Tìm `<script type="application/ld+json">`, map schema.org `FlightReservation`, `LodgingReservation`, `TrainReservation`, `BusReservation`, `EventReservation`, `FoodEstablishmentReservation` | Gần như đủ trường, **không phụ thuộc ngôn ngữ**. Nhiều hãng bay, OTA và nhà ga quốc tế nhúng sẵn; hãng nội địa từng nước cần kiểm tra mẫu thật |
 | PDF có text layer | `pdfrx` (PDFium) lấy text + tọa độ từng ký tự | Text có bố cục, dùng chung bộ máy T2 như OCR |
 | PDF scan | Render trang → ảnh (`pdfrx`) → T1 | |
 | xlsx / csv | `excel`, `csv` | Bảng → mục 6 |
@@ -43,21 +43,23 @@ flowchart TD
 | QR khác | Phân loại theo tiền tố: URL (mở/đọc tham số booking id), VietQR (bỏ qua: là mã thanh toán), text | |
 
 ## 3. T1: OCR trên thiết bị
-| Nền tảng | Engine | Ghi chú |
+| Nền tảng | Engine | Hệ chữ |
 |---|---|---|
-| Android | **ML Kit Text Recognition v2, Latin** (tiếng Việt nằm trong danh sách "supported") | Dùng bản unbundled (qua Google Play services) để app nhẹ; fallback bundled cho máy không có GMS (Huawei) |
-| iOS | **Vision** `RecognizeTextRequest` (mức `.accurate`), iOS 26+ thêm `RecognizeDocumentsRequest` (nhận bảng, đoạn, danh sách) | Tiếng Việt **chưa xác minh** trong `supportedRecognitionLanguages`. Kiểm tra trên máy thật ở Phase 0; nếu không có, dùng ML Kit trên iOS |
-| Chụp giấy | Android: **ML Kit Document Scanner** (tự cắt, chỉnh nghiêng). iOS: **VisionKit** `VNDocumentCameraViewController` | Giấy hẹn khám, vé giấy |
-
+| Android | **ML Kit Text Recognition v2** (unbundled qua Google Play services; bundled cho máy không có GMS) | Latin (gồm tiếng Việt), Chinese, Japanese, Korean, Devanagari |
+| iOS | **Vision** `VNRecognizeTextRequest` (iOS 17), `RecognizeTextRequest` (iOS 18+), `RecognizeDocumentsRequest` (iOS 26+, nhận bảng/đoạn) | Danh sách đọc lúc chạy (`supportedRecognitionLanguages`); tiếng Việt **chưa xác minh**, nếu thiếu thì dùng ML Kit trên iOS |
+| Cả hai (bổ sung) | **PP-OCRv5 mobile** (Apache-2.0, ~8 MB mỗi hệ chữ, chạy qua ONNX Runtime/MNN), tải theo nhu cầu | Ả Rập, Kirin (ru/uk/bg/sr), Thái, Hy Lạp; dùng từ đợt locale 2-3 |
+| Chụp giấy | Android **ML Kit Document Scanner**, iOS **VisionKit** `VNDocumentCameraViewController` | |
+- Chọn model OCR theo hệ chữ của ngôn ngữ người dùng + ngôn ngữ tài liệu đoán được; tối đa 2 lượt OCR mỗi ảnh.
 - Thiết kế interface `OcrEngine` trả `OcrDocument{pages[{blocks[{lines[{text, bbox, conf}]}]}]}` để thay engine không đổi T2.
 - Tiền xử lý: thu ảnh về cạnh dài 2000px, xoay theo EXIF; ảnh chụp màn hình giữ nguyên độ phân giải.
-- Hậu xử lý tiếng Việt: chuẩn hóa Unicode NFC; so khớp từ khóa theo dạng **bỏ dấu + chữ thường** và khoảng cách Levenshtein ≤ 1
-  ("Gio khoi hanh" vẫn khớp "Giờ khởi hành") để chịu lỗi OCR mất dấu.
+- Hậu xử lý: chuẩn hóa Unicode NFC; so khớp từ khóa theo dạng **gấp dấu + chữ thường theo locale** (lưu ý "i" tiếng Thổ Nhĩ Kỳ) và
+  Levenshtein ≤ 1 cho hệ chữ có dấu cách ("Gio khoi hanh" khớp "Giờ khởi hành", "Abfahrt" khớp "Abfahrf"); CJK/Thái so khớp chuỗi con.
 - Tất cả chạy trong isolate/background thread, UI hiện tiến trình.
 
 ## 4. T2: Bộ máy luật (trái tim của hệ thống)
 ### 4.1 Phân loại tài liệu
-Chấm điểm theo từ khóa có trọng số (file `classifier_weights.json`, dev huấn luyện offline bằng script từ bộ mẫu, app chỉ cộng điểm):
+Chấm điểm theo từ khóa có trọng số. Từ khóa nằm trong **gói ngôn ngữ** (`packs/<lang>/classifier.json`), trọng số dev huấn luyện offline từ bộ mẫu;
+app chạy gói của ngôn ngữ người dùng + ngôn ngữ đoán được của tài liệu. Ví dụ tín hiệu (vi/en; các ngôn ngữ khác tương tự trong gói):
 | Loại | Tín hiệu mạnh |
 |---|---|
 | `flight` | "chuyến bay", "boarding pass", "thẻ lên tàu bay", "PNR", "mã đặt chỗ", cặp mã IATA (SGN, HAN, DAD...), mã hãng + số (VN245, VJ123) |
@@ -88,25 +90,27 @@ Mẫu dạng JSON khai báo, không phải code, nên **cập nhật qua CDN mà
 ```
 - Engine đọc mẫu: tìm anchor (so khớp mờ), lấy vùng bên phải/bên dưới theo bbox, áp `pattern`/`type`, chấm confidence.
 - Kho mẫu: `packages/parsers/templates/*.json` + test fixtures. Ký số (Ed25519) khi phát hành lên CDN; app chỉ nhận mẫu có chữ ký hợp lệ.
-- Danh sách ưu tiên cho MVP (cần mẫu thật để xác nhận định dạng):
-  - Bay: Vietnam Airlines, Vietjet Air, Bamboo Airways, Vietravel Airlines, Sun PhuQuoc Airways
-  - OTA: Traveloka, Agoda, Booking.com, Trip.com
-  - Tàu/xe: Đường sắt Việt Nam (dsvn), FUTA Phương Trang, Vexere
-  - Khám bệnh: Medpro, YouMed, phiếu hẹn chung của bệnh viện công (mẫu giấy)
-  - Sự kiện: Ticketbox
-  - Boarding pass bất kỳ hãng nào: barcode BCBP
+- **Danh sách ứng viên** theo thị trường (đợt 1 chọn 12 mẫu, xem `plan/implementation-plan.md` E4.3; cần mẫu thật để xác nhận định dạng):
+  | Thị trường | Bay | Tàu/xe | Lưu trú / OTA | Khám bệnh / sự kiện |
+  |---|---|---|---|---|
+  | Global | (boarding pass BCBP mọi hãng; email JSON-LD) | FlixBus, Trainline | Booking.com, Expedia/Hotels.com, Airbnb, Agoda, Trip.com | Ticketmaster, Eventbrite |
+  | VN | Vietnam Airlines, Vietjet, Bamboo, Vietravel, Sun PhuQuoc | Đường sắt VN, FUTA, Vexere | Traveloka | Medpro, YouMed, phiếu hẹn giấy; Ticketbox |
+  | EU | (BCBP, JSON-LD) | Deutsche Bahn, SNCF Connect, Eurostar, Trenitalia | | Doctolib (thường kèm .ics) |
+  | US | (BCBP, JSON-LD) | Amtrak, Greyhound | | Zocdoc (thường kèm .ics) |
+  | JP / KR | ANA, JAL / Korean Air | JR (smartEX), Korail | Rakuten Travel, Jalan / Yanolja | |
+  | IN / ID / TH / BR / MX | IndiGo / Garuda, Lion / AirAsia / LATAM, Azul / Aeroméxico, Volaris | IRCTC, redBus / KAI / ADO | MakeMyTrip / Traveloka / Despegar | |
 
 ### 4.3 Extractor chung (khi không khớp mẫu nào)
 | Trường | Cách làm |
 |---|---|
-| Ngày/giờ | Parser tiếng Việt/Anh dùng chung với Quick Add: `20/12/2026`, `20-12`, `Thứ Hai, 20 tháng 12`, `20 Th12`, `Dec 20, 2026`, `10:30`, `10h30`, `10g30`, khoảng `14:00 - 15:30` |
-| Sân bay | Từ điển IATA (OurAirports: toàn bộ sân bay VN + ~500 sân bay quốc tế phổ biến) + tên thành phố có/không dấu → tz |
+| Ngày/giờ | Dùng gói ngôn ngữ chung với NLU: `20/12/2026`, `12/20/2026` (theo ngôn ngữ/nhà cung cấp tài liệu), `Thứ Hai, 20 tháng 12`, `Dec 20, 2026`, `20. Dezember 2026`, `2026年12月20日`, `10:30`, `10h30`, `10:30 PM`, khoảng `14:00 - 15:30` |
+| Sân bay | Từ điển IATA đầy đủ (OurAirports) + tên thành phố theo nhiều ngôn ngữ → tz |
 | Số chuyến bay | `\b(VN|VJ|QH|VU|9G|BL|...)\s?\d{2,4}\b` (danh sách mã hãng IATA) |
 | PNR | 6 ký tự `[A-Z0-9]` gần anchor "mã đặt chỗ/PNR/booking"; loại từ tiếng Anh thường gặp |
 | Ghế/toa | `\b\d{1,2}[A-K]\b`, "Toa \d+", "Ghế|Giường \d+" |
 | Mã tàu | `\b(SE|TN|SP|SNT|SPT|SQN)\d{1,2}\b` |
-| Địa chỉ, SĐT | Regex VN (tỉnh/thành, quận/huyện, `0\d{9}`, `+84`); iOS có thể thêm `NSDataDetector` (address, phoneNumber, transitInformation) làm tín hiệu phụ |
-| Số tiền | `1.890.000 ₫`, `1,890,000 VND`, `$120` |
+| Địa chỉ, SĐT | SĐT: `phone_numbers_parser` (dữ liệu libphonenumber) với vùng mặc định theo tài liệu/người dùng; địa chỉ: giữ nguyên khối văn bản sau anchor; iOS thêm `NSDataDetector` (address, phoneNumber, transitInformation) làm tín hiệu phụ |
+| Số tiền | Ký hiệu/mã ISO 4217 + dấu phân cách theo locale tài liệu (`1.890.000 ₫`, `€1.234,50`, `$1,234.50`, `¥12,000`) |
 | Tiêu đề | Ghép theo loại: "Bay SGN → HAN (VJ123)", "Nhận phòng Mường Thanh", "Tái khám BV Chợ Rẫy" |
 
 ### 4.4 Kiểm tra logic và confidence
@@ -141,8 +145,8 @@ Quy tắc dùng:
 
 ## 6. xlsx / csv → danh sách việc
 1. Tìm dòng header trong 10 dòng đầu (dòng có nhiều ô text khớp từ điển đồng nghĩa nhất).
-2. Từ điển cột (vi/en, có/không dấu): **Việc** (Công việc, Nội dung, Tiêu đề, Task, Việc cần làm) · **Ngày** (Ngày, Hạn, Deadline, Due, Thời hạn) ·
-   **Giờ** (Giờ, Time) · **Ghi chú** (Note, Mô tả) · **Ưu tiên** (Priority, Mức độ) · **Trạng thái** (Status, Tình trạng) · **Địa điểm** · **Người phụ trách**.
+2. Từ điển cột nằm trong gói ngôn ngữ (`packs/<lang>/columns.json`), ví dụ vi/en: **Việc** (Công việc, Nội dung, Tiêu đề, Task) · **Ngày** (Ngày, Hạn, Deadline, Due) ·
+   **Giờ** (Giờ, Time) · **Ghi chú** (Note, Mô tả) · **Ưu tiên** (Priority) · **Trạng thái** (Status) · **Địa điểm** · **Người phụ trách**. Thử mọi gói cấp A/B, chọn gói khớp nhiều cột nhất.
 3. Không có header thì suy theo kiểu dữ liệu 20 dòng mẫu: cột phần lớn là ngày → Ngày; cột chuỗi dài nhất → Việc.
 4. Ô ngày kiểu số serial Excel, chuỗi `dd/mm/yyyy`, ô datetime đều được hỗ trợ. Nhiều sheet thì người dùng chọn sheet.
 5. Màn xem trước 10 dòng + dropdown đổi mapping; lưu mapping theo hash header (mục 4.5).
@@ -161,29 +165,14 @@ Quy tắc dùng:
    (trừ PDF), kiểm SPF/DKIM; email từ người gửi lạ chỉ thành đề xuất.
 
 ## 9. Giọng nói
-| Nền tảng | Engine | Chi phí cho mình |
-|---|---|---|
-| iOS 26+ | `SpeechAnalyzer`/`SpeechTranscriber` on-device nếu có locale vi (kiểm tra `supportedLocales` lúc chạy) | 0 |
-| iOS (fallback) | `SFSpeechRecognizer(locale: vi-VN)`: dịch vụ nhận dạng của Apple, miễn phí cho dev, có giới hạn tần suất mỗi thiết bị | 0 |
-| Android | `SpeechRecognizer` (dịch vụ của Google trên máy), ưu tiên `createOnDeviceSpeechRecognizer` khi đã cài gói vi (kiểm tra `checkRecognitionSupport`) | 0 |
-| Android (tùy chọn) | ML Kit GenAI Speech Recognition (vi-VN đang beta ở chế độ Basic) | 0 |
-Sau STT, câu chạy qua `QuickParser` (luật, mục 10). Tách nhiều việc theo liên từ và dấu câu: "và", "rồi", "sau đó", ",", ";".
+Chuyển sang `voice-and-text-input.md` (STT theo vùng, bias, model tải về, đánh giá theo giọng).
 
 ## 10. Quick Add bằng chữ
-Parser luật thuần Dart (`packages/parsers/vi_datetime`), không gọi server. Fixtures giữ nguyên như bản cũ:
-| Câu | Kết quả |
-|---|---|
-| "8 giờ sáng mai uống thuốc" | mai 08:00, "Uống thuốc" |
-| "chiều thứ 6 họp team lúc 3 rưỡi" | thứ Sáu tới 15:30 |
-| "nhắc tôi đóng tiền điện ngày 5 hàng tháng" | RRULE `FREQ=MONTHLY;BYMONTHDAY=5`, 09:00 mặc định |
-| "rằm tháng giêng đi chùa" | âm lịch 15/1 |
-| "mỗi 2 tiếng uống nước từ 8h đến 18h" | RRULE `FREQ=HOURLY;INTERVAL=2;BYHOUR=8,10,12,14,16,18` |
-| "tối nay 9h gọi mẹ" | hôm nay 21:00 |
-| "next Monday 10am dentist" | thứ Hai tới 10:00 |
-Không hiểu chắc chắn thì không đoán bừa: điền phần chắc chắn, các chip còn lại để trống cho người dùng chạm chọn.
+Chuyển sang `voice-and-text-input.md` §5 (gói ngữ pháp theo ngôn ngữ, từ địa phương, câu pha 2 ngôn ngữ).
 
 ## 11. Đánh giá chất lượng (eval) không cần thiết bị trong CI
-1. Phase 0 thu ≥ 300 mẫu ẩn danh (≥ 20 nhà cung cấp, cả ảnh chụp màn hình, ảnh chụp giấy, PDF, email).
+1. Phase 0 thu ≥ 300 mẫu ẩn danh (≥ 20 nhà cung cấp, ≥ 3 thị trường, cả ảnh chụp màn hình, ảnh chụp giấy, PDF, email). Mỗi thị trường đợt sau
+   thêm ≥ 100 mẫu trước khi bật cấp A. Báo cáo eval tách theo thị trường và ngôn ngữ tài liệu.
 2. Chạy OCR **một lần** trên máy thật (ML Kit Android, Vision iOS), lưu kết quả `ocr.json` vào `packages/parsers/fixtures/docs/<id>/`
    cùng `expected.json`. CI chỉ chạy T2 trên `ocr.json` (`dart test`), nhanh và lặp lại được.
 3. Chỉ số: độ chính xác từng trường bắt buộc, tỷ lệ "điền sai" (có giá trị nhưng sai, tệ hơn bỏ trống), % tài liệu khớp mẫu,
@@ -203,16 +192,15 @@ Không hiểu chắc chắn thì không đoán bừa: điền phần chắc ch�
 | Tăng kích thước app | Android ≈ +1 MB (ML Kit unbundled); iOS: 0 nếu dùng Vision, ≈ +10 MB nếu nhúng ML Kit |
 
 ## 13. Thư viện dự kiến
-Flutter/Dart: `google_mlkit_text_recognition`, `google_mlkit_barcode_scanning`, `google_mlkit_document_scanner`, `pdfrx`, `excel`, `csv`,
-`markdown`, `enough_mail`, `html`, `archive`, `speech_to_text` (hoặc plugin native riêng cho SpeechAnalyzer), `rrule`.
-Native: Swift plugin `RemindExtractKit` (Vision, VisionKit, FoundationModels, NSDataDetector, Speech), Kotlin plugin (ML Kit GenAI Prompt, SpeechRecognizer on-device).
-Kiểm tra bảo trì và giấy phép (pub.dev score, license) trước khi khóa phiên bản.
+Danh sách chung: `integration-guide.md` §13. Riêng phần này: ML Kit (text, barcode, document scanner), `pdfrx`, `excel`, `csv`, `markdown`,
+`enough_mail`, `html`, `archive`, `phone_numbers_parser`, ONNX Runtime (PP-OCRv5); native plugin `RemindExtractKit` (Swift) và Kotlin plugin.
 
 ## 14. Rủi ro
 | Rủi ro | Giảm thiểu |
 |---|---|
 | Mẫu lạ đọc kém hơn hẳn so với LLM đám mây | Màn Xem lại tốt (sửa nhanh); ưu tiên mẫu cho top nhà cung cấp; T3 trên máy hỗ trợ; vòng "Gửi mẫu" |
 | Nhà cung cấp đổi bố cục vé, mẫu hỏng | Telemetry phát hiện trường bị sửa tăng đột biến; cập nhật mẫu qua CDN trong ngày |
-| Vision iOS đọc tiếng Việt kém hoặc không hỗ trợ | Kiểm tra Phase 0; fallback ML Kit trên iOS |
+| Vision iOS đọc kém một hệ chữ (ví dụ tiếng Việt) | Kiểm tra Phase 0 (E0.2); fallback ML Kit trên iOS |
+| Thị trường mới chưa có mẫu | JSON-LD/BCBP/ics/pkpass không phụ thuộc ngôn ngữ; extractor chung; điều kiện xem lại ở ADR-011 |
 | Công sức viết mẫu lớn | 1 dev phụ trách mẫu liên tục sau launch; công cụ thử mẫu (`packages/parsers/tool/template_lab.dart`) |
 | T3 không ổn định (alpha, thay đổi API) | Tầng tùy chọn, tắt bằng remote config, không ảnh hưởng luồng chính |
