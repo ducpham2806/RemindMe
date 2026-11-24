@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "remindme/fixtures/expected.schema.json",
+  "$id": "https://schemas.remindme.app/fixtures/expected.schema.json",
   "title": "Kết quả trích xuất mong đợi (expected.json)",
   "description": "Thứ màn Xem lại phải đề xuất. Trường trong 'required' tính vào chỉ số '% trường bắt buộc đúng' (on-device-extraction.md §11).",
   "type": "object",

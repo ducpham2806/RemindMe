@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "remindme/fixtures/meta.schema.json",
+  "$id": "https://schemas.remindme.app/fixtures/meta.schema.json",
   "title": "Thông tin mẫu tài liệu (meta.json)",
   "type": "object",
   "required": ["id", "source_kind", "market", "doc_language", "collected_at", "consent", "anonymized"],
