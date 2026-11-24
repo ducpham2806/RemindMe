@@ -14,7 +14,7 @@
 | Việt Nam (T3, đã chốt) | VN | 59.000đ | 149.000đ (-16%) | 449.000đ (-37%) | như trên |
 - App Store: đặt giá gốc USD rồi **ghi đè** cho storefront quan trọng; Play: giá theo từng quốc gia. Chọn price point gần nhất mỗi store (chưa xác minh bảng price point từng nước).
 - Gói quý là điểm khác biệt: đối thủ chính không có (`research/competitor-analysis.md`).
-- Neo giá: Todoist $5/tháng; TickTick ở VN 69k/tháng, 639k/năm.
+- Neo giá: Todoist $6,99/tháng, $59,99/năm (App Store US, 11/2026); TickTick ở VN 69k/tháng, 639k/năm.
 - Trial: mỗi Apple ID / tài khoản Google chỉ được 1 lần cho mỗi subscription group (store quản lý). Family Sharing: **tắt** ở launch.
 
 ### 1.2 Khuyến mãi theo thị trường (thử nghiệm, remote config)

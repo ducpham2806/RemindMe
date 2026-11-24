@@ -11,6 +11,7 @@
 | `product/PRD.md` | Vấn đề, persona global, user story + AC, phi mục tiêu | Làm tính năng, viết test chấp nhận | KPI, quy ước P0-P3 |
 | `product/pricing-entitlements.md` | Giá theo nhóm thị trường, ma trận Free/Plus, quy tắc quota, paywall | Đụng quota, paywall, thanh toán | Giá, trial, giới hạn |
 | `product/analytics-events.md` | Danh mục event, consent theo vùng | Thêm tracking, dashboard | Tên event, consent |
+| `research/global-market.md` | Chi tiêu app theo quốc gia, đề xuất đợt locale, region dữ liệu, kiểm tra nhóm giá | Chốt locale/region/giá | Dữ liệu thị trường global |
 | `research/competitor-analysis.md` | Đối thủ, giá App Store VN, khoảng trống thị trường | Quyết định sản phẩm, marketing | Dữ liệu nghiên cứu |
 | `architecture/system-architecture.md` | Thành phần, luồng chính, sync, NFR, rủi ro | Hiểu tổng thể | Luồng sync, gộp tài khoản |
 | `architecture/decisions.md` | ADR-001..012 | Trước khi đổi công nghệ | Quyết định |
@@ -20,6 +21,7 @@
 | `architecture/on-device-extraction.md` | Đọc ảnh/pdf/xlsx/md/email trên máy: decoder, OCR đa hệ chữ, luật + mẫu theo thị trường, LLM của OS | Làm import | Giới hạn email (§8), eval (§11), hiệu năng (§12) |
 | `architecture/voice-and-text-input.md` | STT theo vùng, bias, model tải về, NLU gói ngôn ngữ, eval theo giọng | Làm Quick Add, giọng nói | Ngưỡng NLU/giọng nói |
 | `architecture/i18n-l10n.md` | Cấp hỗ trợ locale, định dạng, hệ lịch, ngày lễ, RTL, quy trình dịch, cổng chất lượng | Mọi việc có chữ/ngày/số | Danh sách locale, quy trình dịch |
+| `l10n/README.md` + `glossary.csv`, `style-guide-en.md`, `style-guide-vi.md` | Thuật ngữ (258), giọng văn từng locale, so sánh TMS, quy trình dịch giả/LQA, mẫu style guide | Viết/dịch chuỗi UI | Thuật ngữ, giọng văn |
 | `integrations/integration-guide.md` | FCM, store, RevenueCat, OAuth, email forward, Google, Notion, MS To Do, watch, kênh nhắn tin | Làm tích hợp, việc cần chờ duyệt | Product ID, bước đăng ký, plugin list |
 | `uiux/design-system.md` | Token, font theo hệ chữ, component, a11y, RTL | Làm UI | Token |
 | `uiux/ux-flows-and-screens.md` | IA, wireframe, 6 luồng P0, lỗi/trống, hỗ trợ | Làm màn hình/luồng | Danh sách luồng P0 |

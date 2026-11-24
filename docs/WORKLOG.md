@@ -12,6 +12,25 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · Phase 0: DB sync có quota, khung repo, bộ mẫu, nghiên cứu global, L0 · Claude Code
+- **Làm:**
+  - `supabase/migrations/` (5 file): schema theo data-model, khóa ngoại kèm `user_id`, RLS chỉ SELECT + trigger chặn ghi từ role client,
+    `version` gán sau khóa advisory theo user (sync_pull không sót hàng do commit muộn), entitlement/quota (`app.usage_for`, `app.rrule_fires_on`),
+    RPC `sync_push` (LWW theo `field_clock`, conflict notes qua `base_clock`, tombstone dây chuyền, subtransaction từng mutation, pending_quota → archived/quota),
+    `sync_pull`, `quota_status`, `profile_init` (Inbox id xác định), seed gói từ pricing §2.
+  - 67 test pgTAP (`supabase/tests/database/`) trên Postgres thuần qua shim Supabase; runner `tools/db-test.sh`.
+  - Khung repo: CI, `tools/check-docs.py`, `tools/lint-hardcoded-strings.py`, `tools/validate-fixtures.py`, hook commit-msg, `.editorconfig`.
+  - E0.4: `packages/parsers/fixtures/` (cấu trúc, schema meta/expected, quy trình ẩn danh, 1 mẫu tổng hợp).
+  - Subagent Trend Researcher: `research/global-market.md`. Subagent i18n: `docs/l10n/` (glossary 258 thuật ngữ, style guide en/vi, README TMS).
+  - Sửa docs cho khớp code: data-model (HLC, quy tắc quota thực thi), api-spec (`profile_init`, định dạng kết quả), testing, plan, AGENTS, INDEX.
+    Sửa số liệu: giá neo Todoist $6,99/$59,99; TickTick US có gói tháng $4,99.
+- **Quyết định:** quota import đếm từ bảng `imports` (không dùng `usage_counters`); Inbox không tính `max_lists`; server chỉ đếm nhắc/ngày xấp xỉ (engine máy chính xác);
+  billing_retry/paused mất quyền Plus, grace còn quyền. Đề xuất locale/region/giá **chưa áp**, chờ chủ dự án.
+- **Kiểm chứng:** `tools/db-test.sh`: 4 file, 67 test PASS (Postgres 16.15 + pgTAP). Test bắt được lỗi thật: CHECK múi giờ cần quyền execute `app.is_valid_tz`.
+  `check-docs`: 0 tham chiếu hỏng. `validate-fixtures`: bắt được email/SĐT chưa che. CI chưa xác nhận chạy trên GitHub (MCP GitHub lỗi kết nối).
+  unslop trên `style-guide-en.md`: 1 đề xuất sai (đổi ’ thành ' trong ví dụ về dấu nháy cong), không áp.
+- **Dở dang / tiếp theo:** xem `docs/STATE.md`.
+
 ## 2026-11-24 · Global từ launch, giọng nói đa vùng, rà soát chồng chéo toàn bộ docs · Claude Code
 - **Làm:**
   - Tài liệu mới: `architecture/i18n-l10n.md` (cấp locale A/B/C, CLDR, hệ lịch, RTL, quy trình dịch, cổng chất lượng),

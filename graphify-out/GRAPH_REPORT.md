@@ -1,17 +1,17 @@
 # Graph Report - RemindMe  (2026-11-24)
 
 ## Corpus Check
-- 29 files · ~36,447 words
+- 55 files · ~58,688 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 1 file(s) not represented in the graph (top: (none) 1)
+- Unclassified: 5 file(s) not represented in the graph (top: (none) 3, .csv 1, .psql 1)
 
 ## Summary
-- 283 nodes · 259 edges · 26 communities (22 shown, 4 thin omitted)
+- 382 nodes · 356 edges · 34 communities (27 shown, 7 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0456df59`
+- Built from commit: `849bdc1d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,7 +19,7 @@
 - UX: kiến trúc thông tin, luồng, màn hình
 - Hướng dẫn tích hợp với nền tảng khác
 - 4. User stories và tiêu chí chấp nhận (MVP = P0)
-- RemindMe – Phân tích đối thủ & thị trường (cuối 2026)
+- steps
 - 3. Phân tích từng đối thủ
 - Kiến trúc hệ thống
 - Design system
@@ -38,21 +38,28 @@
 - STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 - Quy trình phát triển với AI (Claude Code, Codex) + graphify, unslop, agency agents
 - Nhập bằng giọng nói và câu tự nhiên (đa ngôn ngữ, đa vùng miền)
-- AGENTS.md: RemindMe
+- RemindMe English style guide (source language)
 - Kiểm thử, CI/CD và phát hành
 - Analytics & telemetry: danh mục sự kiện và consent
+- Hướng dẫn văn phong tiếng Việt cho RemindMe
+- validate-fixtures.py
+- RemindMe: Nghiên cứu thị trường global (locale, region dữ liệu, nhóm giá), 11/2026
+- Bản địa hóa (L0): glossary, style guide, TMS
+- Bộ mẫu tài liệu cho eval trích xuất (E0.4)
+- db-test.sh
+- install-hooks.sh
 
 ## God Nodes (most connected - your core abstractions)
-1. `Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình` - 15 edges
-2. `Hướng dẫn tích hợp với nền tảng khác` - 15 edges
-3. `3. Phân tích từng đối thủ` - 14 edges
-4. `Architecture Decision Records (ADR)` - 13 edges
-5. `Quốc tế hóa và bản địa hóa (i18n / l10n)` - 12 edges
-6. `Kế hoạch triển khai` - 12 edges
-7. `Design system` - 11 edges
-8. `UX: kiến trúc thông tin, luồng, màn hình` - 10 edges
-9. `Reminder engine: lập lịch, lặp lại, thông báo, đồng hồ` - 9 edges
-10. `Nhập bằng giọng nói và câu tự nhiên (đa ngôn ngữ, đa vùng miền)` - 9 edges
+1. `Hướng dẫn tích hợp với nền tảng khác` - 15 edges
+2. `Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình` - 15 edges
+3. `RemindMe English style guide (source language)` - 14 edges
+4. `Hướng dẫn văn phong tiếng Việt cho RemindMe` - 14 edges
+5. `3. Phân tích từng đối thủ` - 14 edges
+6. `Architecture Decision Records (ADR)` - 13 edges
+7. `Quốc tế hóa và bản địa hóa (i18n / l10n)` - 12 edges
+8. `Kế hoạch triển khai` - 12 edges
+9. `Design system` - 11 edges
+10. `RemindMe: Nghiên cứu thị trường global (locale, region dữ liệu, nhóm giá), 11/2026` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
 - None detected - all connections are within the same source files.
@@ -60,7 +67,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (26 total, 4 thin omitted)
+## Communities (34 total, 7 thin omitted)
 
 ### Community 0 - "UX: kiến trúc thông tin, luồng, màn hình"
 Cohesion: 0.09
@@ -74,13 +81,13 @@ Nodes (19): 0. Việc phải khởi động sớm (thời gian chờ dài), 10. 
 Cohesion: 0.14
 Nodes (13): 1. Vấn đề, 2. Mục tiêu và chỉ số, 3. Persona, 4. User stories và tiêu chí chấp nhận (MVP = P0), 5. Phi mục tiêu (không làm ở v1), 6. Giả thuyết cần kiểm chứng sớm, Lịch trình & chuyến đi, Nhập liệu (+5 more)
 
-### Community 3 - "RemindMe – Phân tích đối thủ & thị trường (cuối 2026)"
-Cohesion: 0.17
-Nodes (11): 1. Tóm tắt, 2. Bảng so sánh tổng quan, 4.1 Giá App Store VN (truy cập 24/11/2026), 4.2 Giới hạn free tier (US/global), 4. Benchmark giá & giới hạn free tier, 5. Khoảng trống thị trường & cơ hội khác biệt, 6.1 Tính năng (ưu tiên theo giá trị / chi phí), 6.2-6.4 Giá, giới hạn free tier, KPI (+3 more)
+### Community 3 - "steps"
+Cohesion: 0.12
+Nodes (18): runs-on, steps, runs-on, steps, PGHOST, PGPASSWORD, PGUSER, jobs (+10 more)
 
 ### Community 4 - "3. Phân tích từng đối thủ"
-Cohesion: 0.14
-Nodes (14): 3. Phân tích từng đối thủ, Any.do, Apple Reminders, Due, Google Tasks / Keep, Microsoft To Do, Nhóm AI-first (Motion, Structured, Amie), Nhóm Việt Nam (+6 more)
+Cohesion: 0.08
+Nodes (25): 1. Tóm tắt, 2. Bảng so sánh tổng quan, 3. Phân tích từng đối thủ, 4.1 Giá App Store VN (truy cập 24/11/2026), 4.2 Giới hạn free tier (US/global), 4. Benchmark giá & giới hạn free tier, 5. Khoảng trống thị trường & cơ hội khác biệt, 6.1 Tính năng (ưu tiên theo giá trị / chi phí) (+17 more)
 
 ### Community 5 - "Kiến trúc hệ thống"
 Cohesion: 0.17
@@ -116,7 +123,7 @@ Nodes (9): 1. Rolling window scheduler, 2. Android, 3. iOS, 4. Lặp lại (recu
 
 ### Community 13 - "Mô hình dữ liệu"
 Cohesion: 0.29
-Nodes (6): 1. Sơ đồ quan hệ, 2. Phân loại item, 3. DDL rút gọn (Postgres), 4. Quy tắc đếm quota (thực thi trong RPC `sync_push` + trigger dự phòng), 5. Bảng chỉ có ở client (Drift), Mô hình dữ liệu
+Nodes (6): 1. Sơ đồ quan hệ, 2. Phân loại item, 3. DDL rút gọn (Postgres), 4. Quy tắc đếm quota (thực thi trong RPC `sync_push`, hàm `app.usage_for`), 5. Bảng chỉ có ở client (Drift), Mô hình dữ liệu
 
 ### Community 14 - "Gói dịch vụ, giá và giới hạn (entitlements): nguồn chuẩn duy nhất"
 Cohesion: 0.22
@@ -127,8 +134,8 @@ Cohesion: 0.25
 Nodes (7): 1. Phân loại dữ liệu, 2. Kiểm soát, 3. Bên thứ ba xử lý dữ liệu (liệt kê trong Privacy Policy), 4. Pháp lý theo thị trường (checklist, luật sư địa phương xác nhận), 5. Ứng phó sự cố, 6. Xóa tài khoản, xuất dữ liệu, lưu trữ, Bảo mật & quyền riêng tư
 
 ### Community 20 - "STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)"
-Cohesion: 0.11
-Nodes (13): Bản đồ tài liệu, Blocker, Chưa xác minh (kiểm tra ở spike), Câu hỏi mở (cần chủ dự án quyết), STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG), Tiếp theo (ưu tiên), Đã có, 2026-11-24 · Bỏ AI API trả phí, chuyển trích xuất sang chạy trên máy · Claude Code (+5 more)
+Cohesion: 0.07
+Nodes (23): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+15 more)
 
 ### Community 21 - "Quy trình phát triển với AI (Claude Code, Codex) + graphify, unslop, agency agents"
 Cohesion: 0.25
@@ -138,9 +145,9 @@ Nodes (7): 1. Ngân sách ngữ cảnh (token budget), 2. graphify (knowledge gr
 Cohesion: 0.20
 Nodes (9): 1. Luồng, 2. Chọn ngôn ngữ và giọng vùng, 3. Engine STT theo nền tảng, 4. Model mở chạy trên máy (tùy chọn, Phase 2), 5. NLU luật: gói ngữ pháp theo ngôn ngữ, 6. Hậu xử lý văn bản STT, 7. Đánh giá theo ngôn ngữ và vùng, 8. Quyền riêng tư (+1 more)
 
-### Community 23 - "AGENTS.md: RemindMe"
-Cohesion: 0.25
-Nodes (8): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (dự kiến), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái
+### Community 23 - "RemindMe English style guide (source language)"
+Cohesion: 0.13
+Nodes (14): 10. Paywall wording, 11. Accessibility wording, 12. Terminology, 13. Do and don't (from the P0 flows), 1. Source English, 2. Voice and tone, 3. Addressing the user, 4. Capitalization (+6 more)
 
 ### Community 24 - "Kiểm thử, CI/CD và phát hành"
 Cohesion: 0.33
@@ -150,23 +157,45 @@ Nodes (5): 1. Ma trận thiết bị, 2. Các tầng test, 3. CI/CD, 4. Phát h�
 Cohesion: 0.33
 Nodes (5): 1. Consent, 2. Thuộc tính chung (mọi event), 3. Danh mục sự kiện, 4. Quy tắc, Analytics & telemetry: danh mục sự kiện và consent
 
+### Community 26 - "Hướng dẫn văn phong tiếng Việt cho RemindMe"
+Cohesion: 0.13
+Nodes (14): 10. Paywall, 11. Accessibility, 12. Thuật ngữ hay sai, 13. Nên và không nên (lấy từ các luồng P0), 1. Giọng văn, 2. Xưng hô, 3. Từ ngữ: chuẩn toàn quốc trong UI, NLU hiểu cả từ địa phương, 4. Chính tả, viết hoa (+6 more)
+
+### Community 28 - "RemindMe: Nghiên cứu thị trường global (locale, region dữ liệu, nhóm giá), 11/2026"
+Cohesion: 0.18
+Nodes (10): 1. Chi tiêu và lượt tải theo quốc gia, 2. Hồ sơ từng thị trường, 3. Dữ liệu có cấu trúc trong tài liệu du lịch, 4. Đề xuất locale (cấp B đợt 1 và thứ tự các đợt sau), 5. Region Supabase chính, 6. Kiểm tra nhóm giá T1/T2/T3, 7. Rủi ro và việc cần xác minh, 8. Nguồn (truy cập 24/11/2026) (+2 more)
+
+### Community 29 - "Bản địa hóa (L0): glossary, style guide, TMS"
+Cohesion: 0.22
+Nodes (8): 1. Thư mục có gì, 2. So sánh TMS (giá tra ngày 2026-11-24), 3. Đề xuất, 4. Thuê dịch giả bản ngữ và LQA, 5. Glossary và style guide trong quy trình, 6. Mẫu `style-guide-<locale>.md` cho dịch giả cấp B, 7. Câu hỏi mở cho chủ dự án, Bản địa hóa (L0): glossary, style guide, TMS
+
+### Community 30 - "Bộ mẫu tài liệu cho eval trích xuất (E0.4)"
+Cohesion: 0.29
+Nodes (6): 1. Cấu trúc, 2. Thu mẫu, 3. Ẩn danh (bắt buộc trước khi commit), 4. Viết `expected.json`, 5. OCR trên máy thật, Bộ mẫu tài liệu cho eval trích xuất (E0.4)
+
+### Community 31 - "db-test.sh"
+Cohesion: 0.67
+Nodes (3): PGUSER, run(), db-test.sh script
+
 ## Knowledge Gaps
-- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1 isolated node(s):** `PGUSER`
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 317 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `3. Phân tích từng đối thủ` connect `3. Phân tích từng đối thủ` to `RemindMe – Phân tích đối thủ & thị trường (cuối 2026)`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **What connects `PGUSER` to the rest of the system?**
+  _1 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `UX: kiến trúc thông tin, luồng, màn hình` be split into smaller, more focused modules?**
   _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
-- **Why does `RemindMe – Phân tích đối thủ & thị trường (cuối 2026)` connect `RemindMe – Phân tích đối thủ & thị trường (cuối 2026)` to `3. Phân tích từng đối thủ`?**
-  _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **Should `Hướng dẫn tích hợp với nền tảng khác` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
 - **Should `4. User stories và tiêu chí chấp nhận (MVP = P0)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
+- **Should `steps` be split into smaller, more focused modules?**
+  _Cohesion score 0.12280701754385964 - nodes in this community are weakly interconnected._
 - **Should `3. Phân tích từng đối thủ` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
 - **Should `Architecture Decision Records (ADR)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._

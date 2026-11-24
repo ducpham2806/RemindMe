@@ -49,7 +49,7 @@ category Productivity, iPhone, top 100, ngày 24/11/2026 ([Apple RSS](https://it
 | MX | 26 | (chưa có số riêng) | Tiimo G94; không có Todoist/TickTick trong top 100 | Gần như không có extractor LATAM | T2 |
 | BR | 26 | +29%, lượt tải #3 | App đặt lịch chuyên nghiệp G14/G32/G70; TickTick G65, Todoist G88 | Không có extractor LATAM (định dạng Gol/Azul/LATAM: chưa xác minh) | T2 |
 | JP | 54 | #3; non-game +13% | **TimeTree G25**, **Lifebear G32**, TickTick G63, Jorte G92; LINE Calendar F10 | eki-net (JR East), Kintetsu, ANA, Peach, Skymark | T1 |
-| KR | 39 | #4 nhưng -6,5% (2025) | **App nội địa**: TimeBlocks G17, AnySchedule G21, Planit G43, 할일차곡 G46; TickTick G44 | Korail | T1 |
+| KR | 39 | #4 nhưng -6,5% (2025) | **App nội địa**: TimeBlocks G17, AnySchedule G21, 플래닛 G43, 할일차곡 G46; TickTick G44 | Korail | T1 |
 | TW | 52 | -3,5% (2025) | TimeTree G29, TickTick G66, Todoist G73, Jorte G88 | THSR | chưa xếp |
 | HK | 46 | giảm (2025) | TimeTree G45, Todoist G92 | BCBP | chưa xếp |
 | ID | 21 | lượt tải #4 (+10%) | Todoist G86, Superlist G94 | AirAsia, Agoda, 12go; KAI (chưa xác minh) | T3 |
@@ -113,7 +113,7 @@ Region hiện có ([Supabase docs](https://supabase.com/docs/guides/platform/reg
 |---|---|---|
 | `us-east-1` (Virginia) | 0 / 92 / 223 / 149 ms | EU, UK, BR: cần SCC. JP: cần đồng ý hoặc biện pháp tương đương. KR: phải công bố/xin đồng ý. Supabase dùng SCC, không thấy trong DPF (chưa xác minh) |
 | **`eu-central-1` (Frankfurt)** | 92 / 0 / 164 / 228 ms; tới `sa-east-1` 203 ms | EU: trong khối. JP: PPC công nhận EEA tương đương từ 2019 ([Orrick](https://www.orrick.com/en/Insights/2019/03/Worlds-Largest-Area-of-Safe-Data-Flow-Created-by-Japan-and-the-European-Union)). KR: PIPC công nhận EU tương đương 16/09/2025 ([DPA](https://digitalpolicyalert.org/event/24576-announced-equivalence-recognition-for-personal-data-transfers-between-south-korea-and-the-eu)). BR: EU-Brazil adequacy hai chiều 26-27/01/2026 ([White & Case](https://www.whitecase.com/insight-alert/mutual-adequacy-between-eu-and-brazil-new-era-transatlantic-data-transfers)). UK: UK coi EEA là adequate (chưa xác minh trong phiên). US: luật liên bang không hạn chế chuyển ra nước ngoài |
-| `eu-west-1` (Ireland) | 68 / ~13 / 172 / 203 ms | Giống Frankfurt. Google Cloud không có region ở Ireland, nên worker Cloud Run phải đặt ở London/Belgium (ước lượng thêm 10-20 ms) |
+| `eu-west-1` (Ireland) | 68 / (chưa đo) / 172 / 203 ms | Giống Frankfurt. Google Cloud không có region ở Ireland, nên worker Cloud Run phải đặt ở London/Belgium (ước lượng thêm 10-20 ms) |
 | `ap-southeast-1` (Singapore) | 223 / 164 / 0 / 70 ms; tới Mumbai 64 ms | Gần VN/ID/TH/PH/MY, nhóm nhiều lượt tải nhưng ARPU thấp. EU/UK/JP/KR/BR sang SG đều cần SCC hoặc đồng ý |
 
 **Đề xuất: `eu-central-1` (Frankfurt)**, worker Cloud Run đặt ở `europe-west3` (cùng Frankfurt).

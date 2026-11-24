@@ -1,30 +1,36 @@
 # STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 
-**Cập nhật:** 2026-11-24 · **Phase:** 0, tài liệu và thiết kế · **Nhánh:** `ccr-7a85f116-dswwig`
+**Cập nhật:** 2026-11-24 · **Phase:** 0, tài liệu và nền móng · **Nhánh:** `ccr-7a85f116-dswwig`
 
 ## Đã có
-- Bộ docs v2 (`docs/INDEX.md`): sản phẩm, kiến trúc + 12 ADR, trích xuất trên máy, giọng nói/NLU đa vùng, i18n/l10n, analytics, kiểm thử/phát hành, kế hoạch E/V/L.
-- Quyết định chính: trích xuất trên máy, không AI API trả phí (ADR-010); global từ launch với cấp locale A/B/C (ADR-011); ghi chỉ qua `sync_push` (ADR-012).
-- Tooling: `tools/ai-tools-setup.sh`, `tools/graphify-docs.sh`, `tools/unslop-docs.sh`; `graphify-out/GRAPH_REPORT.md`. Chưa có code.
+- Bộ docs v2 (`docs/INDEX.md`) + 12 ADR. Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
+- DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, seed gói) + 67 test pgTAP, chạy `tools/db-test.sh`.
+- Khung repo: CI `.github/workflows/ci.yml` (chưa thấy chạy trên GitHub), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
+- Chưa có: app Flutter, worker, package Dart.
 
 ## Tiếp theo (ưu tiên)
-1. Chủ dự án duyệt: giá theo nhóm thị trường và giới hạn Free (`product/pricing-entitlements.md`), đợt locale 1 (`architecture/i18n-l10n.md` §2).
-2. Nghiên cứu thị trường global (doanh thu productivity app theo quốc gia) để chốt đợt locale 1 và region dữ liệu (ADR-011).
-3. Đăng ký Apple Developer (tổ chức, D-U-N-S), Google Play Console, domain, Firebase, Supabase; hồ sơ thuế cho các storefront.
-4. Phỏng vấn 15-20 người dùng (VN + ≥ 2 thị trường đợt 1); thu ≥ 300 mẫu tài liệu (≥ 3 thị trường) và bộ câu nói theo vùng (V4).
-5. Spike E0 (OCR theo hệ chữ), V0 (STT/NLU), L0 (TMS, glossary, style guide).
-6. Prototype 6 luồng P0 (`uiux/ux-flows-and-screens.md`, có bản tiếng Anh), rồi Sprint S1.
+1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
+   region `eu-central-1` (sửa ADR-011); BR/TR ~50% giá T1, EU/UK ghi đè €4,99/£4,99, thêm SA/AE/HK/TW vào bảng giá. Cùng lúc duyệt giới hạn Free.
+2. Trả lời câu hỏi l10n (dưới) rồi chạy trial TMS 14 ngày với 50 key (Crowdin Pro, dự phòng Weblate hosted).
+3. Đăng ký Apple Developer (tổ chức, D-U-N-S), Google Play Console, domain, Firebase, Supabase (region theo mục 1); hồ sơ thuế storefront.
+4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
+5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
+6. Sprint S1: workspace Flutter + `packages/parsers`, khung i18n (L1), auth; nối app với `profile_init`/`sync_push` đã có.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
 - Tên thương mại/domain (docs dùng giả định `RemindMe`, `remindme.app`, bundle `app.remindme`).
-- Đợt locale 1 cuối cùng; region Supabase chính.
-- Đăng nhập theo thị trường (Zalo/LINE/Kakao) có làm ở Phase 1 không; có bán qua web không.
-- Ngân sách dịch giả bản ngữ cho cấp A/B; chấp nhận CASA cho Gmail nếu Google yêu cầu.
-- Đội ngũ thực tế để chỉnh timeline.
+- Đợt locale 1, region, nhóm giá: xem Tiếp theo mục 1.
+- l10n: giữ tên gói "Free" không dịch ở mọi locale? Đổi tên list mặc định "Inbox/Hộp thư" (trùng nghĩa hộp thư email, đề xuất "Chưa phân loại")?
+  Một file `en` hay thêm `en_GB`; tách `es-ES`/`es-419` ở đợt 1? Ngân sách dịch giả cấp B.
+- Đăng nhập theo thị trường (Zalo/LINE/Kakao) ở Phase 1? Bán qua web? Chấp nhận CASA cho Gmail nếu Google yêu cầu? Đội ngũ thực tế.
+
+## Việc kỹ thuật còn nợ
+- Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
+- UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.
 
 ## Blocker
 - Không có.
 
 ## Chưa xác minh (kiểm tra ở spike)
 Vision iOS với tiếng Việt và các hệ chữ khác; locale STT on-device thực tế trên máy; chất lượng Foundation Models/Gemini Nano theo ngôn ngữ;
-định dạng vé thật của các nhà cung cấp; price point từng storefront; giấy phép từng checkpoint PhoWhisper và dữ liệu ngày lễ.
+định dạng vé thật; price point từng storefront; giấy phép checkpoint PhoWhisper và dữ liệu ngày lễ; UK coi EEA là adequate; hạn mức từ của Crowdin Pro.
