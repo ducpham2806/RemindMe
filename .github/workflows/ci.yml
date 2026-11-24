@@ -34,3 +34,39 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: postgres
         run: tools/db-test.sh
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.50.1
+          channel: stable
+          cache: true
+      - name: Contract test SyncEngine ↔ RPC Postgres
+        env:
+          REMINDME_PG: "1"
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          flutter pub get
+          cd packages/data && dart test test/pg_contract_test.dart
+
+  flutter:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.50.1
+          channel: stable
+          cache: true
+      - name: ARB, pseudo-locale, quy tắc nền tảng
+        run: |
+          python3 tools/check-arb.py
+          python3 tools/pseudo-arb.py --check
+          python3 tools/lint-platform-checks.py
+      - run: flutter pub get
+      - run: cd apps/client && flutter gen-l10n
+      - run: flutter analyze
+      - name: Test package Dart thuần (chạy trong từng package: sqlite3 dùng native assets)
+        run: for p in core platform data; do (cd packages/$p && dart test) || exit 1; done
+      - name: Test widget (3 kích thước, pseudo-locale)
+        run: cd apps/client && flutter test

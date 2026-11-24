@@ -36,7 +36,9 @@ Quy ước ưu tiên trong PRD: **P0** = Phase 1, **P1** = Phase 2, **P2** = Pha
 - [ ] Thu ≥ 300 mẫu tài liệu ẩn danh, ≥ 20 nhà cung cấp, **≥ 3 thị trường** (E0.4). Đã có cấu trúc, schema, quy trình ẩn danh: `packages/parsers/fixtures/README.md`
 - [ ] Spike E0 (OCR), V0 (giọng nói/NLU) cần máy thật; L0 phần tài liệu xong (`docs/l10n/`), còn chọn TMS sau trial + thuê dịch giả
 - [x] Khung repo: CI (`.github/workflows/ci.yml`), lint chuỗi hard-code, kiểm tham chiếu docs, hook commit-msg. Workspace Flutter/Dart làm ở S1
-- [x] (Kéo sớm từ S1-S2) Supabase migrations + RLS + RPC `sync_push`/`sync_pull`/`quota_status`/`profile_init` + 67 test pgTAP (`supabase/`)
+- [x] (Kéo sớm từ S1-S2) Supabase migrations + RLS + RPC sync/quota/phiên + 102 test pgTAP (`supabase/`)
+- [x] (Kéo sớm S1) Workspace Dart/Flutter 3.50.1: `packages/core` (HLC, UUIDv7, entitlement, giao thức sync), `packages/platform`, `packages/data`
+  (Drift + outbox + SyncEngine, contract test với Postgres), `apps/client` khung (theme token, go_router + shell thích ứng, ARB en/vi + pseudo-locale, 14 test widget). Còn của S1: flavors, auth, font, nối DB vào app
 - **Gate:** PRD chốt sau phỏng vấn; prototype pass (≥ 4/5 người hoàn thành tác vụ chính); spike có kết luận engine OCR/STT cho từng nền tảng.
 
 ## Phase 1: MVP (16 tuần = 8 sprint)

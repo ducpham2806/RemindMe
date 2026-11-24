@@ -1,17 +1,17 @@
 # Graph Report - RemindMe  (2026-11-24)
 
 ## Corpus Check
-- 60 files · ~67,016 words
+- 122 files · ~108,612 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 5 file(s) not represented in the graph (top: (none) 3, .csv 1, .psql 1)
+- Unclassified: 36 file(s) not represented in the graph (top: (none) 7, .xml 7, .plist 4)
 
 ## Summary
-- 398 nodes · 371 edges · 35 communities (28 shown, 7 thin omitted)
+- 1277 nodes · 1588 edges · 79 communities (60 shown, 19 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1b68bf29`
+- Built from commit: `046d506f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,7 +19,7 @@
 - UX: kiến trúc thông tin, luồng, màn hình
 - Hướng dẫn tích hợp với nền tảng khác
 - 4. User stories và tiêu chí chấp nhận (MVP = P0)
-- steps
+- database.dart
 - 3. Phân tích từng đối thủ
 - Kiến trúc hệ thống
 - Design system
@@ -42,33 +42,72 @@
 - Kiểm thử, CI/CD và phát hành
 - Analytics & telemetry: danh mục sự kiện và consent
 - Hướng dẫn văn phong tiếng Việt cho RemindMe
-- validate-fixtures.py
+- pseudo-arb.py
 - RemindMe: Nghiên cứu thị trường global (locale, region dữ liệu, nhóm giá), 11/2026
 - Bản địa hóa (L0): glossary, style guide, TMS
 - Bộ mẫu tài liệu cho eval trích xuất (E0.4)
 - db-test.sh
 - install-hooks.sh
 - Đa nền tảng: điện thoại, tablet, máy tính (macOS, Windows), web
+- tables.dart
+- sync_protocol.dart
+- services.dart
+- entitlements.dart
+- sync_engine.dart
+- capabilities.dart
+- dependencies
+- DataClass
+- tokens.dart
+- hlc.dart
+- AppDelegate
+- app.dart
+- pg_contract_test.dart
+- sync_engine_test.dart
+- ../l10n/app_localizations.dart
+- fake_server.dart
+- data/pubspec.yaml
+- Table
+- app_theme.dart
+- row_codec.dart
+- package:remindme_core/remindme_core.dart
+- empty_state.dart
+- ids.dart
+- core/pubspec.yaml
+- platform/pubspec.yaml
+- app_test.dart
+- analysis_options.yaml
+- package:material_ui/material_ui.dart
+- client/analysis_options.yaml
+- window_size.dart
+- router.dart
+- pubspec.yaml
+- adaptive_shell.dart
+- MainActivity.kt
+- remindme_client
+- LaunchImage.imageset/README.md
 
 ## God Nodes (most connected - your core abstractions)
-1. `Architecture Decision Records (ADR)` - 15 edges
-2. `Hướng dẫn tích hợp với nền tảng khác` - 15 edges
+1. `Hướng dẫn tích hợp với nền tảng khác` - 15 edges
+2. `Architecture Decision Records (ADR)` - 15 edges
 3. `Trích xuất trên thiết bị: ảnh, pdf, xlsx, md, email, giọng nói → todo / lịch trình` - 15 edges
 4. `RemindMe English style guide (source language)` - 14 edges
 5. `Hướng dẫn văn phong tiếng Việt cho RemindMe` - 14 edges
 6. `3. Phân tích từng đối thủ` - 14 edges
-7. `Kế hoạch triển khai` - 13 edges
-8. `Design system` - 12 edges
+7. `DataClass` - 13 edges
+8. `Kế hoạch triển khai` - 13 edges
 9. `Quốc tế hóa và bản địa hóa (i18n / l10n)` - 12 edges
-10. `UX: kiến trúc thông tin, luồng, màn hình` - 10 edges
+10. `Design system` - 12 edges
 
 ## Surprising Connections (you probably didn't know these)
-- None detected - all connections are within the same source files.
+- `FakeApi` --implements--> `SyncApi`  [EXTRACTED]
+  packages/data/test/fake_server.dart → packages/core/lib/src/sync_protocol.dart
+- `PgSyncApi` --implements--> `SyncApi`  [EXTRACTED]
+  packages/data/test/pg_contract_test.dart → packages/core/lib/src/sync_protocol.dart
 
 ## Import Cycles
 - None detected.
 
-## Communities (35 total, 7 thin omitted)
+## Communities (79 total, 19 thin omitted)
 
 ### Community 0 - "UX: kiến trúc thông tin, luồng, màn hình"
 Cohesion: 0.08
@@ -82,9 +121,9 @@ Nodes (19): 0. Việc phải khởi động sớm (thời gian chờ dài), 10. 
 Cohesion: 0.14
 Nodes (13): 1. Vấn đề, 2. Mục tiêu và chỉ số, 3. Persona, 4. User stories và tiêu chí chấp nhận (MVP = P0), 5. Phi mục tiêu (không làm ở v1), 6. Giả thuyết cần kiểm chứng sớm, Lịch trình & chuyến đi, Nhập liệu (+5 more)
 
-### Community 3 - "steps"
-Cohesion: 0.11
-Nodes (20): runs-on, steps, runs-on, steps, PGHOST, PGPASSWORD, PGUSER, jobs (+12 more)
+### Community 3 - "database.dart"
+Cohesion: 0.02
+Nodes (192): _, actualTableName, _alias, aliasedName, allDay, _allDayMeta, allSchemaEntities, allTables (+184 more)
 
 ### Community 4 - "3. Phân tích từng đối thủ"
 Cohesion: 0.08
@@ -136,7 +175,7 @@ Nodes (7): 1. Phân loại dữ liệu, 2. Kiểm soát, 3. Bên thứ ba xử l
 
 ### Community 20 - "STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)"
 Cohesion: 0.06
-Nodes (26): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+18 more)
+Nodes (27): Agency agents (persona chuyên môn), AGENTS.md: RemindMe, Cấu trúc repo (`*` = chưa tạo), Dự án, Lệnh hay dùng, Quy tắc làm việc (bắt buộc), Stack đã chốt (lý do: `docs/architecture/decisions.md`), Trạng thái (+19 more)
 
 ### Community 21 - "Quy trình phát triển với AI (Claude Code, Codex) + graphify, unslop, agency agents"
 Cohesion: 0.25
@@ -162,6 +201,10 @@ Nodes (5): 1. Consent, 2. Thuộc tính chung (mọi event), 3. Danh mục sự 
 Cohesion: 0.13
 Nodes (14): 10. Paywall, 11. Accessibility, 12. Thuật ngữ hay sai, 13. Nên và không nên (lấy từ các luồng P0), 1. Giọng văn, 2. Xưng hô, 3. Từ ngữ: chuẩn toàn quốc trong UI, NLU hiểu cả từ địa phương, 4. Chính tả, viết hoa (+6 more)
 
+### Community 27 - "pseudo-arb.py"
+Cohesion: 0.12
+Nodes (6): resolves(), allowed(), argument(), icu(), main(), text()
+
 ### Community 28 - "RemindMe: Nghiên cứu thị trường global (locale, region dữ liệu, nhóm giá), 11/2026"
 Cohesion: 0.18
 Nodes (10): 1. Chi tiêu và lượt tải theo quốc gia, 2. Hồ sơ từng thị trường, 3. Dữ liệu có cấu trúc trong tài liệu du lịch, 4. Đề xuất locale (cấp B đợt 1 và thứ tự các đợt sau), 5. Region Supabase chính, 6. Kiểm tra nhóm giá T1/T2/T3, 7. Rủi ro và việc cần xác minh, 8. Nguồn (truy cập 24/11/2026) (+2 more)
@@ -182,25 +225,149 @@ Nodes (3): PGUSER, run(), db-test.sh script
 Cohesion: 0.33
 Nodes (5): 1. Lộ trình, 2. Quy tắc code từ S1 (để thêm desktop không phải viết lại), 3. Ma trận năng lực theo nền tảng, 4. Phát hành máy tính, Đa nền tảng: điện thoại, tablet, máy tính (macOS, Windows), web
 
+### Community 35 - "tables.dart"
+Cohesion: 0.02
+Nodes (87): allDay, archivedReason, at, attempts, bookingType, bytes, calendar, carrierCode (+79 more)
+
+### Community 36 - "sync_protocol.dart"
+Cohesion: 0.05
+Nodes (39): baseClock, bookingDetails, code, details, edit, endsSession, error, fieldClock (+31 more)
+
+### Community 37 - "services.dart"
+Cohesion: 0.05
+Nodes (39): addEvent, alternatives, availableLocales, BarcodeScanner, body, CalendarWriter, cancel, cancelAll (+31 more)
+
+### Community 38 - "entitlements.dart"
+Cohesion: 0.06
+Nodes (32): cacheTtl, EntitlementKey, featureAltCalendars, featureEnhancedVoice, featureLevel, features, featureWatchApp, fetchedAt (+24 more)
+
+### Community 39 - "sync_engine.dart"
+Cohesion: 0.06
+Nodes (28): api, _applyResult, _applyServerRow, _bumpAttempts, clock, _codecs, db, delete (+20 more)
+
+### Community 40 - "capabilities.dart"
+Cohesion: 0.07
+Nodes (23): detectPlatform, devicePlatformProvider, platformCapabilitiesProvider, DeviceClass, DevicePlatform, mobileClassFromShortestSide, resolveDeviceClass, tabletShortestSideDp (+15 more)
+
+### Community 41 - "dependencies"
+Cohesion: 0.07
+Nodes (26): dependencies, cupertino_ui, flutter, flutter_localizations, flutter_riverpod, go_router, intl, material_ui (+18 more)
+
+### Community 42 - "DataClass"
+Cohesion: 0.15
+Nodes (23): BookingDetail, BookingDetailsCompanion, DataClass, Import, ImportsCompanion, Item, ItemsCompanion, ListsCompanion (+15 more)
+
+### Community 43 - "tokens.dart"
+Cohesion: 0.10
+Nodes (20): background, danger, divider, fontFallback, fontFamily, health, lunar, minLineHeight (+12 more)
+
+### Community 44 - "hlc.dart"
+Cohesion: 0.10
+Nodes (17): compareTo, counter, hashCode, Hlc, HlcClock, _last, maxCounter, maxDriftMs (+9 more)
+
+### Community 45 - "AppDelegate"
+Cohesion: 0.12
+Nodes (6): AppDelegate, SceneDelegate, RunnerTests, Flutter, Testing, UIKit
+
+### Community 46 - "app.dart"
+Cohesion: 0.12
+Nodes (8): appSupportedLocales, build, createState, locale, pseudoLocale, RemindMeApp, _RemindMeAppState, _router
+
+### Community 47 - "pg_contract_test.dart"
+Cohesion: 0.11
+Nodes (14): SyncApi, FakeApi, call, conn, enabled, env, main, PgSyncApi (+6 more)
+
+### Community 48 - "sync_engine_test.dart"
+Cohesion: 0.12
+Nodes (11): AppDatabase, SyncEngine, db, Device, engine, main, name, now (+3 more)
+
+### Community 49 - "../l10n/app_localizations.dart"
+Cohesion: 0.15
+Nodes (10): build, CalendarScreen, EmptyState, build, MeScreen, build, TodayScreen, build (+2 more)
+
+### Community 50 - "fake_server.dart"
+Cohesion: 0.13
+Nodes (13): SyncErrorCode, apiFor, apply, device, failWith, FakeServer, _k, pull (+5 more)
+
+### Community 51 - "data/pubspec.yaml"
+Cohesion: 0.13
+Nodes (14): dependencies, drift, remindme_core, description, dev_dependencies, build_runner, drift_dev, postgres (+6 more)
+
+### Community 52 - "Table"
+Cohesion: 0.26
+Nodes (12): BookingDetails, Imports, Items, Lists, OccurrenceLog, Outbox, Recurrences, Reminders (+4 more)
+
+### Community 53 - "app_theme.dart"
+Cohesion: 0.14
+Nodes (10): buildTheme, copyWith, dark, lerp, of, pick, RemindColors, scheme (+2 more)
+
+### Community 54 - "row_codec.dart"
+Cohesion: 0.14
+Nodes (9): ColumnKind, columns, dataColumns, keyColumns, metaColumns, name, RowCodec, table (+1 more)
+
+### Community 55 - "package:remindme_core/remindme_core.dart"
+Cohesion: 0.21
+Nodes (5): main, main, main, main, main
+
+### Community 56 - "empty_state.dart"
+Cohesion: 0.17
+Nodes (7): body, build, icon, title, build, QuickAddSheet, showQuickAdd
+
+### Community 57 - "ids.dart"
+Cohesion: 0.17
+Nodes (8): bytes, digest, _format, hex, inboxListId, ms, _random, uuidV7
+
+### Community 58 - "core/pubspec.yaml"
+Cohesion: 0.18
+Nodes (10): dependencies, crypto, description, dev_dependencies, test, environment, sdk, name (+2 more)
+
+### Community 59 - "platform/pubspec.yaml"
+Cohesion: 0.18
+Nodes (10): dependencies, remindme_core, description, dev_dependencies, test, environment, sdk, name (+2 more)
+
+### Community 60 - "app_test.dart"
+Cohesion: 0.20
+Nodes (4): main, pumpAndSettle, pumpApp, pumpWidget
+
+### Community 61 - "analysis_options.yaml"
+Cohesion: 0.22
+Nodes (8): analyzer, exclude, language, include, strict-casts, strict-raw-types, linter, rules
+
+### Community 62 - "package:material_ui/material_ui.dart"
+Cohesion: 0.22
+Nodes (4): find, resolveLocale, sup, main
+
+### Community 63 - "client/analysis_options.yaml"
+Cohesion: 0.22
+Nodes (8): analyzer, exclude, language, include, strict-casts, strict-raw-types, linter, rules
+
+### Community 64 - "window_size.dart"
+Cohesion: 0.22
+Nodes (6): expanded, expandedMin, fromWidth, mediumMin, of, WindowSize
+
+### Community 66 - "pubspec.yaml"
+Cohesion: 0.25
+Nodes (7): dev_dependencies, lints, environment, sdk, name, publish_to, workspace
+
 ## Knowledge Gaps
-- **1 isolated node(s):** `PGUSER`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 331 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **378 isolated node(s):** `Testing`, `pseudoLocale`, `locale`, `_router`, `appSupportedLocales` (+373 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 850 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What connects `PGUSER` to the rest of the system?**
-  _1 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `AppDatabase` connect `sync_engine_test.dart` to `database.dart`, `sync_engine.dart`?**
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **What connects `Testing`, `pseudoLocale`, `locale` to the rest of the system?**
+  _378 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `UX: kiến trúc thông tin, luồng, màn hình` be split into smaller, more focused modules?**
   _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._
 - **Should `Hướng dẫn tích hợp với nền tảng khác` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
 - **Should `4. User stories và tiêu chí chấp nhận (MVP = P0)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
-- **Should `steps` be split into smaller, more focused modules?**
-  _Cohesion score 0.10952380952380952 - nodes in this community are weakly interconnected._
+- **Should `database.dart` be split into smaller, more focused modules?**
+  _Cohesion score 0.019309393625929757 - nodes in this community are weakly interconnected._
 - **Should `3. Phân tích từng đối thủ` be split into smaller, more focused modules?**
   _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
-- **Should `Architecture Decision Records (ADR)` be split into smaller, more focused modules?**
-  _Cohesion score 0.125 - nodes in this community are weakly interconnected._

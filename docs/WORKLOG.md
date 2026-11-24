@@ -12,6 +12,24 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-24 · S1 phần 1: workspace Flutter, core/platform/data, sync engine, app khung · Claude Code
+- **Làm:**
+  - Cài Flutter 3.50.1 (Dart 3.14) trong container; pub workspace ở gốc (`pubspec.yaml`, `analysis_options.yaml`).
+  - `packages/core`: `Hlc`/`HlcClock` (định dạng khớp server, so sánh = thứ tự byte), `uuidV7`, `inboxListId` (khớp `md5(uid||':inbox')::uuid`),
+    `resolveDeviceClass` (khớp `app.device_class_of`), `QuotaStatus` (cache 24h, không hard-code giá trị), giao thức `Mutation`/`MutationResult`/`PullPage`/`SyncErrorCode`/`SyncApi`.
+  - `packages/platform`: interface `NotificationScheduler`, `OcrEngine`, `SttEngine`, `PurchaseService`... + `PlatformCapabilities.defaultsFor` theo ma trận multi-platform §3.
+  - `packages/data`: Drift mirror 8 bảng đồng bộ + outbox/sync_state/sync_issues; `RowCodec` (ISO ↔ epoch ms, JSON ↔ text); `SyncEngine`
+    (sửa local + outbox trong 1 transaction, push theo lô 200, pull nhiều trang, merge theo trường bằng HLC, tombstone dây chuyền, ghi quota/notes conflict vào `sync_issues`, `session_revoked` giữ outbox).
+    Test: 9 test với server giả + 3 contract test với RPC Postgres thật (hội tụ 2 máy, quota, bị đá phiên).
+  - `apps/client`: theme từ token (`RemindColors`), `WindowSize` (600/840), shell thích ứng (NavigationBar / rail / rail mở rộng), 4 tab khung,
+    Quick Add (nút + Ctrl/Cmd+N), ARB en/vi theo glossary, pseudo-locale `en_XA` (debug), chuỗi fallback locale, dò nền tảng trong `lib/platform/`.
+    14 test widget (3 cỡ màn hình, pseudo-locale + chữ 1,3x không tràn, tiếng Việt, fallback locale, phím tắt).
+  - Tools: `check-arb.py`, `pseudo-arb.py` (hiểu ICU plural), `lint-platform-checks.py`. CI: job `flutter`, contract test trong job `db`.
+- **Quyết định:** Flutter 3.50 tách Material/Cupertino thành `material_ui`/`cupertino_ui`: dùng delegate của 2 package này (danh sách sinh sẵn của gen-l10n còn trỏ bản cũ, thiếu tiếng Việt).
+  File l10n sinh ra không commit (CI chạy `flutter gen-l10n`); `database.g.dart` của Drift có commit. Test package chạy trong từng thư mục (sqlite3 dùng native assets).
+- **Kiểm chứng:** `flutter analyze` 0 lỗi; core 19, platform 2, data 9 (+3 contract khi có Postgres), client 14 test pass; `tools/db-test.sh` 102 pass.
+- **Dở dang / tiếp theo:** auth, flavors, `SupabaseSyncApi`, nối DB vào UI cần project Supabase/Firebase; xem `docs/STATE.md`.
+
 ## 2026-11-24 · Lộ trình app máy tính, chuẩn bị nền tảng để nâng cấp (ADR-014) · Claude Code
 - **Làm:** chủ dự án chốt: paywall ghi "máy tính: sắp có"; máy tính có thể là app PC/MacBook. Thêm ADR-014 (một codebase Flutter, macOS + Windows ở Phase 4)
   và `architecture/multi-platform.md` (lộ trình, 6 quy tắc code từ S1, ma trận năng lực theo nền tảng, phát hành desktop).

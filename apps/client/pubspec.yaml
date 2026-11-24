@@ -1,0 +1,30 @@
+name: remindme_client
+description: RemindMe app (Android, iOS, iPadOS; macOS/Windows ở Phase 4 theo ADR-014).
+publish_to: none
+version: 0.1.0+1
+resolution: workspace
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  cupertino_ui: ^1.1.7
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^3.5.0
+  go_router: ^18.1.4
+  intl: ^0.20.3
+  material_ui: ^1.1.0
+  remindme_core: any
+  remindme_platform: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true

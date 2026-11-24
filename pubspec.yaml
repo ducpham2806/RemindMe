@@ -1,0 +1,12 @@
+# Dart pub workspace: một lần `dart pub get` ở gốc cho mọi package (ADR-014, architecture/multi-platform.md §2).
+name: remindme_workspace
+publish_to: none
+environment:
+  sdk: ^3.10.0
+workspace:
+  - packages/core
+  - packages/platform
+  - packages/data
+  - apps/client
+dev_dependencies:
+  lints: ^6.0.0

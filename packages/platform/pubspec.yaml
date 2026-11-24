@@ -1,0 +1,10 @@
+name: remindme_platform
+description: Interface cho tính năng phụ thuộc nền tảng + PlatformCapabilities (architecture/multi-platform.md §2-3).
+publish_to: none
+resolution: workspace
+environment:
+  sdk: ^3.10.0
+dependencies:
+  remindme_core: any
+dev_dependencies:
+  test: ^1.25.0

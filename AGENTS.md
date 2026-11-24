@@ -10,7 +10,7 @@ từ vé máy bay/tàu/xe/khách sạn/lịch khám; nhắc lặp lại (kể c�
 Thị trường: **global từ launch**, ngôn ngữ cấp A là `en` + `vi`, các locale khác theo cấp B/C (`docs/architecture/i18n-l10n.md`).
 
 ## Trạng thái
-Giai đoạn: **Phase 0** (docs xong; đã có Supabase migrations + test, CI; chưa có app Flutter). Xem `docs/STATE.md`.
+Giai đoạn: **Phase 0 → S1** (docs xong; Supabase migrations + pgTAP; workspace Dart/Flutter: core, platform, data/sync engine, app khung). Xem `docs/STATE.md`.
 
 ## Stack đã chốt (lý do: `docs/architecture/decisions.md`)
 - Mobile: Flutter 3 (Dart), Riverpod, go_router, Drift (SQLite), offline-first
@@ -26,12 +26,13 @@ Giai đoạn: **Phase 0** (docs xong; đã có Supabase migrations + test, CI; c
 
 ## Cấu trúc repo (`*` = chưa tạo)
 ```
-apps/client/*       Flutter app: Android, iOS, iPadOS; macOS, Windows ở Phase 4
+apps/client/        Flutter app (khung S1): Android, iOS, iPadOS; macOS, Windows ở Phase 4
 apps/watch-ios/*    watchOS app        apps/wear-android/*  Wear OS app
 services/worker/*   TS worker: entitlement, hộp thư email, push, OAuth, webhooks (không phân tích nội dung, không nằm trên đường ghi)
 supabase/           migrations/ (schema, RLS, sync_push/pull, quota, seed gói), tests/database/ (pgTAP), tests/shim/
-packages/core*      Dart thuần: model, thời gian/DST, recurrence, hệ lịch      packages/data*  Drift, outbox, sync engine
-packages/platform/* interface + adapter theo nền tảng (thông báo, OCR, STT, mua hàng...)
+packages/core/      Dart thuần: HLC, id, thiết bị, entitlement, giao thức sync (sau: thời gian/DST, recurrence, hệ lịch)
+packages/data/      Drift (mirror bảng server), outbox, SyncEngine; test với server giả + contract test Postgres
+packages/platform/  interface + PlatformCapabilities; adapter theo nền tảng nằm trong apps/*/lib/platform/
 packages/parsers/   Dart thuần*: decoder, luật + mẫu, NLU; fixtures/ (bộ mẫu eval, đã có schema)
 docs/               tài liệu (bản đồ: docs/INDEX.md)
 tools/              script cho AI tooling (graphify, unslop)
@@ -67,6 +68,11 @@ tools/unslop-docs.sh docs/product/PRD.md   # làm sạch văn phong AI (determin
 tools/install-hooks.sh             # hook commit-msg (1 lần sau khi clone)
 PGHOST=localhost PGUSER=postgres tools/db-test.sh   # migrations + pgTAP trên Postgres thuần (cần pgtap, pg_prove)
 python3 tools/check-docs.py && python3 tools/validate-fixtures.py && python3 tools/lint-hardcoded-strings.py
+python3 tools/check-arb.py && python3 tools/pseudo-arb.py && python3 tools/lint-platform-checks.py   # ARB, pseudo-locale en_XA, quy tắc nền tảng
+flutter pub get && (cd apps/client && flutter gen-l10n) && flutter analyze      # Flutter 3.50.1, pub workspace ở gốc
+for p in core platform data; do (cd packages/$p && dart test); done; (cd apps/client && flutter test)
+(cd packages/data && dart run build_runner build)   # sau khi sửa bảng Drift
+REMINDME_PG=1 PGHOST=localhost PGUSER=postgres (cd packages/data && dart test test/pg_contract_test.dart)  # sau db-test.sh
 ```
 
 ## Agency agents (persona chuyên môn)

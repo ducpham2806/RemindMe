@@ -19,7 +19,8 @@ Paywall và store listing đọc remote config `desktop_client_available` (mặc
 2. **Tính năng nền tảng sau interface**: `NotificationScheduler`, `OcrEngine`, `SttEngine`, `BarcodeScanner`, `PurchaseService`, `ShareInbox`, `CalendarWriter`,
    `PushChannel`. Mỗi interface có bản cho từng nền tảng (federated plugin hoặc lớp adapter), inject qua Riverpod.
 3. **`PlatformCapabilities`** (provider): `canPurchaseInApp`, `hasExactAlarms`, `hasPush`, `hasOcr`, `hasOnDeviceStt`, `hasShareExtension`, `hasWidgets`, `hasWatch`.
-   UI ẩn/hiện tính năng theo capability, **không** rải `Platform.isIOS` trong UI. Lint ở S1: chỉ `packages/platform/**` được dùng `Platform.is*`.
+   UI ẩn/hiện tính năng theo capability, **không** rải `Platform.isIOS` trong UI. Chỉ `packages/platform/**` và `apps/*/lib/platform/**` được dò nền tảng;
+   package Dart thuần không import Flutter (`tools/lint-platform-checks.py`, chạy trong CI).
 4. **Layout thích ứng** theo window size class của Material 3: compact < 600 dp, medium 600-839, expanded ≥ 840. Medium/expanded dùng master-detail
    (danh sách + chi tiết), lịch tuần rộng. Mọi màn chạy được với chuột, bàn phím (Tab, Enter, Esc, phím tắt), hover, menu chuột phải, cửa sổ đổi kích thước.
    Golden test chạy ở 3 kích thước.

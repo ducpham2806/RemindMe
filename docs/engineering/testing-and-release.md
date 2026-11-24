@@ -35,7 +35,8 @@ mở mã đặt chỗ từ thông báo; đổi ngôn ngữ app. Tiêu chí: mọ
 
 ## 3. CI/CD
 - GitHub Actions: lint (gồm lint chuỗi hard-code) → unit/DB/eval → build Android (AAB) + iOS (IPA) → upload nội bộ.
-  Đã có (`.github/workflows/ci.yml`): `tools/check-docs.py` (tham chiếu hỏng trong docs), `tools/validate-fixtures.py` (bộ mẫu), `tools/lint-hardcoded-strings.py`, job DB (`tools/db-test.sh`).
+  Đã có (`.github/workflows/ci.yml`): job `docs-and-lint` (`check-docs`, `validate-fixtures`, `lint-hardcoded-strings`); job `db` (`tools/db-test.sh` + contract test
+  `packages/data/test/pg_contract_test.dart`); job `flutter` (`check-arb`, `pseudo-arb --check`, `lint-platform-checks`, `flutter analyze`, test từng package, test widget).
   Commit message kiểm bằng hook `tools/hooks/commit-msg` (cài: `tools/install-hooks.sh`).
 - Code signing: Android upload key trong Play App Signing, keystore trong secret CI; iOS bằng fastlane `match` (repo cert riêng, mã hóa).
 - fastlane: `beta` (TestFlight + Play internal), `release` (metadata đa ngôn ngữ từ `fastlane/metadata/<locale>/`, ảnh chụp tự động L5).
