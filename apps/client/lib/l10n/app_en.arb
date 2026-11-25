@@ -1150,16 +1150,6 @@
       }
     }
   },
-  "tripsItemCount": "{count, plural, =1{1 booking} other{{count} bookings}}",
-  "@tripsItemCount": {
-    "description": "Number of bookings in a trip. Glossary trip_booking.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "3"
-      }
-    }
-  },
   "tripRename": "Rename trip",
   "@tripRename": {
     "description": "Menu action on the trip screen; also the title of the rename dialog."
@@ -1175,6 +1165,102 @@
   "tripActivityHint": "What do you plan to do?",
   "@tripActivityHint": {
     "description": "Hint of the activity name field (it becomes a task in the trip)."
+  },
+  "tripsTagline": "Every leg, in one itinerary.",
+  "@tripsTagline": {
+    "description": "Subtitle under the Trips title."
+  },
+  "tripsUpcoming": "Upcoming · {count}",
+  "@tripsUpcoming": {
+    "description": "Filter chip on Trips: current and future trips, with their number.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "tripsPast": "Past",
+  "@tripsPast": {
+    "description": "Filter chip on Trips: trips that have ended."
+  },
+  "tripsPastEmpty": "No past trips yet",
+  "@tripsPastEmpty": {
+    "description": "Trips, Past filter with nothing in it."
+  },
+  "tripDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@tripDays": {
+    "description": "Trip card: length of the trip in days.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "tripNights": "{count, plural, =1{1 night} other{{count} nights}}",
+  "@tripNights": {
+    "description": "Hotel line on a trip card.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "tripCheckInAt": "Check-in {time}",
+  "@tripCheckInAt": {
+    "description": "Hotel line on a trip card: local check-in time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:00"
+      }
+    }
+  },
+  "tripViewItinerary": "View itinerary",
+  "@tripViewItinerary": {
+    "description": "Button on a trip card: open the trip timeline."
+  },
+  "tripsAddBookingTitle": "Add a ticket or booking",
+  "@tripsAddBookingTitle": {
+    "description": "Card on Trips that opens Import from file."
+  },
+  "tripsAddBookingBody": "Import a document to fill in your itinerary.",
+  "@tripsAddBookingBody": {
+    "description": "Second line of the add-booking card."
+  },
+  "planName": "{plan, select, free{Free} plus{Plus} other{{plan}}}",
+  "@planName": {
+    "description": "Plan name; Free and Plus stay in English in every language (product names).",
+    "placeholders": {
+      "plan": {
+        "type": "String",
+        "example": "free"
+      }
+    }
+  },
+  "tripsQuotaUsage": "{plan} · Using {used}/{limit} trips.",
+  "@tripsQuotaUsage": {
+    "description": "Footnote on Trips from the cached plan limits (max_active_trips).",
+    "placeholders": {
+      "plan": {
+        "type": "String",
+        "example": "Free"
+      },
+      "used": {
+        "type": "int",
+        "example": "1"
+      },
+      "limit": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "tripsQuotaFull": "You can still add bookings to your current trip.",
+  "@tripsQuotaFull": {
+    "description": "Second footnote line when the plan's trip limit is reached."
   },
   "tripDelete": "Delete trip",
   "@tripDelete": {

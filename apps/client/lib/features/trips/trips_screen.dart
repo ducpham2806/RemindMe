@@ -5,38 +5,326 @@ import 'package:remindme_core/remindme_core.dart';
 import 'package:remindme_data/remindme_data.dart';
 
 import '../../core/l10n/formatters.dart';
+import '../../core/theme/app_icons.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 import '../common/text_prompt.dart';
 
-/// Tab Chuyến đi (US-20): các chuyến theo ngày đi, chuyến đã qua ở cuối.
-class TripsScreen extends ConsumerWidget {
+/// Tab Chuyến đi (US-20, Figma 20): lọc Sắp tới / Đã qua, thẻ chuyến (ngày, số ngày, nơi đến, tuyến, vài chặng đầu, "Xem lịch trình"),
+/// thẻ "Thêm vé hoặc đặt phòng" (→ Nhập từ tệp), dòng hạn mức chuyến đi từ cache `quota_status`.
+class TripsScreen extends ConsumerStatefulWidget {
   const TripsScreen({super.key});
+
+  @override
+  ConsumerState<TripsScreen> createState() => _TripsScreenState();
+}
+
+class _TripsScreenState extends ConsumerState<TripsScreen> {
+  bool _past = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final trips = ref.watch(tripsProvider).value ?? const [];
+    final today = CivilDate.of(ref.watch(nowProvider)()).toIso();
+    final upcoming = [...trips.where((t) => t.activeOn(today))];
+    final past = [...trips.where((t) => !t.activeOn(today))].reversed.toList();
+    final shown = _past ? past : upcoming;
+    final quota = ref.watch(cachedQuotaProvider).value;
+    final limit = quota?.limit(EntitlementKey.maxActiveTrips);
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space2, Tokens.screenMargin, Tokens.space6),
+          children: [
+            Row(
+              children: [
+                Expanded(child: Semantics(header: true, child: Text(l.navTrips, style: theme.textTheme.headlineLarge))),
+                IconButton(
+                  key: const Key('tripsAdd'),
+                  tooltip: l.tripsAddBookingTitle,
+                  icon: AppIcon(AppIcons.plus, size: 22, color: theme.colorScheme.primary),
+                  onPressed: () => context.push('/import'),
+                ),
+              ],
+            ),
+            Text(l.tripsTagline, style: theme.textTheme.bodySmall),
+            const SizedBox(height: Tokens.space4),
+            Wrap(
+              spacing: Tokens.space2,
+              runSpacing: Tokens.space2,
+              children: [
+                _FilterChip(key: const Key('tripsUpcoming'), label: l.tripsUpcoming(upcoming.length), selected: !_past, onTap: () => setState(() => _past = false)),
+                _FilterChip(key: const Key('tripsPast'), label: l.tripsPast, selected: _past, onTap: () => setState(() => _past = true)),
+              ],
+            ),
+            const SizedBox(height: Tokens.space4),
+            if (trips.isEmpty)
+              EmptyState(icon: Icons.luggage_outlined, title: l.tripsEmptyTitle, body: l.tripsEmptyBody)
+            else if (shown.isEmpty)
+              EmptyState(icon: Icons.history, title: _past ? l.tripsPastEmpty : l.tripsEmptyTitle)
+            else
+              for (final t in shown) Padding(padding: const EdgeInsetsDirectional.only(bottom: Tokens.space4), child: _TripCard(trip: t, active: !_past)),
+            _AddBookingCard(onTap: () => context.push('/import')),
+            if (limit != null && limit != unlimited) ...[
+              const SizedBox(height: Tokens.space4),
+              Text(
+                l.tripsQuotaUsage(l.planName(quota!.plan), upcoming.length, limit),
+                key: const Key('tripsQuota'),
+                style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant),
+              ),
+              if (upcoming.length >= limit)
+                Text(l.tripsQuotaFull, style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({super.key, required this.label, required this.selected, required this.onTap});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+        color: selected ? scheme.primary : scheme.surface,
+        borderRadius: BorderRadius.circular(Tokens.radiusSm),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Tokens.radiusSm),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.all(Tokens.space2),
+            child: Text(label, style: theme.textTheme.labelSmall?.copyWith(color: selected ? scheme.onPrimary : scheme.onSurfaceVariant)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Thẻ chuyến đi (Figma 20): phần tóm tắt nền travel nhạt + tối đa 3 chặng đầu + nút "Xem lịch trình".
+class _TripCard extends ConsumerWidget {
+  const _TripCard({required this.trip, required this.active});
+  final TripSummary trip;
+  final bool active;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    final trips = ref.watch(tripsProvider).value ?? const [];
-    final today = CivilDate.of(ref.watch(nowProvider)()).toIso();
-    final ordered = [...trips.where((t) => t.activeOn(today)), ...trips.where((t) => !t.activeOn(today)).toList().reversed];
-    return Scaffold(
-      appBar: AppBar(title: Text(l.navTrips)),
-      body: ordered.isEmpty
-          ? EmptyState(icon: Icons.luggage_outlined, title: l.tripsEmptyTitle, body: l.tripsEmptyBody)
-          : ListView(
-              children: [
-                for (final t in ordered)
-                  ListTile(
-                    key: Key('trip-${t.id}'),
-                    leading: Icon(Icons.luggage_outlined, color: t.activeOn(today) ? null : Theme.of(context).disabledColor),
-                    title: Text(t.title ?? l.navTrips),
-                    subtitle: Text([?tripDateRange(context, t, ref.read(nowProvider)()), l.tripsItemCount(t.itemCount)].join(' · ')),
-                    onTap: () => context.go('/trips/${t.id}'),
-                  ),
-              ],
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final colors = RemindColors.of(context);
+    final segments = ref.watch(tripSegmentsProvider(trip.id)).value ?? const <TripSegment>[];
+    final range = tripDateRange(context, trip, ref.read(nowProvider)());
+    final days = trip.startsOn == null
+        ? null
+        : CivilDate.parse(trip.endsOn ?? trip.startsOn!).daysSince(CivilDate.parse(trip.startsOn!)) + 1;
+    final flight = segments.where((s) => s.bookingType == 'flight' || s.bookingType == 'train' || s.bookingType == 'bus').firstOrNull;
+    String? code(Map<String, Object?>? p) => (p?['code'] ?? p?['name']) as String?;
+    final from = code(flight?.origin), to = code(segments.where((s) => s.destination != null).lastOrNull?.destination);
+    void open() => context.go('/trips/${trip.id}');
+    return Material(
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(Tokens.radiusLg),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: Key('trip-${trip.id}'),
+        onTap: open,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: active ? colors.travelContainer : scheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(Tokens.radiusLg),
+              ),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.all(Tokens.space5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: Tokens.space3,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        if (range != null)
+                          DecoratedBox(
+                            decoration: BoxDecoration(color: scheme.surface, borderRadius: BorderRadius.circular(Tokens.radiusSm)),
+                            child: Padding(
+                              padding: const EdgeInsetsDirectional.all(Tokens.space2),
+                              child: Text(range.toUpperCase(), style: theme.textTheme.labelSmall?.copyWith(color: colors.travel)),
+                            ),
+                          ),
+                        if (days != null)
+                          Text(l.tripDays(days), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: colors.travel)),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text(trip.destination ?? trip.title ?? l.navTrips,
+                        style: theme.textTheme.headlineLarge?.copyWith(fontSize: 32, height: 46 / 32)),
+                    if (from != null && to != null && from != to) ...[
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(child: Text(from, style: theme.textTheme.titleMedium?.copyWith(color: colors.travel))),
+                          AppIcon(AppIcons.plane, size: 22, color: colors.travel),
+                          const SizedBox(width: 10),
+                          Text(to, style: theme.textTheme.titleMedium?.copyWith(color: colors.travel)),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
+            Padding(
+              padding: const EdgeInsetsDirectional.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final s in segments.take(3))
+                    Padding(padding: const EdgeInsetsDirectional.only(bottom: Tokens.space4), child: _SegmentLine(segment: s)),
+                  Material(
+                    color: scheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(Tokens.radiusMd),
+                    child: InkWell(
+                      key: Key('tripOpen-${trip.id}'),
+                      borderRadius: BorderRadius.circular(Tokens.radiusMd),
+                      onTap: open,
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.all(15),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AppIcon(AppIcons.trip, size: 20, color: scheme.primary),
+                            const SizedBox(width: Tokens.space2),
+                            Text(l.tripViewItinerary, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: scheme.primary)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 1 chặng trên thẻ chuyến: icon loại + "tên · ngày, giờ" + dòng phụ (nơi đi → nơi đến, hoặc số đêm · giờ nhận phòng).
+class _SegmentLine extends StatelessWidget {
+  const _SegmentLine({required this.segment});
+  final TripSegment segment;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final travel = RemindColors.of(context).travel;
+    final i = segment.item;
+    String? hm(DateTime? utc, String? tz) {
+      if (utc == null || tz == null || !TimeZones.isValid(tz)) return null;
+      final w = TimeZones.toWall(utc, tz).time!;
+      return MaterialLocalizations.of(context)
+          .formatTimeOfDay(TimeOfDay(hour: w.hour, minute: w.minute), alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
+    }
+
+    String place(Map<String, Object?>? p) => ((p?['name'] ?? p?['city'] ?? p?['code']) as String?) ?? '';
+    final hotel = segment.bookingType == 'hotel';
+    final when = i.startsAt != null && i.tz != null && TimeZones.isValid(i.tz!)
+        ? [Fmt.of(context).date(DateTime.parse(TimeZones.toWall(i.startsAt!, i.tz!).date.toIso())), ?hm(i.startsAt, i.tz)].join(', ')
+        : null;
+    final String? sub;
+    if (hotel) {
+      final nights = i.startsAt != null && i.endsAt != null && i.tz != null && TimeZones.isValid(i.tz!)
+          ? TimeZones.toWall(i.endsAt!, i.tz!).date.daysSince(TimeZones.toWall(i.startsAt!, i.tz!).date)
+          : null;
+      sub = [if (nights != null && nights > 0) l.tripNights(nights), if (hm(i.startsAt, i.tz) case final t?) l.tripCheckInAt(t)].join(' · ');
+    } else if (segment.origin != null || segment.destination != null) {
+      sub = '${place(segment.origin)} → ${place(segment.destination)}';
+    } else {
+      sub = null;
+    }
+    return Row(
+      children: [
+        switch (segment.bookingType) {
+          'flight' => AppIcon(AppIcons.plane, size: 22, color: travel),
+          'hotel' => AppIcon(AppIcons.hotel, size: 22, color: travel),
+          final t => Icon(TripDetailScreen.iconFor(t), size: 22, color: travel),
+        },
+        const SizedBox(width: Tokens.space3),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text([i.title, if (!hotel) ?when].join(' · '), style: theme.textTheme.titleSmall),
+              if (sub != null && sub.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Text(sub, style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant)),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AddBookingCard extends StatelessWidget {
+  const _AddBookingCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Material(
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        key: const Key('tripsAddBooking'),
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(Tokens.space4),
+          child: Row(
+            children: [
+              AppIcon(AppIcons.plus, size: 25, color: scheme.primary),
+              const SizedBox(width: Tokens.space3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.tripsAddBookingTitle, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: Tokens.space1),
+                    Text(l.tripsAddBookingBody, style: theme.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+              AppIcon(AppIcons.chevronSmall, color: scheme.onSurfaceVariant),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -184,6 +472,8 @@ class TripDetailScreen extends ConsumerWidget {
     final endTz = (s.destination?['tz'] as String?) ?? i.tz!;
     return '$start → ${hm(i.endsAt!, TimeZones.isValid(endTz) ? endTz : i.tz!)}';
   }
+
+  static IconData iconFor(String? type) => _icon(type);
 
   static IconData _icon(String? type) => switch (type) {
         'flight' => Icons.flight,

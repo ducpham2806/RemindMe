@@ -135,6 +135,9 @@ final todaySectionsProvider =
         .watch(itemsRepositoryProvider)
         .watchToday(ref.watch(todayWindowProvider), deviceTz: ref.watch(deviceTimeZoneProvider)));
 
+/// Hạn mức lấy ở lần sync gần nhất (null khi chưa sync lần nào).
+final cachedQuotaProvider = FutureProvider<QuotaStatus?>((ref) => ref.watch(syncEngineProvider).cachedQuota());
+
 /// Gói ngày lễ có sẵn trong app (packages/core/data/holidays, ADR-017).
 const bundledHolidayRegions = {'VN', 'US', 'GB'};
 

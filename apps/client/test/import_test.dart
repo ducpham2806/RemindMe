@@ -180,7 +180,7 @@ void main() {
 
     await tester.tap(find.text('Chuyến đi').last);
     await tester.pumpAndSettle();
-    expect(find.textContaining('1 đặt chỗ'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(Key('trip-${trips.single.id}')), matching: find.textContaining(items.single.title!)), findsOneWidget);
     await tester.tap(find.byKey(Key('trip-${trips.single.id}')));
     await tester.pumpAndSettle();
     expect(find.byKey(Key('tripSegment-${items.single.id}')), findsOneWidget);
