@@ -1345,5 +1345,132 @@
   "tripDeleteBody": "The bookings stay in your calendar.",
   "@tripDeleteBody": {
     "description": "Confirm dialog body: deleting a trip keeps its bookings."
+  },
+  "importReviewHint": "Choose what to save",
+  "@importReviewHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importNeedsCheck": "{count, plural, =1{1 item needs checking} other{{count} items need checking}}",
+  "@importNeedsCheck": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importNeedsCheckHint": "Some fields were read from the document text and may not be right.",
+  "@importNeedsCheckHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importReady": "Everything's checked",
+  "@importReady": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importReadyHint": "{count, plural, =1{1 item ready to save} other{{count} items ready to save}}",
+  "@importReadyHint": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importCheckTile": "Check: {fields}",
+  "@importCheckTile": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "importCheckTileHint": "Tap to compare with the document",
+  "@importCheckTileHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importCheckedTile": "Checked: {fields}",
+  "@importCheckedTile": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "importCheckedTileHint": "Compared with the original document",
+  "@importCheckedTileHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importUnsavedNote": "Nothing is saved yet. You can still deselect any item.",
+  "@importUnsavedNote": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importCheckToContinue": "Check to continue",
+  "@importCheckToContinue": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importApptRoom": "{count, plural, =0{Your plan has no room for more appointments} =1{Your plan has room for 1 more appointment} other{Your plan has room for {count} more appointments}}",
+  "@importApptRoom": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importApptAfter": "{selected, plural, =1{1 selected} other{{selected} selected}} · {left} left after saving.",
+  "@importApptAfter": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "importApptOver": "{count, plural, =1{1 item is over your plan's limit and will be archived when syncing.} other{{count} items are over your plan's limit and will be archived when syncing.}}",
+  "@importApptOver": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importTripChoose": "Add to a trip",
+  "@importTripChoose": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importEdit": "Edit",
+  "@importEdit": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importEditHint": "Compare with your original document",
+  "@importEditHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importConfirmTitle": "Please check these for me",
+  "@importConfirmTitle": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importConfirmHint": "Fields outlined in yellow were read from the document text: {fields}. Fix anything wrong, or confirm if it's right.",
+  "@importConfirmHint": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "importConfirmAll": "Yes, these are right",
+  "@importConfirmAll": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importEditDone": "Confirm and go back",
+  "@importEditDone": {
+    "description": "Import review (Figma 15/15b/16)"
   }
 }

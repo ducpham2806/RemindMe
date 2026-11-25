@@ -18,6 +18,9 @@ abstract final class Tokens {
   static const checkOutline = (Color(0xFFBDC5D1), Color(0xFF596575));
   static const checkOverdue = (Color(0xFFDA8B8F), Color(0xFFA45259));
   static const warning = (Color(0xFFC98A00), Color(0xFFFFC94D));
+  /// Thẻ "cần kiểm tra" (màn Xem lại): nền + chữ.
+  static const warningContainer = (Color(0xFFFFF4DB), Color(0xFF352B16));
+  static const onWarningContainer = (Color(0xFF8A5A00), Color(0xFFFFC94D));
   static const success = (Color(0xFF1E9E62), Color(0xFF5FD39A));
   static const travel = (Color(0xFF087E89), Color(0xFF55D6E0));
   /// Nền ngày thuộc chuyến đi trên lịch.

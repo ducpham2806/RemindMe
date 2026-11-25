@@ -6,6 +6,7 @@ import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_parsers/remindme_parsers.dart';
 
 import '../../core/l10n/formatters.dart';
+import '../../core/theme/app_icons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
@@ -204,24 +205,53 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     }
   }
 
+  /// Mục đang chọn đầu tiên còn trường phải kiểm tra: nút chính mở form của mục này thay vì lưu (Figma 15).
+  int? get _firstToCheck {
+    for (var i = 0; i < _selected.length; i++) {
+      if (_selected[i] && keysToCheck(_candidate(i)).isNotEmpty) return i;
+    }
+    return null;
+  }
+
+  Future<void> _edit(int i) async {
+    final edited = await editCandidate(context, _candidate(i), today: CivilDate.of(ref.read(nowProvider)()), title: _titleOf(i));
+    if (edited != null && mounted) setState(() => _edits[i] = edited);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final preview = _preview;
     final reviewing = !_busy && preview != null && preview.candidates.isNotEmpty;
     final count = reviewing ? _selected.where((s) => s).length : 0;
     final missingTitle = reviewing && [for (var i = 0; i < _selected.length; i++) if (_selected[i]) i].any((i) => _titleOf(i) == null);
+    final toCheck = reviewing ? _firstToCheck : null;
     return Scaffold(
       appBar: AppBar(title: Text(reviewing ? l.importReviewTitle : l.importTitle)),
       bottomNavigationBar: !reviewing
           ? null
           : SafeArea(
               child: Padding(
-                padding: const EdgeInsetsDirectional.all(Tokens.space4),
-                child: FilledButton(
-                  key: const Key('importAdd'),
-                  onPressed: count == 0 || missingTitle ? null : _save,
-                  child: Text(l.importAdd(count)),
+                padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space3, Tokens.screenMargin, Tokens.space4),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(l.importUnsavedNote, style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant)),
+                    const SizedBox(height: Tokens.space3),
+                    FilledButton.icon(
+                      key: const Key('importAdd'),
+                      icon: AppIcon(AppIcons.tick, size: 20, color: theme.colorScheme.onPrimary),
+                      label: Text(toCheck != null ? l.importCheckToContinue : l.importAdd(count)),
+                      onPressed: toCheck != null
+                          ? () => _edit(toCheck)
+                          : count == 0 || missingTitle
+                              ? null
+                              : _save,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -271,148 +301,454 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   Widget _review(BuildContext context, ImportPreview preview) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = RemindColors.of(context);
     final isTable = preview.format == ImportFormat.csv || preview.format == ImportFormat.xlsx;
+    final needCheck = [for (var i = 0; i < _selected.length; i++) if (_selected[i] && keysToCheck(_candidate(i)).isNotEmpty) i];
+    final selected = _selected.where((s) => s).length;
+    const gap = SizedBox(height: Tokens.space4);
     return ListView(
-      padding: const EdgeInsetsDirectional.only(bottom: Tokens.space6),
+      padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space5),
       children: [
-        ListTile(
-          title: Text(l.importFound(preview.candidates.length), style: theme.textTheme.titleMedium),
-          subtitle: preview.subject == null ? null : Text(preview.subject!),
-        ),
-        if (preview.pendingAttachments.isNotEmpty)
-          ListTile(
-            leading: const Icon(Icons.attach_file),
-            title: Text(l.importPendingAttachments(preview.pendingAttachments.length, preview.pendingAttachments.join(', '))),
+        Text(l.importReviewHint, style: theme.textTheme.bodySmall),
+        gap,
+        _sourceCard(context, preview),
+        if (preview.sheetNames.length > 1) ...[
+          gap,
+          Row(
+            children: [
+              Expanded(child: Text(l.importSheet, style: theme.textTheme.titleSmall)),
+              DropdownButton<int>(
+                key: const Key('importSheet'),
+                value: preview.sheetIndex,
+                items: [
+                  for (var i = 0; i < preview.sheetNames.length; i++) DropdownMenuItem(value: i, child: Text(preview.sheetNames[i])),
+                ],
+                onChanged: (i) => i == null ? null : _decode(_request!.copyWith(sheetIndex: i)),
+              ),
+            ],
           ),
-        if (preview.sheetNames.length > 1)
-          ListTile(
-            title: Text(l.importSheet),
-            trailing: DropdownButton<int>(
-              key: const Key('importSheet'),
-              value: preview.sheetIndex,
-              items: [
-                for (var i = 0; i < preview.sheetNames.length; i++) DropdownMenuItem(value: i, child: Text(preview.sheetNames[i])),
-              ],
-              onChanged: (i) => i == null ? null : _decode(_request!.copyWith(sheetIndex: i)),
-            ),
-          ),
-        if (isTable && (preview.dateOrderAmbiguous || _request!.dateOrder != null))
-          Padding(
-            padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.screenMargin, vertical: Tokens.space2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l.importDateOrderQuestion, style: theme.textTheme.bodyMedium),
-                const SizedBox(height: Tokens.space2),
-                Wrap(
-                  spacing: Tokens.space2,
-                  runSpacing: Tokens.space2,
-                  children: [
-                    for (final (order, label) in [('dmy', l.importDateOrderDmy), ('mdy', l.importDateOrderMdy)])
-                      ChoiceChip(
-                        key: Key('importOrder-$order'),
-                        label: Text(label),
-                        selected: preview.dateOrder == order,
-                        onSelected: (_) => _decode(_request!.copyWith(dateOrder: order)),
-                      ),
-                  ],
+        ],
+        if (isTable && (preview.dateOrderAmbiguous || _request!.dateOrder != null)) ...[
+          gap,
+          Text(l.importDateOrderQuestion, style: theme.textTheme.titleSmall),
+          const SizedBox(height: Tokens.space2),
+          Wrap(
+            spacing: Tokens.space2,
+            runSpacing: Tokens.space2,
+            children: [
+              for (final (order, label) in [('dmy', l.importDateOrderDmy), ('mdy', l.importDateOrderMdy)])
+                ChoiceChip(
+                  key: Key('importOrder-$order'),
+                  label: Text(label),
+                  selected: preview.dateOrder == order,
+                  onSelected: (_) => _decode(_request!.copyWith(dateOrder: order)),
                 ),
-              ],
-            ),
+            ],
           ),
-        const Divider(),
-        for (var k = 0; k < preview.trips.length; k++) _tripRow(context, k, preview.trips[k]),
-        for (var i = 0; i < preview.candidates.length; i++) _tile(context, i, _candidate(i)),
+        ],
+        if (needCheck.isNotEmpty) ...[
+          gap,
+          _banner(
+            context,
+            key: const Key('importNeedsCheck'),
+            background: colors.warningContainer,
+            foreground: colors.onWarningContainer,
+            icon: AppIcons.alert,
+            title: l.importNeedsCheck(needCheck.length),
+            hint: l.importNeedsCheckHint,
+            onTap: () => _edit(needCheck.first),
+          ),
+        ] else if (_edits.isNotEmpty && selected > 0) ...[
+          gap,
+          _banner(
+            context,
+            key: const Key('importReady'),
+            background: colors.travelContainer,
+            foreground: colors.travel,
+            icon: AppIcons.tick,
+            title: l.importReady,
+            hint: l.importReadyHint(selected),
+          ),
+        ],
+        for (var i = 0; i < preview.candidates.length; i++) ...[gap, _card(context, i, _candidate(i))],
+        for (var k = 0; k < preview.trips.length; k++) ...[gap, _tripCard(context, k, preview.trips[k])],
+        ?_quotaCard(context),
       ],
     );
   }
 
-  /// "Gộp vào: [Chuyến Hà Nội ▾]" (UX §2.4).
-  Widget _tripRow(BuildContext context, int k, TripSuggestion s) {
+  /// Tệp nguồn: tên, tiêu đề email, số mục tìm thấy, tệp đính kèm chưa đọc được.
+  Widget _sourceCard(BuildContext context, ImportPreview preview) {
     final l = AppLocalizations.of(context);
-    return ListTile(
-      leading: const Icon(Icons.luggage_outlined),
-      title: Text(l.importTripLabel),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = Theme.of(context);
+    final secondary = theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant);
+    return Container(
+      padding: const EdgeInsetsDirectional.all(Tokens.space3),
+      decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(12)),
+      child: Row(
         children: [
-          _tripDropdown(context, k, s),
-          if (!_canCreateTrip(k))
-            Text(
-              l.importTripLimit(_quota!.limit(EntitlementKey.maxActiveTrips)),
-              key: Key('importTripLimit-$k'),
-              style: Theme.of(context).textTheme.bodySmall,
+          AppIcon(AppIcons.file, size: 22, color: theme.colorScheme.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_request!.name, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: theme.colorScheme.onSurface)),
+                if (preview.subject != null) Text(preview.subject!, style: secondary),
+                Text(l.importFound(preview.candidates.length), style: secondary),
+                if (preview.pendingAttachments.isNotEmpty)
+                  Text(l.importPendingAttachments(preview.pendingAttachments.length, preview.pendingAttachments.join(', ')), style: secondary),
+              ],
             ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _tripDropdown(BuildContext context, int k, TripSuggestion s) {
-    final l = AppLocalizations.of(context);
-    return DropdownButton<String>(
-      key: Key('importTrip-$k'),
-      isExpanded: true,
-      value: _tripChoice[k] ?? _noTrip,
-      items: [
-        DropdownMenuItem(
-          value: _newTrip,
-          enabled: _canCreateTrip(k),
-          child: Text(l.importTripNew(_newTripTitle(context, s)), overflow: TextOverflow.ellipsis),
+  Widget _banner(
+    BuildContext context, {
+    required Key key,
+    required Color background,
+    required Color foreground,
+    required AppIcons icon,
+    required String title,
+    required String hint,
+    VoidCallback? onTap,
+  }) {
+    final theme = Theme.of(context);
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(Tokens.radiusMd),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: key,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(14),
+          child: Row(
+            children: [
+              AppIcon(icon, size: 22, color: foreground),
+              const SizedBox(width: Tokens.space3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: theme.textTheme.labelMedium?.copyWith(color: foreground)),
+                    const SizedBox(height: Tokens.space1),
+                    Text(hint, style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        for (final t in _activeTrips)
-          DropdownMenuItem(value: t.id, child: Text(t.title ?? l.navTrips, overflow: TextOverflow.ellipsis)),
-        DropdownMenuItem(value: _noTrip, child: Text(l.importTripNone)),
-      ],
-      onChanged: (v) => setState(() => _tripChoice[k] = v ?? _noTrip),
+      ),
     );
   }
 
-  Widget _tile(BuildContext context, int i, Candidate c) {
+  /// "Gộp vào: Chuyến Hà Nội ›" (UX §2.4, Figma 15): chạm để chọn chuyến mới / có sẵn / không gộp.
+  Widget _tripCard(BuildContext context, int k, TripSuggestion s) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = RemindColors.of(context);
+    final choice = _tripChoice[k] ?? _noTrip;
+    final fmt = Fmt.of(context);
+    final now = ref.read(nowProvider)();
+    final first = fmt.date(DateTime.parse(s.startsOn), now: now);
+    final range = s.endsOn == s.startsOn ? first : l.tripDates(first, fmt.date(DateTime.parse(s.endsOn), now: now));
+    final title = switch (choice) {
+      _newTrip => l.importTripNew(_newTripTitle(context, s)),
+      _noTrip => l.importTripNone,
+      _ => _activeTrips.where((t) => t.id == choice).firstOrNull?.title ?? l.navTrips,
+    };
+    final secondary = theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant);
+    return Material(
+      color: colors.travelContainer,
+      borderRadius: BorderRadius.circular(Tokens.radiusMd),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: Key('importTrip-$k'),
+        onTap: () => _chooseTrip(k, s),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(Tokens.space4),
+          child: Row(
+            children: [
+              AppIcon(AppIcons.trip, size: 25, color: colors.travel),
+              const SizedBox(width: Tokens.space3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.importTripLabel, style: secondary),
+                    Text(title, key: Key('importTripChoice-$k'), style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                    Text(range, style: secondary),
+                    if (!_canCreateTrip(k))
+                      Text(l.importTripLimit(_quota!.limit(EntitlementKey.maxActiveTrips)), key: Key('importTripLimit-$k'), style: secondary),
+                  ],
+                ),
+              ),
+              AppIcon(AppIcons.chevron, size: 18, color: colors.travel),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _chooseTrip(int k, TripSuggestion s) async {
+    final l = AppLocalizations.of(context);
+    final current = _tripChoice[k] ?? _noTrip;
+    final options = [
+      (_newTrip, l.importTripNew(_newTripTitle(context, s)), _canCreateTrip(k)),
+      for (final t in _activeTrips) (t.id, t.title ?? l.navTrips, true),
+      (_noTrip, l.importTripNone, true),
+    ];
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.screenMargin),
+                child: Text(l.importTripChoose, style: Theme.of(context).textTheme.titleMedium),
+              ),
+              for (final (value, label, enabled) in options)
+                ListTile(
+                  key: Key('importTripOption-$k-$value'),
+                  enabled: enabled,
+                  leading: Icon(value == current ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                  title: Text(label),
+                  onTap: () => Navigator.of(context).pop(value),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (picked != null && mounted) setState(() => _tripChoice[k] = picked);
+  }
+
+  /// Hạn mức lịch hẹn đang hoạt động theo cache `quota_status` (không có cache hoặc không giới hạn thì không hiện).
+  Widget? _quotaCard(BuildContext context) {
+    final quota = _quota;
+    if (quota == null || quota.isUnlimited(EntitlementKey.maxActiveAppointments)) return null;
+    final adding = [
+      for (var i = 0; i < _selected.length; i++)
+        if (_selected[i] && _candidate(i).kind != CandidateKind.task && !(_matches.length > i && _matches[i] != null)) i,
+    ].length;
+    if (adding == 0) return null;
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final room = (quota.limit(EntitlementKey.maxActiveAppointments) - quota.used(EntitlementKey.maxActiveAppointments)).clamp(0, 1 << 20);
+    final left = room - adding;
+    final secondary = theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(top: Tokens.space4),
+      child: Container(
+        key: const Key('importQuota'),
+        padding: const EdgeInsetsDirectional.all(14),
+        decoration: BoxDecoration(color: theme.colorScheme.primaryContainer, borderRadius: BorderRadius.circular(Tokens.radiusMd)),
+        child: Row(
+          children: [
+            AppIcon(left < 0 ? AppIcons.alert : AppIcons.tick, size: 22, color: theme.colorScheme.primary),
+            const SizedBox(width: Tokens.space3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.importApptRoom(room), style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.primary)),
+                  const SizedBox(height: Tokens.space1),
+                  Text(left < 0 ? l.importApptOver(-left) : l.importApptAfter(adding, left), style: secondary),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _card(BuildContext context, int i, Candidate c) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = RemindColors.of(context);
+    final fmt = Fmt.of(context);
     final title = _titleOf(i);
     final tz = ref.read(deviceTimeZoneProvider);
     final today = CivilDate.of(ref.read(nowProvider)());
     final f = c.fields;
+    final isHotel = c.bookingType == BookingType.hotel;
     final start = resolveLocalTime(c.kind == CandidateKind.task ? (f.due ?? f.startsAt) : (f.startsAt ?? f.checkIn ?? f.due), tz);
-    final lines = <String>[
-      if (start != null) Fmt.of(context).civil(start.wall(), today: today),
+    final end = c.kind == CandidateKind.task ? null : resolveLocalTime(isHotel ? f.checkOut : f.endsAt, tz);
+    String? code(Place? p) => p?.code;
+    final from = code(f.origin), to = code(f.destination);
+    final route = from != null && to != null;
+    final secondary = theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant);
+    final when = [
+      if (start != null) fmt.civil(start.wall(), today: today),
+      if (end != null)
+        switch (c.bookingType) {
+          BookingType.hotel => [l.tripCheckOut, fmt.civil(end.wall(), today: today)].join(' · '),
+          BookingType.flight || BookingType.train || BookingType.bus || BookingType.ferry => l.calendarArrives(fmt.civil(end.wall(), today: today)),
+          _ => [l.importFieldEnd, fmt.civil(end.wall(), today: today)].join(' · '),
+        },
+    ];
+    final footer = [
+      if (f.confirmationCode != null && c.kind != CandidateKind.task) l.importBookingCode(f.confirmationCode!),
       if (c.listName != null) l.importListName(c.listName!),
       if (c.checklist.isNotEmpty) l.importChecklistCount(c.checklist.length),
-      if (f.confirmationCode != null && c.kind != CandidateKind.task) l.importBookingCode(f.confirmationCode!),
+      if (c.done) l.importDoneTag,
       if (_matches.length > i && _matches[i] != null) _matches[i]!.duplicate ? l.importDuplicate : l.importWillUpdate,
-      for (final issue in c.issues) ?_issueText(l, issue),
-      // Tầng luật T2: trường đọc theo nhãn/mẫu chung (độ tin cậy thấp) cần người dùng xem lại; sửa ở form thì hết (E5.1).
-      if (needsCheck(c)) l.importCheckFields,
     ];
-    return ListTile(
-      key: Key('importItem-$i'),
-      leading: Checkbox(
-        key: Key('importCheck-$i'),
-        value: _selected[i],
-        onChanged: (v) => setState(() => _selected[i] = v ?? false),
+    final issues = [for (final issue in c.issues) ?_issueText(l, issue)];
+    final toCheck = keysToCheck(c);
+    final checked = checkedKeys(_preview!.candidates[i], c);
+    final labels = (toCheck.isNotEmpty ? toCheck : checked).map((k) => fieldLabel(l, c, k)).join(', ');
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: Key('importItem-$i'),
+        onTap: () => _edit(i),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(Tokens.space4, Tokens.space2, Tokens.space2, Tokens.space4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Checkbox(
+                    key: Key('importCheck-$i'),
+                    value: _selected[i],
+                    visualDensity: VisualDensity.compact,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    onChanged: (v) => setState(() => _selected[i] = v ?? false),
+                  ),
+                  const SizedBox(width: Tokens.space1),
+                  Expanded(
+                    child: Text(
+                      title ?? l.importNoTitle,
+                      style: title == null
+                          ? theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.error, fontStyle: FontStyle.italic)
+                          : theme.textTheme.titleMedium?.copyWith(fontSize: 15, height: 22 / 15, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  if (c.rrule != null) Icon(Icons.repeat, size: 18, color: theme.colorScheme.onSurfaceVariant),
+                  IconButton(
+                    key: Key('importEdit-$i'),
+                    tooltip: l.importEdit,
+                    icon: AppIcon(AppIcons.edit, size: 20, color: theme.colorScheme.primary),
+                    onPressed: () => _edit(i),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: Tokens.space2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (route) ...[
+                      const SizedBox(height: Tokens.space1),
+                      Row(
+                        children: [
+                          Expanded(child: Text(from, style: theme.textTheme.headlineLarge?.copyWith(fontSize: 25, height: 36 / 25))),
+                          AppIcon(AppIcons.plane, size: 24, color: colors.travel),
+                          const SizedBox(width: 10),
+                          Text(to, style: theme.textTheme.headlineLarge?.copyWith(fontSize: 25, height: 36 / 25)),
+                        ],
+                      ),
+                    ],
+                    if (when.isNotEmpty) ...[
+                      const SizedBox(height: Tokens.space2),
+                      Row(
+                        children: [
+                          if (!route) ...[_typeIcon(context, c), const SizedBox(width: 10)],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(when.first, style: theme.textTheme.titleSmall),
+                                for (final w in when.skip(1)) Text(w, style: theme.textTheme.bodySmall),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    for (final issue in issues)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(top: Tokens.space1),
+                        child: Text(issue, style: secondary?.copyWith(color: colors.onWarningContainer)),
+                      ),
+                    if (labels.isNotEmpty) ...[
+                      const SizedBox(height: Tokens.space3),
+                      _checkTile(context, i, done: toCheck.isEmpty, labels: labels),
+                    ],
+                    if (footer.isNotEmpty) ...[
+                      const SizedBox(height: Tokens.space3),
+                      Text(footer.join(' · '), style: secondary),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      title: Text(
-        title ?? l.importNoTitle,
-        style: title == null ? TextStyle(color: theme.colorScheme.error, fontStyle: FontStyle.italic) : null,
-      ),
-      subtitle: lines.isEmpty ? null : Text(lines.join('\n')),
-      isThreeLine: lines.length > 1,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (c.done) Chip(label: Text(l.importDoneTag), visualDensity: VisualDensity.compact),
-          if (c.rrule != null) Icon(Icons.repeat, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          if (needsCheck(c)) Icon(Icons.info_outline, key: Key('importWarn-$i'), size: 18, color: RemindColors.of(context).warning),
-          Icon(_icon(c), color: theme.colorScheme.onSurfaceVariant),
-        ],
-      ),
-      onTap: () async {
-        final edited = await editCandidate(context, c, today: today, title: title);
-        if (edited != null) setState(() => _edits[i] = edited);
-      },
     );
+  }
+
+  /// Ô "Cần kiểm tra: Bắt đầu, Kết thúc ›" (vàng) hoặc "Đã kiểm tra" (xanh) trong thẻ mục.
+  Widget _checkTile(BuildContext context, int i, {required bool done, required String labels}) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = RemindColors.of(context);
+    final fg = done ? colors.travel : colors.onWarningContainer;
+    return Material(
+      color: done ? colors.travelContainer : colors.warningContainer,
+      borderRadius: BorderRadius.circular(10),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: Key(done ? 'importChecked-$i' : 'importWarn-$i'),
+        onTap: () => _edit(i),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(Tokens.space3),
+          child: Row(
+            children: [
+              AppIcon(done ? AppIcons.tick : AppIcons.alert, size: 18, color: fg),
+              const SizedBox(width: Tokens.space2),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(done ? l.importCheckedTile(labels) : l.importCheckTile(labels),
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: fg)),
+                    Text(done ? l.importCheckedTileHint : l.importCheckTileHint,
+                        style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+              AppIcon(AppIcons.chevronSmall, size: 16, color: fg),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _typeIcon(BuildContext context, Candidate c) {
+    final color = RemindColors.of(context).travel;
+    return switch (c.bookingType) {
+      BookingType.flight => AppIcon(AppIcons.plane, size: 24, color: color),
+      BookingType.hotel => AppIcon(AppIcons.hotel, size: 24, color: color),
+      _ => Icon(_icon(c), size: 24, color: c.kind == CandidateKind.task ? Theme.of(context).colorScheme.onSurfaceVariant : color),
+    };
   }
 
   static String? _issueText(AppLocalizations l, String issue) => switch (issue) {

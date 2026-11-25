@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:remindme_client/core/theme/app_icons.dart';
 import 'package:remindme_client/data/providers.dart';
 import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_client/features/import/import_decode.dart';
@@ -21,6 +22,12 @@ Future<PickedFile?> Function() picker(List<PickedFile> files) {
 }
 
 PickedFile fixture(String dir, String name) => (name: name, bytes: File('$docs/$dir/$name').readAsBytesSync());
+
+/// Icon SVG của app (AppIcon) theo loại.
+Finder appIcon(AppIcons icon) => find.byWidgetPredicate((w) => w is AppIcon && w.icon == icon);
+
+/// Lựa chọn đang hiện trên thẻ gộp chuyến thứ [k].
+String? tripChoice(WidgetTester tester, int k) => tester.widget<Text>(find.byKey(Key('importTripChoice-$k'))).data;
 
 Future<void> openImport(WidgetTester tester, {required String me, required String row}) async {
   await tester.tap(find.text(me).last);
@@ -55,7 +62,7 @@ void main() {
     await tester.tap(find.text('Nộp báo cáo quý 4'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('importName')), 'Nộp báo cáo Q4');
-    await tester.tap(find.text('Lưu'));
+    await tester.tap(find.byKey(const Key('importEditSave')));
     await tester.pumpAndSettle();
     expect(find.text('Nộp báo cáo Q4'), findsOneWidget);
 
@@ -91,7 +98,8 @@ void main() {
 
     expect(find.text('ZZ 245 · SGN → HAN'), findsOneWidget);
     expect(find.textContaining('Booking code: XQ7K2M'), findsOneWidget);
-    expect(find.byIcon(Icons.flight), findsOneWidget);
+    expect(appIcon(AppIcons.plane), findsOneWidget, reason: 'tuyến SGN ✈ HAN');
+    expect(find.byKey(const Key('importNeedsCheck')), findsNothing, reason: 'JSON-LD: không có trường phải kiểm tra');
     await tester.tap(find.byKey(const Key('importAdd')));
     await settleReminders(tester);
 
@@ -114,8 +122,23 @@ void main() {
     expect(find.text('ZZ 245 · SGN → HAN'), findsOneWidget);
     expect(find.textContaining('Mã đặt chỗ: XQ7K2M'), findsOneWidget);
     expect(find.textContaining('Ngày này đã qua'), findsOneWidget);
-    expect(find.textContaining('Đọc từ chữ trên tài liệu, hãy kiểm tra lại'), findsOneWidget);
-    expect(find.byIcon(Icons.flight), findsOneWidget);
+    expect(find.text('Có 1 mục cần bạn kiểm tra'), findsOneWidget);
+    expect(find.text('Cần kiểm tra: Bắt đầu, Kết thúc, Số hiệu chuyến bay'), findsOneWidget);
+    expect(appIcon(AppIcons.plane), findsOneWidget);
+
+    // Nút chính chưa lưu: mở form của mục cần kiểm tra; "Đúng, giữ nguyên" xác nhận mọi trường tô vàng (Figma 15 → 16 → 15b).
+    expect(find.text('Kiểm tra để tiếp tục'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('importAdd')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Bắt đầu, Kết thúc, Số hiệu chuyến bay'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('importConfirmAll')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('importConfirmCard')), findsNothing);
+    await tester.tap(find.byKey(const Key('importEditSave')));
+    await tester.pumpAndSettle();
+    expect(find.text('Đã xác nhận đủ thông tin'), findsOneWidget);
+    expect(find.text('Đã kiểm tra: Bắt đầu, Kết thúc, Số hiệu chuyến bay'), findsOneWidget);
+    expect(find.text('Thêm 1 mục'), findsOneWidget);
   });
 
   testWidgets('en: sửa từng trường ở form (E5.1): trường độ tin cậy thấp có dấu, xác nhận giờ thì hết dấu, giá trị mới vào DB', (tester) async {
@@ -131,21 +154,26 @@ void main() {
     await tester.tap(find.text('ZZ 245 · SGN → HAN'));
     await tester.pumpAndSettle();
     expect(find.text('Edit item'), findsOneWidget);
-    expect(find.byTooltip('Read automatically, please check'), findsNWidgets(3), reason: 'bắt đầu, kết thúc, số chuyến 0,6; mã, ghế 0,8 thì không');
+    expect(find.textContaining('read from the document text: Starts, Ends, Flight number.'), findsOneWidget,
+        reason: 'bắt đầu, kết thúc, số chuyến 0,6; mã, ghế 0,8 thì không');
     expect(find.byKey(const Key('importField-location_text')), findsNothing, reason: 'chuyến bay: địa điểm là sân bay đi');
+    final form = find.descendant(of: find.byKey(const Key('importEditForm')), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.byKey(const Key('importField-seat')), 100, scrollable: form);
 
     await tester.enterText(find.byKey(const Key('importField-seat')), '15A');
     await tester.enterText(find.byKey(const Key('importField-number')), 'zz246');
     for (final slot in ['starts_at', 'ends_at']) {
+      await tester.scrollUntilVisible(find.byKey(Key('importEdit-$slot-time')), -100, scrollable: form);
       await tester.tap(find.byKey(Key('importEdit-$slot-time')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
     }
-    expect(find.byTooltip('Read automatically, please check'), findsNothing);
+    expect(find.byKey(const Key('importConfirmCard')), findsNothing);
     await tester.tap(find.byKey(const Key('importEditSave')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('importWarn-0')), findsNothing, reason: 'người dùng đã xác nhận mọi trường cần kiểm tra');
+    expect(find.byKey(const Key('importChecked-0')), findsOneWidget);
     expect(find.text('ZZ 245 · SGN → HAN'), findsOneWidget);
     expect(find.textContaining('Read from the text'), findsNothing);
 
@@ -192,7 +220,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Đã có, sẽ bỏ qua'), findsOneWidget);
     expect(tester.widget<Checkbox>(find.byKey(const Key('importCheck-0'))).value, isFalse);
-    expect(tester.widget<DropdownButton<String>>(find.byKey(const Key('importTrip-0'))).value, trips.single.id);
+    expect(tripChoice(tester, 0), 'Chuyến đi ngày 21 thg 12', reason: 'gộp vào chuyến có sẵn');
   });
 
   testWidgets('en: hết lượt chuyến đi theo cache quota_status → không gộp, "chuyến mới" bị khóa, có dòng giải thích', (tester) async {
@@ -207,17 +235,28 @@ void main() {
             key: 'quota_status',
             value: jsonEncode({
               'fetched_at': '2026-11-25T00:00:00Z',
-              'status': {'plan': 'free', 'limits': {'max_active_trips': 1}, 'usage': {'max_active_trips': 1}, 'features': {}},
+              'status': {
+                'plan': 'free',
+                'limits': {'max_active_trips': 1, 'max_active_appointments': 10},
+                'usage': {'max_active_trips': 1, 'max_active_appointments': 3},
+                'features': {},
+              },
             }),
           ));
     });
     await openImport(tester, me: 'Me', row: 'Import from file');
     await tester.tap(find.byKey(const Key('importPick')));
     await tester.pumpAndSettle();
-    expect(tester.widget<DropdownButton<String>>(find.byKey(const Key('importTrip-0'))).value, 'none');
+    expect(tripChoice(tester, 0), 'Don’t add to a trip');
     expect(find.text('Your plan includes 1 active trip. Delete a trip or upgrade to add another.'), findsOneWidget);
-    final items = tester.widget<DropdownButton<String>>(find.byKey(const Key('importTrip-0'))).items!;
-    expect(items.firstWhere((i) => i.value == 'new').enabled, isFalse);
+    await tester.scrollUntilVisible(find.byKey(const Key('importQuota')), 100, scrollable: find.byType(Scrollable).first);
+    expect(find.text('Your plan has room for 7 more appointments'), findsOneWidget, reason: 'số lấy từ cache quota_status');
+    expect(find.text('1 selected · 6 left after saving.'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('importTrip-0')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<ListTile>(find.byKey(const Key('importTripOption-0-new'))).enabled, isFalse);
+    await tester.tap(find.byKey(const Key('importTripOption-0-none')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('importAdd')));
     await settleReminders(tester);
     final (saved, trips) = (await tester.runAsync(() async => (await db.select(db.items).get(), await db.select(db.trips).get())))!;
@@ -256,8 +295,7 @@ void main() {
     await tester.ensureVisible(find.byKey(const Key('importPick')));
     await tester.tap(find.byKey(const Key('importPick')));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.hotel), findsOneWidget);
-    expect(find.byIcon(Icons.attach_file), findsOneWidget);
+    expect(appIcon(AppIcons.hotel), findsOneWidget);
     expect(tester.takeException(), isNull);
     // Form sửa (E5.1): khách sạn có nhận/trả phòng, địa điểm, mã.
     // Thẻ cao hơn vùng nhìn thấy ở cỡ này: cuộn tới rồi chạm phần đầu thẻ (tên).

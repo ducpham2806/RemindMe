@@ -27,6 +27,7 @@ Nguồn thiết kế: file Figma "RemindMe" (~59 màn × VI/EN × sáng/tối, k
 | `color.danger` | `#BF3035` | `#FF7A7A` | Quá hạn, xóa (`#D93A3A` cũ chỉ ~4,3:1 trên nền trắng, chưa đạt AA chữ nhỏ) |
 | `color.checkOutline` / `checkOverdue` | `#BDC5D1` / `#DA8B8F` | `#596575` / `#A45259` | Vòng "đánh dấu xong" thường / quá hạn |
 | `color.warning` | `#C98A00` | `#FFC94D` | Trường đọc tự động có độ tin cậy thấp, sắp tới hạn |
+| `color.warningContainer` / `onWarningContainer` | `#FFF4DB` / `#8A5A00` | `#352B16` / `#FFC94D` | Thẻ và ô "cần kiểm tra" ở màn Xem lại, form sửa |
 | `color.success` | `#1E9E62` | `#5FD39A` | Hoàn thành |
 | `color.travel` | `#087E89` | `#55D6E0` | Booking, chuyến đi, giờ lịch hẹn (`#0E9AA7` cũ ~3,4:1 trên nền trắng, chưa đạt AA) |
 | `color.travelContainer` | `#E6F5F4` | `#102D30` | Nền ngày thuộc chuyến đi trên lịch |
@@ -57,7 +58,7 @@ Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương
 
 ## 5. Icon & hình
 - Icon nét 1,8 lấy từ Figma (`apps/client/assets/icons/*.svg`, widget `AppIcon` tô theo màu theme, 1 tệp cho sáng/tối): thanh điều hướng
-  (today, calendar, trip, user), `search`, `plus`, vòng `check`, `back`/`chevron`/`chevronSmall` (lật khi RTL), `plane`, `hotel`, `globe`. Icon khác tạm dùng Material Symbols tới khi lấy đủ từ Figma.
+  (today, calendar, trip, user), `search`, `plus`, vòng `check`, `back`/`chevron`/`chevronSmall` (lật khi RTL), `plane`, `hotel`, `globe`, `file`, `alert`, `edit`, `tick`. Icon khác tạm dùng Material Symbols tới khi lấy đủ từ Figma.
 - Icon loại booking: ✈ máy bay, 🚆 tàu, 🚌 xe, 🏨 khách sạn, 🚗 thuê xe, ⛴ phà, 🩺 khám bệnh, 🎫 sự kiện (dùng icon vector, emoji chỉ trong thông báo).
 - Minh họa empty state: nét đơn, 2 màu (`primary` + `textSecondary`).
 
@@ -68,7 +69,7 @@ Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương
 | `TimeBadge` | Giờ đậm `14:30`, phụ "còn 25'" | sắp tới < 1h thì `warning` |
 | `BookingCard` | Header icon + hãng + mã đặt chỗ (nút copy), thân: `SGN 10:30 → HAN 12:40`, giờ địa phương mỗi đầu, nút "Mở vé/QR" | upcoming, in-progress, completed |
 | `QuickAddBar` | Ô nhập + chip phân tích trực tiếp (📅 Mai 08:00, 🔁 Hằng ngày, #list) + nút mic + nút 📎 | idle, typing, listening (sóng âm), parsing |
-| `ImportReviewCard` | Trường dạng form; trường confidence thấp viền `warning` + icon ⓘ hiện `evidence` | |
+| `ImportReviewCard` | Thẻ trắng: ô chọn, tên, nút sửa; tuyến lớn (SGN ✈ HAN) nếu có mã; ô "Cần kiểm tra: …" nền `warningContainer` (đã xác nhận: `travelContainer`). Form sửa: ô dạng thẻ, trường confidence thấp nền `warningContainer` + viền `warning` + ⓘ (sau sẽ hiện `evidence`) | |
 | `QuotaMeter` | Thanh tiến trình nhỏ "7/10 nhắc hôm nay" | ≥ 80% thì `warning` |
 | `PaywallSheet` | Bottom sheet, 3 gói, gói năm chọn sẵn, ghi rõ giá/kỳ/cách hủy, nút Khôi phục | |
 | `SnoozePicker` | 10', 30', 1h, Tối nay 20:00, Mai 08:00, Tùy chọn | |

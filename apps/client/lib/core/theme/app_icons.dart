@@ -15,7 +15,12 @@ enum AppIcons {
   chevronSmall,
   plane,
   hotel,
-  globe;
+  globe,
+  file,
+  alert,
+  edit,
+  close,
+  tick;
 
   String get asset => 'assets/icons/${switch (this) {
         chevronSmall => 'chevron_small',

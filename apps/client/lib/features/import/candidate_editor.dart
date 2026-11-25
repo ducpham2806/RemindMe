@@ -3,6 +3,7 @@ import 'package:remindme_core/remindme_core.dart';
 import 'package:remindme_parsers/remindme_parsers.dart';
 
 import '../../core/l10n/formatters.dart';
+import '../../core/theme/app_icons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../l10n/app_localizations.dart';
@@ -29,6 +30,36 @@ Set<String> reviewKeys(Candidate c) {
     if (c.kind == CandidateKind.appointment) ...{'department', 'queue_number', 'preparation'},
   };
 }
+
+/// Trường còn phải kiểm tra (độ tin cậy thấp, người dùng chưa sửa/xác nhận), theo thứ tự form; mã hãng gộp vào số chuyến.
+List<String> keysToCheck(Candidate c) => [
+      for (final k in reviewKeys(c))
+        if (k != 'carrier_code' && (_low(c, k) || (k == 'number' && _low(c, 'carrier_code')))) k,
+    ];
+
+/// Trường bản gốc [original] cần kiểm tra mà bản [current] đã được xác nhận.
+List<String> checkedKeys(Candidate original, Candidate current) {
+  final left = keysToCheck(current).toSet();
+  return [for (final k in keysToCheck(original)) if (!left.contains(k)) k];
+}
+
+bool _low(Candidate c, String k) => (c.fieldConfidence[k] ?? 1) < lowConfidence;
+
+/// Nhãn 1 trường của [c] (form sửa và thẻ ở màn Xem lại).
+String fieldLabel(AppLocalizations l, Candidate c, String key) => switch (key) {
+      'due' => l.importFieldDue,
+      'starts_at' || 'check_in' => l.importFieldStart,
+      'ends_at' || 'check_out' => l.importFieldEnd,
+      'location_text' => l.importFieldLocation,
+      'confirmation_code' => l.importFieldCode,
+      'number' || 'carrier_code' => c.bookingType == BookingType.flight ? l.importFieldFlightNumber : l.importFieldTrainNumber,
+      'seat' => l.importFieldSeat,
+      'carriage' => l.importFieldCarriage,
+      'department' => l.importFieldDepartment,
+      'queue_number' => l.importFieldQueue,
+      'preparation' => l.importFieldPreparation,
+      _ => l.itemTitleLabel,
+    };
 
 bool _hasNumber(Candidate c) => c.bookingType == BookingType.flight || c.bookingType == BookingType.train;
 bool _hasSeat(Candidate c) => const {BookingType.flight, BookingType.train, BookingType.bus, BookingType.eventTicket}.contains(c.bookingType);
@@ -156,32 +187,70 @@ class _CandidateEditorScreenState extends State<CandidateEditorScreen> {
         _ => null,
       };
 
+  /// Trường đang tô vàng (chưa sửa, chưa xác nhận) theo thứ tự form.
+  List<String> get _warned => [
+        'title',
+        _startKey,
+        if (_hasEnd) _endKey,
+        ..._text.keys.where((k) => k != 'title'),
+      ].where(_warn).toList();
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final labels = {
-      'title': l.itemTitleLabel,
-      'location_text': l.importFieldLocation,
-      'confirmation_code': l.importFieldCode,
-      'number': c.bookingType == BookingType.flight ? l.importFieldFlightNumber : l.importFieldTrainNumber,
-      'seat': l.importFieldSeat,
-      'carriage': l.importFieldCarriage,
-      'department': l.importFieldDepartment,
-      'queue_number': l.importFieldQueue,
-      'preparation': l.importFieldPreparation,
-    };
+    final theme = Theme.of(context);
+    final colors = RemindColors.of(context);
+    final warned = _warned;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.importEditTitle),
-        actions: [TextButton(key: const Key('importEditSave'), onPressed: _save, child: Text(l.quickAddSave))],
+      appBar: AppBar(title: Text(l.importEditTitle)),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space3, Tokens.screenMargin, Tokens.space4),
+          child: FilledButton.icon(
+            key: const Key('importEditSave'),
+            icon: AppIcon(AppIcons.tick, size: 20, color: theme.colorScheme.onPrimary),
+            label: Text(l.importEditDone),
+            onPressed: _save,
+          ),
+        ),
       ),
       body: ListView(
-        padding: const EdgeInsetsDirectional.all(Tokens.screenMargin),
+        key: const Key('importEditForm'),
+        padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space4),
         children: [
-          _field(context, 'title', labels['title']!, fieldKey: const Key('importName')),
-          _timeRow(context, _TimeSlot.start, _isTask ? l.importFieldDue : l.importFieldStart),
-          if (_hasEnd) _timeRow(context, _TimeSlot.end, l.importFieldEnd),
-          for (final k in _text.keys.where((k) => k != 'title')) _field(context, k, labels[k]!),
+          Text(l.importEditHint, style: theme.textTheme.bodySmall),
+          const SizedBox(height: Tokens.space4),
+          if (warned.isNotEmpty) ...[
+            Container(
+              key: const Key('importConfirmCard'),
+              padding: const EdgeInsetsDirectional.all(Tokens.space4),
+              decoration: BoxDecoration(color: colors.warningContainer, borderRadius: BorderRadius.circular(Tokens.radiusMd)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.importConfirmTitle, style: theme.textTheme.labelMedium?.copyWith(color: colors.onWarningContainer)),
+                  const SizedBox(height: Tokens.space2),
+                  Text(l.importConfirmHint(warned.map((k) => fieldLabel(l, c, k)).join(', ')), style: theme.textTheme.bodySmall),
+                  const SizedBox(height: Tokens.space3),
+                  FilledButton.tonalIcon(
+                    key: const Key('importConfirmAll'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primaryContainer,
+                      foregroundColor: theme.colorScheme.primary,
+                    ),
+                    icon: AppIcon(AppIcons.tick, size: 18, color: theme.colorScheme.primary),
+                    label: Text(l.importConfirmAll),
+                    onPressed: () => setState(() => _edited.addAll(warned)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: Tokens.space4),
+          ],
+          _field(context, 'title', fieldLabel(l, c, 'title'), fieldKey: const Key('importName')),
+          _timeRow(context, _TimeSlot.start, fieldLabel(l, c, _startKey)),
+          if (_hasEnd) _timeRow(context, _TimeSlot.end, fieldLabel(l, c, _endKey)),
+          for (final k in _text.keys.where((k) => k != 'title')) _field(context, k, fieldLabel(l, c, k)),
         ],
       ),
     );
@@ -189,22 +258,39 @@ class _CandidateEditorScreenState extends State<CandidateEditorScreen> {
 
   Widget _field(BuildContext context, String key, String label, {Key? fieldKey}) {
     final warn = _warn(key);
-    final color = RemindColors.of(context).warning;
     return Padding(
       padding: const EdgeInsetsDirectional.only(bottom: Tokens.space4),
-      child: TextField(
+      child: _box(context, warn, TextField(
         key: fieldKey ?? Key('importField-$key'),
         controller: _text[key],
         minLines: 1,
         maxLines: key == 'preparation' || key == 'location_text' ? 3 : 1,
         onChanged: (_) => setState(() => _edited.add(key)),
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          enabledBorder: warn ? OutlineInputBorder(borderSide: BorderSide(color: color, width: 2)) : null,
-          suffixIcon: warn ? _checkIcon(context) : null,
-        ),
+        decoration: _decoration(context, label, warn),
+      )),
+    );
+  }
+
+  /// Ô dạng thẻ (Figma 16): nền trắng, nhãn nhỏ ở trong; trường cần kiểm tra nền vàng nhạt + viền `warning`.
+  InputDecoration _decoration(BuildContext context, String label, bool warn) => InputDecoration(
+        labelText: label,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        labelStyle: Theme.of(context).textTheme.bodySmall,
+        border: InputBorder.none,
+        contentPadding: const EdgeInsetsDirectional.only(top: Tokens.space1),
+        suffixIcon: warn ? _checkIcon(context) : null,
+      );
+
+  Widget _box(BuildContext context, bool warn, Widget child) {
+    final colors = RemindColors.of(context);
+    return Container(
+      padding: const EdgeInsetsDirectional.fromSTEB(Tokens.space4, Tokens.space2, Tokens.space2, Tokens.space2),
+      decoration: BoxDecoration(
+        color: warn ? colors.warningContainer : Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(Tokens.radiusMd),
+        border: warn ? Border.all(color: colors.warning) : null,
       ),
+      child: child,
     );
   }
 
@@ -257,13 +343,8 @@ class _CandidateEditorScreenState extends State<CandidateEditorScreen> {
             alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
     return Padding(
       padding: const EdgeInsetsDirectional.only(bottom: Tokens.space4),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          enabledBorder: warn ? OutlineInputBorder(borderSide: BorderSide(color: RemindColors.of(context).warning, width: 2)) : null,
-          suffixIcon: warn ? _checkIcon(context) : null,
-        ),
+      child: _box(context, warn, InputDecorator(
+        decoration: _decoration(context, label, warn),
         child: Wrap(
           spacing: Tokens.space2,
           runSpacing: Tokens.space2,
@@ -290,7 +371,7 @@ class _CandidateEditorScreenState extends State<CandidateEditorScreen> {
               ),
           ],
         ),
-      ),
+      )),
     );
   }
 
