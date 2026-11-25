@@ -3549,5 +3549,107 @@
         "type": "int"
       }
     }
+  },
+  "docViewerTitle": "Original document",
+  "@docViewerTitle": {
+    "description": "Title of the in-app viewer for an imported original file (Figma 28)."
+  },
+  "docViewerMeta": "{count, plural, =1{1 item} other{{count} items}} · View only",
+  "@docViewerMeta": {
+    "description": "Document viewer: number of bookings read from the file; the viewer cannot edit.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "docViewerSection": "Item {n} of {total} · {kind}",
+  "@docViewerSection": {
+    "description": "Document viewer: label above each item read from the file.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "docKindFlight": "Flight ticket",
+  "@docKindFlight": {
+    "description": "Document viewer item kind."
+  },
+  "docKindTrain": "Train ticket",
+  "@docKindTrain": {
+    "description": "Document viewer item kind."
+  },
+  "docKindBus": "Bus ticket",
+  "@docKindBus": {
+    "description": "Document viewer item kind."
+  },
+  "docKindHotel": "Hotel confirmation",
+  "@docKindHotel": {
+    "description": "Document viewer item kind."
+  },
+  "docKindBooking": "Booking",
+  "@docKindBooking": {
+    "description": "Document viewer item kind for other bookings."
+  },
+  "docKindAppointment": "Appointment",
+  "@docKindAppointment": {
+    "description": "Document viewer item kind."
+  },
+  "docKindEvent": "Event",
+  "@docKindEvent": {
+    "description": "Document viewer item kind."
+  },
+  "docKindTask": "Task",
+  "@docKindTask": {
+    "description": "Document viewer item kind."
+  },
+  "docETicket": "E-TICKET",
+  "@docETicket": {
+    "description": "Small uppercase label on a ticket card in the document viewer (uppercase per locale)."
+  },
+  "docHotelLabel": "BOOKING CONFIRMATION",
+  "@docHotelLabel": {
+    "description": "Small uppercase label on a hotel card in the document viewer (uppercase per locale)."
+  },
+  "docArrives": "Arrives {time}",
+  "@docArrives": {
+    "description": "Ticket card: arrival time at the destination (local time there).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "docCodeUpper": "BOOKING CODE {code}",
+  "@docCodeUpper": {
+    "description": "Ticket card footer with the booking reference (uppercase label per locale).",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "docViewerFooter": "Original kept on this device · Works offline",
+  "@docViewerFooter": {
+    "description": "Document viewer footer."
+  },
+  "docViewerBack": "Back",
+  "@docViewerBack": {
+    "description": "Document viewer bottom button."
+  },
+  "docViewerOpenExternal": "Open in another app",
+  "@docViewerOpenExternal": {
+    "description": "Document viewer action: hand the original file to another app."
+  },
+  "docViewerUnreadable": "This file can't be shown here. You can still open it in another app.",
+  "@docViewerUnreadable": {
+    "description": "Document viewer when the original file could not be read again."
   }
 }

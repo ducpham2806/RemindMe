@@ -14,6 +14,7 @@ import 'features/me/privacy_screens.dart';
 import 'features/onboarding/onboarding_screens.dart';
 import 'features/search/search_screen.dart';
 import 'features/today/today_screen.dart';
+import 'features/trips/document_viewer.dart';
 import 'features/trips/trips_screen.dart';
 import 'shell/adaptive_shell.dart';
 
@@ -51,6 +52,7 @@ GoRouter buildRouter({String initialLocation = '/today'}) => GoRouter(
             ]),
           ],
         ),
+        GoRoute(path: '/document/:importId', builder: (_, state) => DocumentViewerScreen(importId: state.pathParameters['importId']!)),
         GoRoute(
           path: '/item/:id',
           // Mở từ thông báo: ?reminder=<id>&at=<ms UTC của lần nhắc> để hiện nút Hoãn nhắc cho đúng lần đó.

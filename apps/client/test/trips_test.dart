@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_client/data/originals.dart';
 import 'package:remindme_client/data/providers.dart';
+import 'package:remindme_client/features/import/import_decode.dart';
+import 'package:remindme_client/features/import/import_providers.dart';
 
 import 'helpers.dart';
 
@@ -148,7 +150,9 @@ void main() {
 
   testWidgets('en: tab Documents: vé máy bay có tuyến + mã, đặt chỗ nhập ở máy khác thì "Xem chi tiết"; không đặt chỗ thì trống', (tester) async {
     final originals = MemoryOriginalsStore();
-    final c = await pumpApp(tester, size: const Size(390, 1100), originals: originals);
+    final c = await pumpApp(tester, size: const Size(390, 1100), originals: originals, overrides: [
+      importDecoderProvider.overrideWithValue((req) async => decodeImport(req)),
+    ]);
     final ids = (await tester.runAsync(() async {
       final trips = c.read(tripsRepositoryProvider), items = c.read(itemsRepositoryProvider);
       final trip = await trips.create(title: 'Hanoi', startsOn: '2099-01-02', endsOn: '2099-01-04');
@@ -178,9 +182,16 @@ void main() {
     expect(find.text('HT2048'), findsOneWidget);
     expect(tester.widget<Text>(find.byKey(const Key('docsSummary'))).data, '2 bookings · 1 original file');
     expect(tester.widget<Text>(find.byKey(Key('docFile-$hotel'))).data, 'Original file not on this device');
+    // Tệp gốc hỏng: màn Tài liệu gốc báo không hiện được, vẫn mở bằng app khác được.
     await tester.tap(find.byKey(Key('docOpen-$flight')));
     await tester.pumpAndSettle();
+    expect(find.text('Original document'), findsOneWidget);
+    expect(find.byKey(const Key('docViewerUnreadable')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('docViewerExternal')));
+    await tester.pumpAndSettle();
     expect(originals.opened, ['imp-1']);
+    await tester.tap(find.byKey(const Key('docViewerBack')));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(Key('docDetails-$hotel')));
     await tester.tap(find.byKey(Key('docDetails-$hotel')));
     await tester.pumpAndSettle();

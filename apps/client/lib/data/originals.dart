@@ -10,6 +10,8 @@ abstract interface class OriginalsStore {
   Future<void> save(String importId, String fileName, Uint8List bytes);
   /// Tên tệp gốc của lần nhập, null nếu không có trên máy này.
   Future<String?> nameOf(String importId);
+  /// Tên + nội dung bản gốc (màn Tài liệu gốc giải mã lại trên máy); null nếu không có.
+  Future<({String name, Uint8List bytes})?> read(String importId);
   /// Mở bằng app của hệ điều hành; false nếu không mở được.
   Future<bool> open(String importId);
   Future<void> clear();
@@ -50,6 +52,12 @@ class FileOriginalsStore implements OriginalsStore {
   Future<String?> nameOf(String importId) async => (await _file(importId))?.uri.pathSegments.last;
 
   @override
+  Future<({String name, Uint8List bytes})?> read(String importId) async {
+    final f = await _file(importId);
+    return f == null ? null : (name: f.uri.pathSegments.last, bytes: await f.readAsBytes());
+  }
+
+  @override
   Future<bool> open(String importId) async {
     final f = await _file(importId);
     if (f == null) return false;
@@ -72,6 +80,9 @@ class MemoryOriginalsStore implements OriginalsStore {
   Future<void> save(String importId, String fileName, Uint8List bytes) async => files[importId] = (fileName, bytes);
   @override
   Future<String?> nameOf(String importId) async => files[importId]?.$1;
+  @override
+  Future<({String name, Uint8List bytes})?> read(String importId) async =>
+      files[importId] == null ? null : (name: files[importId]!.$1, bytes: files[importId]!.$2);
   @override
   Future<bool> open(String importId) async {
     if (!files.containsKey(importId)) return false;

@@ -264,9 +264,18 @@ void main() {
     expect(find.text('Xác nhận đặt phòng'), findsOneWidget);
     expect(tester.widget<Text>(find.byKey(Key('docFile-${items.single.id}'))).data, 'input.eml');
     expect(tester.widget<Text>(find.byKey(const Key('docsSummary'))).data, '1 đặt chỗ · 1 tệp gốc');
+    // Tài liệu gốc (Figma 28): đọc lại bản gốc trên máy, thẻ xác nhận khách sạn; "mở bằng app khác" chuyển tệp cho hệ điều hành.
     await tester.tap(find.byKey(Key('docOpen-${items.single.id}')));
     await tester.pumpAndSettle();
+    expect(find.text('Tài liệu gốc'), findsOneWidget);
+    expect(find.text('XÁC NHẬN ĐẶT PHÒNG'), findsOneWidget);
+    expect(find.text('Mục 1/1 · Xác nhận khách sạn'), findsOneWidget);
+    expect(find.byKey(const Key('docViewerItem-0')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('docViewerExternal')));
+    await tester.pumpAndSettle();
     expect(originals.opened, [importId]);
+    await tester.tap(find.byKey(const Key('docViewerBack')));
+    await tester.pumpAndSettle();
 
     await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
     await tester.tap(find.byKey(const Key('importPick')));

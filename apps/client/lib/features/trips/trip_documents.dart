@@ -185,16 +185,7 @@ class _DocCard extends ConsumerWidget {
             InkWell(
               key: Key(fileName != null ? 'docOpen-${i.id}' : 'docDetails-${i.id}'),
               borderRadius: BorderRadius.circular(Tokens.radiusSm),
-              onTap: () async {
-                if (fileName == null || importId == null) {
-                  await context.push('/item/${i.id}');
-                  return;
-                }
-                final ok = await ref.read(originalsStoreProvider).open(importId);
-                if (!ok && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.docsOpenFailed)));
-                }
-              },
+              onTap: () => context.push(fileName == null || importId == null ? '/item/${i.id}' : '/document/$importId'),
               child: Padding(
                 padding: const EdgeInsetsDirectional.symmetric(vertical: Tokens.space3),
                 child: Row(
