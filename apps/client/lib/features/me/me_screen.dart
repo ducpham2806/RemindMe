@@ -17,7 +17,7 @@ class MeScreen extends StatelessWidget {
       (Icons.extension_outlined, l.meIntegrations, null),
       (Icons.workspace_premium_outlined, l.mePlanUsage, null),
       (Icons.devices_outlined, l.meAccountDevices, null),
-      (Icons.translate_outlined, l.meLanguageRegion, null),
+      (Icons.translate_outlined, l.meLanguageRegion, '/me/language'),
       (Icons.settings_outlined, l.meSettings, null),
     ];
     return Scaffold(

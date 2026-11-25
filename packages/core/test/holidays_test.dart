@@ -67,6 +67,7 @@ void main() {
       final region = f.uri.pathSegments.last.split('.').first;
       final c = HolidayCalendar.parse(f.readAsStringSync());
       expect(c.region, region);
+      expect(c.names['en'], isNotNull, reason: '$region thiếu tên quốc gia en');
       expect(pubspec, contains('data/holidays/$region.json'));
       for (final y in [2025, 2030, 2050]) {
         for (final h in c.inYear(y)) {

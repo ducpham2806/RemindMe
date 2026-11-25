@@ -17,7 +17,7 @@ Future<void> main() async {
   final db = openAppDatabase();
   final deviceId = await InstallInfo.deviceId(db);
   final tz = await deviceTimeZone();
-  await loadBundledHolidays(deviceRegion());
+  await loadBundledHolidays(effectiveHolidayRegion(await LocalPrefs(db).get(holidayRegionPref) ?? prefAuto, deviceRegion()));
   // Nút trên thông báo đăng ký theo ngôn ngữ máy lúc khởi động; ReminderBinding đăng ký lại khi ngôn ngữ app khác.
   final locale = resolveLocale(WidgetsBinding.instance.platformDispatcher.locales, appSupportedLocales());
   final local = LocalNotificationScheduler.supported ? LocalNotificationScheduler() : null;

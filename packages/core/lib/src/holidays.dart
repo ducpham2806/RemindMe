@@ -64,13 +64,14 @@ class Holiday {
 /// `observed` (`us`: T7 → T6, CN → T2; `substitute`: T7/CN → ngày thường kế tiếp chưa là ngày lễ), `moved` (năm → ngày thay thế).
 /// Cấp gói: `one_off` (ngày lễ 1 lần).
 class HolidayCalendar {
-  HolidayCalendar._(this.region, this.version, this._rules, this._oneOff);
+  HolidayCalendar._(this.region, this.version, this.names, this._rules, this._oneOff);
 
   factory HolidayCalendar.parse(String source) {
     final j = jsonDecode(source) as Map<String, Object?>;
     return HolidayCalendar._(
       j['region']! as String,
       (j['version']! as num).toInt(),
+      ((j['name'] as Map?) ?? const {}).cast<String, String>(),
       [for (final r in j['holidays']! as List<Object?>) _Rule.fromJson((r! as Map).cast<String, Object?>())],
       [
         for (final o in (j['one_off'] as List<Object?>?) ?? const [])
@@ -86,9 +87,14 @@ class HolidayCalendar {
 
   final String region;
   final int version;
+  /// Tên quốc gia theo ngôn ngữ (`intl` không có tên vùng CLDR), cho màn Ngôn ngữ & vùng.
+  final Map<String, String> names;
   final List<_Rule> _rules;
   final List<Holiday> _oneOff;
   final Map<int, List<Holiday>> _cache = {};
+
+  /// Tên quốc gia theo [lang], không có thì tiếng Anh, rồi mã vùng.
+  String name(String lang) => names[lang] ?? names['en'] ?? region;
 
   /// Ngày lễ có ngày nằm trong năm dương [year], theo ngày.
   List<Holiday> inYear(int year) => _cache.putIfAbsent(year, () {

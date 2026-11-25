@@ -81,8 +81,8 @@
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).
 - Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
-- Hệ âm lịch trong lựa chọn lặp và trên tab Lịch đang suy theo ngôn ngữ giao diện (vi/zh/ko), vùng ngày lễ theo vùng máy; chuyển sang cài đặt
-  `profiles.calendar_systems`/`region` (+ bật/tắt ngày âm) khi có màn Cài đặt.
+- Tôi → Ngôn ngữ & vùng (quốc gia ngày lễ, hệ lịch phụ; mặc định theo máy/ngôn ngữ) lưu ở `LocalPrefs` trên máy: chuyển sang
+  `profiles.region`/`calendar_systems` khi có `SupabaseSyncApi`. Chưa có chọn ngôn ngữ giao diện, định dạng, giọng nói.
 - Ngày lễ còn thiếu: server `app.rrule_fires_on` chưa trừ ngày lễ khi đếm quota (đếm dư, an toàn), gói ngày lễ
   cho các nước khác (AU, CA, IN, đợt locale cấp B), màu loại item trên chấm lịch.
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.

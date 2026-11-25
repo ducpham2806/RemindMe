@@ -1,5 +1,6 @@
 {
   "region": "GB",
+  "name": {"en": "United Kingdom", "vi": "Vương quốc Anh"},
   "version": 1,
   "sources": ["Banking and Financial Dealings Act 1971; danh sách bank holiday của gov.uk (England and Wales)"],
   "notes": "England và Wales; Scotland, Bắc Ireland có ngày riêng (chưa có).",

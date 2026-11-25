@@ -8,7 +8,6 @@ import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 import '../items/item_tile.dart';
-import '../items/schedule_editor.dart' show lunarSystemForLanguage;
 
 /// Lịch tháng (UX §2.6): chấm ở ngày có item, ngày âm nhỏ dưới ngày dương (ngôn ngữ có hệ âm lịch), ngày nghỉ lễ của vùng máy
 /// (ADR-017) tô màu. Chạm ngày → ngày lễ + item của ngày đó.
@@ -44,7 +43,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final gridEnd = gridStart.addDays(41);
     final counts = ref.watch(calendarCountsProvider('${gridStart.toIso()}|${gridEnd.toIso()}')).value ?? const {};
     final holidays = ref.watch(holidayCalendarProvider).value;
-    final lunarSystem = lunarSystemForLanguage(Localizations.localeOf(context).languageCode);
+    final lunarSystem =
+        effectiveLunarSystem(ref.watch(calendarSystemSettingProvider).value ?? prefAuto, Localizations.localeOf(context).languageCode);
     final lunar = lunarSystem == null ? null : LunarCalendar(lunarSystem);
     final isCurrentMonth = month.year == today.year && month.month == today.month;
 

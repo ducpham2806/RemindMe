@@ -150,8 +150,41 @@ Future<HolidayCalendar?> loadBundledHolidays(String? region) async {
   return c;
 }
 
-/// Ngày lễ theo vùng của máy; null = vùng chưa có gói hoặc không biết vùng.
-final holidayCalendarProvider = FutureProvider<HolidayCalendar?>((ref) => loadBundledHolidays(ref.watch(deviceRegionProvider)));
+/// Cài đặt chỉ trên máy ở màn Ngôn ngữ & vùng (UX §1), tới khi có đồng bộ `profiles.region`/`calendar_systems`.
+/// Giá trị: [prefAuto] (theo máy/ngôn ngữ, mặc định), [prefNone], hoặc mã vùng ('VN') / hệ lịch ('lunar_vi').
+const holidayRegionPref = 'holiday_region', calendarSystemPref = 'calendar_system';
+const prefAuto = 'auto', prefNone = 'none';
+
+final holidayRegionSettingProvider = FutureProvider<String>((ref) async => await ref.watch(localPrefsProvider).get(holidayRegionPref) ?? prefAuto);
+final calendarSystemSettingProvider =
+    FutureProvider<String>((ref) async => await ref.watch(localPrefsProvider).get(calendarSystemPref) ?? prefAuto);
+
+/// Vùng tính ngày lễ theo cài đặt; null = không dùng ngày lễ.
+String? effectiveHolidayRegion(String setting, String? deviceRegion) =>
+    setting == prefAuto ? deviceRegion?.toUpperCase() : (setting == prefNone ? null : setting);
+
+/// Hệ âm lịch phụ theo cài đặt; [prefAuto] = suy theo ngôn ngữ giao diện (vi/zh/ko).
+LunarSystem? effectiveLunarSystem(String setting, String languageCode) {
+  if (setting == prefNone) return null;
+  if (setting != prefAuto) return LunarSystem.values.where((s) => s.wire == setting).firstOrNull;
+  return switch (languageCode) {
+    'vi' => LunarSystem.vi,
+    'zh' => LunarSystem.zh,
+    'ko' => LunarSystem.ko,
+    _ => null,
+  };
+}
+
+/// Vùng ngày lễ đang dùng (cài đặt hoặc vùng máy).
+final holidayRegionProvider = FutureProvider<String?>(
+    (ref) async => effectiveHolidayRegion(await ref.watch(holidayRegionSettingProvider.future), ref.watch(deviceRegionProvider)));
+
+/// Ngày lễ của vùng đang dùng; null = không dùng, hoặc vùng chưa có gói.
+final holidayCalendarProvider = FutureProvider<HolidayCalendar?>((ref) async => loadBundledHolidays(await ref.watch(holidayRegionProvider.future)));
+
+/// Mọi gói ngày lễ có sẵn (cho danh sách chọn quốc gia).
+final bundledHolidayCalendarsProvider = FutureProvider<List<HolidayCalendar>>(
+    (ref) async => [for (final r in bundledHolidayRegions.toList()..sort()) ?await loadBundledHolidays(r)]);
 
 /// Gợi ý dời việc khỏi ngày nghỉ lễ (US-12b): ngày nghỉ lễ gần nhất trong 7 ngày tới (chưa bị "Để nguyên") có việc 1 lần đang hẹn.
 class HolidayHint {

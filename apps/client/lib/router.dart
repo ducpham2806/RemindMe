@@ -4,6 +4,7 @@ import 'features/calendar/calendar_screen.dart';
 import 'features/import/import_screen.dart';
 import 'features/items/item_detail_screen.dart';
 import 'features/lists/lists_screen.dart';
+import 'features/me/language_region_screen.dart';
 import 'features/me/me_screen.dart';
 import 'features/search/search_screen.dart';
 import 'features/today/today_screen.dart';
@@ -27,6 +28,7 @@ GoRouter buildRouter() => GoRouter(
             ]),
             StatefulShellBranch(routes: [
               GoRoute(path: '/me', builder: (_, _) => const MeScreen(), routes: [
+                GoRoute(path: 'language', builder: (_, _) => const LanguageRegionScreen()),
                 GoRoute(path: 'lists', builder: (_, _) => const ListsScreen(), routes: [
                   GoRoute(path: ':id', builder: (_, state) => ListDetailScreen(id: state.pathParameters['id']!)),
                 ]),

@@ -1,5 +1,6 @@
 {
   "region": "US",
+  "name": {"en": "United States", "vi": "Hoa Kỳ"},
   "version": 1,
   "sources": ["5 U.S.C. 6103 (ngày lễ liên bang, quy tắc ngày bù)"],
   "notes": "Ngày lễ liên bang; ngày lễ riêng của từng bang chưa có.",

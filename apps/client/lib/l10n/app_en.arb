@@ -104,6 +104,66 @@
       }
     }
   },
+  "settingsHolidayCountry": "Holiday country",
+  "@settingsHolidayCountry": {
+    "description": "Section title on Language & region."
+  },
+  "settingsHolidayCountryHint": "Public holidays on the calendar, suggestions to move tasks, and “working days” repeats.",
+  "@settingsHolidayCountryHint": {
+    "description": "Hint under the holiday country section."
+  },
+  "settingsSameAsDevice": "Same as this device",
+  "@settingsSameAsDevice": {
+    "description": "Option: follow the device region (no holiday data for it yet)."
+  },
+  "settingsSameAsDeviceNamed": "Same as this device ({country})",
+  "@settingsSameAsDeviceNamed": {
+    "description": "Option: follow the device region.",
+    "placeholders": {
+      "country": {
+        "type": "String",
+        "example": "Vietnam"
+      }
+    }
+  },
+  "settingsNone": "None",
+  "@settingsNone": {
+    "description": "Option: turn this off."
+  },
+  "settingsCalendarSystem": "Additional calendar",
+  "@settingsCalendarSystem": {
+    "description": "Section title: lunar calendar shown on Calendar and offered for repeats."
+  },
+  "settingsCalendarSystemHint": "Lunar dates on the calendar and lunar repeats.",
+  "@settingsCalendarSystemHint": {
+    "description": "Hint under the additional calendar section."
+  },
+  "settingsSameAsLanguage": "Same as app language ({calendar})",
+  "@settingsSameAsLanguage": {
+    "description": "Option: choose the calendar from the app language.",
+    "placeholders": {
+      "calendar": {
+        "type": "String",
+        "example": "Vietnamese lunar calendar"
+      }
+    }
+  },
+  "settingsSameAsLanguageNone": "Same as app language (none)",
+  "@settingsSameAsLanguageNone": {
+    "description": "Option: choose the calendar from the app language; this language has none."
+  },
+  "lunarVi": "Vietnamese lunar calendar",
+  "@lunarVi": {
+    "description": "Calendar system name. Glossary lunar_calendar."
+  },
+  "lunarZh": "Chinese lunar calendar",
+  "@lunarZh": {
+    "description": "Calendar system name."
+  },
+  "lunarKo": "Korean lunar calendar",
+  "@lunarKo": {
+    "description": "Calendar system name."
+  },
   "calendarPrevMonth": "Previous month",
   "@calendarPrevMonth": {
     "description": "Tooltip of the month navigation button on Calendar."

@@ -1,5 +1,6 @@
 {
   "region": "VN",
+  "name": {"vi": "Việt Nam", "en": "Vietnam"},
   "version": 1,
   "sources": ["Bộ luật Lao động 2019, Điều 112 (ngày nghỉ lễ, Tết)"],
   "notes": "Tết Âm lịch nghỉ 5 ngày, ngày cụ thể và ngày liền kề Quốc khánh do Thủ tướng quyết định hằng năm: gói chỉ đánh dấu giao thừa, mùng 1-3 và 2/9.",

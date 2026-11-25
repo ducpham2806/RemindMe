@@ -21,14 +21,6 @@ Map<String, Object?> workdaysRule(String? region) {
   return {'kind': 'rrule', 'rrule': 'FREQ=WEEKLY;BYDAY=${days.join(',')}', 'workdays_region': ?region?.toUpperCase()};
 }
 
-/// Hệ âm lịch gợi ý theo ngôn ngữ giao diện. Sau này lấy từ `profiles.calendar_systems` (cài đặt người dùng).
-LunarSystem? lunarSystemForLanguage(String languageCode) => switch (languageCode) {
-      'vi' => LunarSystem.vi,
-      'zh' => LunarSystem.zh,
-      'ko' => LunarSystem.ko,
-      _ => null,
-    };
-
 /// Thời điểm (ngày, giờ) và lặp lại của item (UX §2.3). Sửa theo múi giờ của máy.
 class ScheduleEditor extends ConsumerWidget {
   const ScheduleEditor({super.key, required this.item});
@@ -131,7 +123,10 @@ class ScheduleEditor extends ConsumerWidget {
           enabled: wall != null,
           onTap: wall == null
               ? null
-              : () => _pickRepeat(context, region: ref.read(deviceRegionProvider), current: rule, date: wall.date, onPick: (r) async {
+              : () => _pickRepeat(context,
+                  region: ref.read(holidayRegionProvider).value ?? ref.read(deviceRegionProvider),
+                  lunarSystem: effectiveLunarSystem(ref.read(calendarSystemSettingProvider).value ?? prefAuto, Localizations.localeOf(context).languageCode),
+                  current: rule, date: wall.date, onPick: (r) async {
                     final start = wall.time == null
                         ? TimeZones.toUtc(CivilDateTime(wall.date, CivilTime(0)), tz).utc
                         : TimeZones.toUtc(wall, tz).utc;
@@ -151,8 +146,8 @@ class ScheduleEditor extends ConsumerWidget {
 
   Future<void> _pickRepeat(BuildContext context,
       {required String? region,
+      required LunarSystem? lunarSystem,
       required Map<String, Object?>? current, required CivilDate date, required Future<void> Function(Map<String, Object?>?) onPick}) {
-    final lunarSystem = lunarSystemForLanguage(Localizations.localeOf(context).languageCode);
     final lunar = lunarSystem == null ? null : LunarCalendar(lunarSystem).fromSolar(date);
     final options = <Map<String, Object?>?>[
       null,
