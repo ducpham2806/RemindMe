@@ -1619,5 +1619,37 @@
   "langRegionDone": "Done",
   "@langRegionDone": {
     "description": "Language & region (Figma C50)"
+  },
+  "quickAddTitle": "New reminder",
+  "@quickAddTitle": {
+    "description": "Quick add sheet (Figma 02)"
+  },
+  "quickAddSubtitle": "Type naturally and we'll schedule it.",
+  "@quickAddSubtitle": {
+    "description": "Quick add sheet (Figma 02)"
+  },
+  "quickAddUnderstood": "Got the time · Tap a chip to change it",
+  "@quickAddUnderstood": {
+    "description": "Quick add sheet (Figma 02)"
+  },
+  "quickAddNoReminder": "No reminder",
+  "@quickAddNoReminder": {
+    "description": "Quick add sheet (Figma 02)"
+  },
+  "quickAddVoice": "Speak",
+  "@quickAddVoice": {
+    "description": "Quick add sheet (Figma 02)"
+  },
+  "quickAddCamera": "Camera",
+  "@quickAddCamera": {
+    "description": "Quick add sheet (Figma 02)"
+  },
+  "quickAddPhoto": "Photo",
+  "@quickAddPhoto": {
+    "description": "Quick add sheet (Figma 02)"
+  },
+  "quickAddFile": "File",
+  "@quickAddFile": {
+    "description": "Quick add sheet (Figma 02)"
   }
 }

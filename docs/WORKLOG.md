@@ -26,7 +26,8 @@
 - **Thêm:** Ngôn ngữ & vùng theo Figma C50 (ngôn ngữ giao diện, định dạng + múi giờ theo máy, quốc gia ngày lễ kèm ngày nghỉ cuối tuần CLDR,
   hệ lịch phụ chọn ở bottom sheet, xem trước ngày giờ); `ChoiceButtons`, `utcOffsetLabel` dùng chung. Chủ dự án gửi URL project Supabase
   `msgamxrlohgszgpvvyfd`: connector Supabase của phiên chỉ thấy project khác (không đụng tới), chưa áp migration.
-- **Tiếp theo:** quyền vào project Supabase mới → áp migrations + `SupabaseSyncApi`; Thêm nhanh (02), chi tiết nhắc (04); evidence khi chạm ⓘ.
+- **Thêm nữa:** Thêm nhanh theo Figma 02 (chip chạm được: thời điểm, nhắc; nút Tệp; Nói/Chụp/Ảnh mờ). +2 test. Connector Supabase vẫn chỉ thấy project cũ.
+- **Tiếp theo:** quyền vào project Supabase mới → áp migrations + `SupabaseSyncApi`; chi tiết nhắc (04); evidence khi chạm ⓘ.
 
 ## 2026-11-25 · UI theo Figma đợt 1 (Hôm nay, Lịch, Chuyến đi, chi tiết chuyến) + 2 lỗi dữ liệu · Claude Code
 - **Làm:** đọc file Figma qua MCP (236 frame); token màu/chữ/bo góc theo Figma (design-system.md §2-5), font Be Vietnam Pro bundle (OFL ở màn

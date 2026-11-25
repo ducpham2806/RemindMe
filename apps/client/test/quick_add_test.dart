@@ -36,6 +36,40 @@ void main() {
     expect(find.text('5:00 PM'), findsOneWidget);
   });
 
+  testWidgets('chip nhắc chạm được (Figma 02): đổi sang "30 phút trước" thì lưu đúng; Không nhắc thì không tạo nhắc', (tester) async {
+    final c = await pumpApp(tester, size: phone, locale: const Locale('en'));
+    await openQuickAdd(tester, 'Dentist at 5pm');
+    expect(find.text('Got the time · Tap a chip to change it'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('chipReminder')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('quickAddReminder--30')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('quickAddSave')));
+    await tester.pumpAndSettle();
+    expect((await rows(tester, c, 'select offset_minutes from reminders')).map((r) => r['offset_minutes']), [-30]);
+
+    await openQuickAdd(tester, 'Call Bob at 6pm');
+    await tester.tap(find.byKey(const Key('chipReminder')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('quickAddReminder-none')));
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: find.byKey(const Key('chipReminder')), matching: find.text('No reminder')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('quickAddSave')));
+    await tester.pumpAndSettle();
+    expect(await rows(tester, c, 'select id from reminders'), hasLength(1));
+  });
+
+  testWidgets('nút Tệp mở Nhập từ tệp; Nói/Chụp/Ảnh chưa làm thì không chạm được', (tester) async {
+    await pumpApp(tester, size: phone, locale: const Locale('en'));
+    await openQuickAdd(tester, '');
+    await tester.tap(find.byKey(const Key('quickAddMethod-mic')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('quickAddField')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('quickAddMethod-file')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('importPick')), findsOneWidget);
+  });
+
   testWidgets('giờ mơ hồ: hiện "Ý bạn là", chọn lựa chọn khác thì chip đổi theo', (tester) async {
     await pumpApp(tester, size: phone, locale: const Locale('en'));
     await openQuickAdd(tester, 'call mom at 3');

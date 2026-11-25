@@ -24,7 +24,13 @@ enum AppIcons {
   mail,
   link,
   bell,
-  shield;
+  shield,
+  close,
+  list,
+  repeat,
+  mic,
+  camera,
+  image;
 
   String get asset => 'assets/icons/${switch (this) {
         chevronSmall => 'chevron_small',

@@ -278,5 +278,13 @@
   "settingsWeekend": "[Ŵééķéñđ: ~~~{days}]",
   "langRegionPreview": "[Þŕéṽîéŵ: ~~~{value}]",
   "langRegionPreviewHint": "[Đàţéš àñđ ţîɱéš ûšé ţĥé šéţţîñĝš àƀöṽé.~~~~~~~~~~~~~]",
-  "langRegionDone": "[Đöñé~~]"
+  "langRegionDone": "[Đöñé~~]",
+  "quickAddTitle": "[Ñéŵ ŕéɱîñđéŕ~~~~]",
+  "quickAddSubtitle": "[Ţýþé ñàţûŕàļļý àñđ ŵé'ļļ šçĥéđûļé îţ.~~~~~~~~~~~~]",
+  "quickAddUnderstood": "[Ĝöţ ţĥé ţîɱé · Ţàþ à çĥîþ ţö çĥàñĝé îţ~~~~~~~~~~~]",
+  "quickAddNoReminder": "[Ñö ŕéɱîñđéŕ~~~~]",
+  "quickAddVoice": "[Šþéàķ~~]",
+  "quickAddCamera": "[Çàɱéŕà~~]",
+  "quickAddPhoto": "[Þĥöţö~~]",
+  "quickAddFile": "[Ƒîļé~~]"
 }

@@ -54,9 +54,11 @@
   Đợt 2: màn Xem lại khi nhập (thẻ mục, tuyến lớn, ô "Cần kiểm tra"/"Đã kiểm tra", trường vàng phải xác nhận trước khi lưu, thẻ gộp chuyến
   chạm để chọn, thẻ hạn mức lịch hẹn từ cache), form sửa dạng thẻ + "Đúng, giữ nguyên", màn Tôi (lối tắt, cài đặt, chọn ngôn ngữ giao diện và
   sáng/tối trong app, lưu trên máy).
+  Thêm nhanh (02): tiêu đề + đóng, ô nhập lớn, chip thời điểm/list/nhắc/lặp (chạm chip thời điểm → chọn ngày giờ, chip nhắc → chọn độ lệch
+  hoặc Không nhắc), dòng "Đã hiểu thời gian", nút Nói/Chụp/Ảnh (mờ, sắp có) và Tệp (mở Nhập từ tệp).
   Ngôn ngữ & vùng (C50): ngôn ngữ giao diện, định dạng + múi giờ (theo máy, chỉ xem), quốc gia ngày lễ kèm ngày nghỉ cuối tuần, hệ lịch phụ, xem trước.
   Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến,
-  Thêm nhanh (02), chi tiết nhắc (04), onboarding/đăng nhập/gói (chờ auth, paywall).
+  chi tiết nhắc (04), onboarding/đăng nhập/gói (chờ auth, paywall).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.

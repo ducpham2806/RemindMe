@@ -278,5 +278,13 @@
   "settingsWeekend": "Nghỉ {days}",
   "langRegionPreview": "Xem trước: {value}",
   "langRegionPreviewHint": "Ngày giờ dùng thiết lập ở trên.",
-  "langRegionDone": "Hoàn tất"
+  "langRegionDone": "Hoàn tất",
+  "quickAddTitle": "Thêm nhắc",
+  "quickAddSubtitle": "Gõ tự nhiên, mình sẽ giúp bạn đặt lịch.",
+  "quickAddUnderstood": "Đã hiểu thời gian · Chạm vào chip để sửa",
+  "quickAddNoReminder": "Không nhắc",
+  "quickAddVoice": "Nói",
+  "quickAddCamera": "Chụp",
+  "quickAddPhoto": "Ảnh",
+  "quickAddFile": "Tệp"
 }

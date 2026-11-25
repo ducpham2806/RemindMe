@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_core/remindme_core.dart';
 import 'package:remindme_parsers/remindme_parsers.dart';
 
 import '../../core/l10n/formatters.dart';
 import '../../core/l10n/recurrence_text.dart';
+import '../../core/theme/app_icons.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../data/reminders.dart';
@@ -25,11 +28,16 @@ class _Draft {
   final NluResult result;
   final String fallbackTitle;
   final Map<int, int> picks = {};
+  /// Người dùng chạm chip thời điểm và chọn lại ngày/giờ: thay kết quả phân tích.
+  CivilDateTime? manualWhen;
+  /// Độ lệch nhắc (phút, âm = trước); null = không nhắc. Mặc định đúng giờ.
+  int? reminder = 0;
 
   String get title => result.title.isEmpty ? fallbackTitle : result.title;
 
   /// Thời điểm sau khi áp lựa chọn: chip giờ đổi giờ (và ngày nếu giờ đó rơi sang mai), chip ngày đổi ngày.
   CivilDateTime? get when {
+    if (manualWhen != null) return manualWhen;
     var w = result.when;
     if (w == null) return null;
     final hasDateAmb = result.ambiguities.any((a) => a.kind != AmbiguityKind.meridiem);
@@ -108,8 +116,8 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
         tags: d.result.tags,
         recurrence: rec?.toPayload(),
         recurrenceStart: rec == null ? null : (local ?? DateTime(today.year, today.month, today.day)).toUtc(),
-        // Có thời điểm thì mặc định nhắc đúng giờ (chip 🔔 trong UX §2.2); sửa ở màn chi tiết.
-        reminderOffsets: when == null ? const [] : const [0],
+        // Có thời điểm thì mặc định nhắc đúng giờ (chip 🔔 trong UX §2.2), đổi được ở chip.
+        reminderOffsets: when == null || d.reminder == null ? const [] : [d.reminder!],
       );
     }
     if (mounted) Navigator.of(context).pop();
@@ -123,6 +131,9 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
     // Gói tải xong sau khi người dùng đã gõ: phân tích lại.
     ref.listen(nluEngineProvider(key), (_, next) => _reparse(next.value));
     final today = CivilDate.of(ref.watch(nowProvider)());
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final understood = _drafts.isNotEmpty && _drafts.every((d) => d.when != null);
     return Padding(
       padding: EdgeInsetsDirectional.only(
         start: Tokens.screenMargin,
@@ -133,14 +144,39 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextField(
-            key: const Key('quickAddField'),
-            controller: _text,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(hintText: l.quickAddHint),
-            onChanged: (_) => _reparse(engine),
-            onSubmitted: (_) => _save(),
+          Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(l.quickAddTitle, style: theme.textTheme.titleLarge?.copyWith(fontSize: 20, height: 29 / 20)),
+                ),
+              ),
+              IconButton(
+                key: const Key('quickAddClose'),
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                icon: AppIcon(AppIcons.close, size: 22, color: scheme.onSurface),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+          Text(l.quickAddSubtitle, style: theme.textTheme.bodySmall),
+          const SizedBox(height: Tokens.space4),
+          Container(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.space4, vertical: Tokens.space2),
+            decoration: BoxDecoration(color: scheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(Tokens.radiusMd)),
+            child: TextField(
+              key: const Key('quickAddField'),
+              controller: _text,
+              autofocus: true,
+              minLines: 1,
+              maxLines: 3,
+              textInputAction: TextInputAction.done,
+              style: theme.textTheme.titleLarge?.copyWith(fontSize: 23, height: 33 / 23, fontWeight: FontWeight.w500),
+              decoration: InputDecoration(hintText: l.quickAddHint, border: InputBorder.none, filled: false),
+              onChanged: (_) => _reparse(engine),
+              onSubmitted: (_) => _save(),
+            ),
           ),
           // Chip có thể dài (nhiều việc, chữ lớn): phần này cuộn, ô nhập và nút Lưu luôn thấy.
           Flexible(
@@ -150,7 +186,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
                 children: [
                   if (_drafts.length > 1) ...[
                     const SizedBox(height: Tokens.space3),
-                    Text(l.quickAddFoundN(_drafts.length), style: Theme.of(context).textTheme.labelLarge),
+                    Text(l.quickAddFoundN(_drafts.length), style: theme.textTheme.labelLarge),
                   ],
                   for (final (i, d) in _drafts.indexed)
                     _DraftChips(
@@ -158,20 +194,47 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
                       draft: d,
                       showTitle: _drafts.length > 1,
                       today: today,
-                      onPick: (amb, option) => setState(() => d.picks[amb] = option),
+                      onChanged: () => setState(() {}),
                     ),
+                  if (understood) ...[
+                    const SizedBox(height: Tokens.space3),
+                    Row(
+                      children: [
+                        AppIcon(AppIcons.tick, size: 16, color: RemindColors.of(context).success),
+                        const SizedBox(width: Tokens.space2),
+                        Expanded(child: Text(l.quickAddUnderstood, style: theme.textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w400, color: scheme.onSurfaceVariant))),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: Tokens.space4),
+                  Row(
+                    children: [
+                      for (final (i, (icon, label, onTap)) in <(AppIcons, String, VoidCallback?)>[
+                        (AppIcons.mic, l.quickAddVoice, null),
+                        (AppIcons.camera, l.quickAddCamera, null),
+                        (AppIcons.image, l.quickAddPhoto, null),
+                        (AppIcons.file, l.quickAddFile, () {
+                          final router = GoRouter.of(context);
+                          Navigator.of(context).pop();
+                          router.push('/import');
+                        }),
+                      ].indexed) ...[
+                        if (i > 0) const SizedBox(width: Tokens.space2),
+                        Expanded(child: _InputMethod(icon: icon, label: label, onTap: onTap)),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: Tokens.space3),
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: FilledButton(
-              key: const Key('quickAddSave'),
-              onPressed: _canSave ? _save : null,
-              child: Text(_drafts.length > 1 ? l.quickAddSaveAll : l.quickAddSave),
-            ),
+          const SizedBox(height: Tokens.space4),
+          FilledButton.icon(
+            key: const Key('quickAddSave'),
+            icon: AppIcon(AppIcons.tick, size: 20, color: _canSave ? scheme.onPrimary : scheme.onSurfaceVariant),
+            onPressed: _canSave ? _save : null,
+            label: Text(_drafts.length > 1 ? l.quickAddSaveAll : l.quickAddSave),
           ),
         ],
       ),
@@ -179,12 +242,92 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
   }
 }
 
+/// Nút cách nhập (Nói / Chụp / Ảnh / Tệp). Chưa làm thì mờ, đọc là "Sắp có".
+class _InputMethod extends StatelessWidget {
+  const _InputMethod({required this.icon, required this.label, this.onTap});
+  final AppIcons icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final enabled = onTap != null;
+    return Tooltip(
+      message: enabled ? label : [label, AppLocalizations.of(context).meComingSoon].join(' · '),
+      child: Opacity(
+        opacity: enabled ? 1 : 0.45,
+        child: Material(
+          color: scheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(Tokens.space3),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            key: Key('quickAddMethod-${icon.name}'),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.all(Tokens.space3),
+              child: Column(
+                children: [
+                  AppIcon(icon, size: 22, color: scheme.onSurfaceVariant),
+                  const SizedBox(height: 7),
+                  Text(label, textAlign: TextAlign.center, style: theme.textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DraftChips extends StatelessWidget {
-  const _DraftChips({super.key, required this.draft, required this.showTitle, required this.today, required this.onPick});
+  const _DraftChips({super.key, required this.draft, required this.showTitle, required this.today, required this.onChanged});
   final _Draft draft;
   final bool showTitle;
   final CivilDate today;
-  final void Function(int ambiguity, int option) onPick;
+  final VoidCallback onChanged;
+
+  Future<void> _pickWhen(BuildContext context) async {
+    final current = draft.when ?? CivilDateTime(today);
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime(current.date.year, current.date.month, current.date.day),
+      firstDate: DateTime(today.year - 1),
+      lastDate: DateTime(today.year + 20),
+    );
+    if (date == null || !context.mounted) return;
+    final t = current.time;
+    final time = await showTimePicker(context: context, initialTime: TimeOfDay(hour: t?.hour ?? 9, minute: t?.minute ?? 0));
+    draft.manualWhen = CivilDateTime(CivilDate.of(date), time == null ? t : CivilTime(time.hour, time.minute));
+    onChanged();
+  }
+
+  Future<void> _pickReminder(BuildContext context) async {
+    final l = AppLocalizations.of(context);
+    final picked = await showModalBottomSheet<(int?,)>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final m in <int?>[...reminderPresets, null])
+              ListTile(
+                key: Key('quickAddReminder-${m ?? 'none'}'),
+                leading: Icon(m == draft.reminder ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                title: Text(m == null ? l.quickAddNoReminder : describeReminderOffset(l, m)),
+                onTap: () => Navigator.of(context).pop((m,)),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked == null) return;
+    draft.reminder = picked.$1;
+    onChanged();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,24 +336,30 @@ class _DraftChips extends StatelessWidget {
     final r = draft.result;
     final when = draft.when;
     final chips = <Widget>[
-      if (when != null) Chip(key: const Key('chipWhen'), avatar: const Icon(Icons.event, size: 18), label: Text(fmt.civil(when, today: today))),
+      if (when != null)
+        _Pill(key: const Key('chipWhen'), icon: AppIcons.calendar, label: fmt.civil(when, today: today), onTap: () => _pickWhen(context)),
+      for (final t in r.tags) _Pill(icon: AppIcons.list, label: t),
       if (when != null || r.recurrence != null)
-        Chip(key: const Key('chipReminder'), avatar: const Icon(Icons.notifications_outlined, size: 18), label: Text(describeReminderOffset(l, 0))),
+        _Pill(
+          key: const Key('chipReminder'),
+          icon: AppIcons.bell,
+          label: draft.reminder == null ? l.quickAddNoReminder : describeReminderOffset(l, draft.reminder!),
+          onTap: () => _pickReminder(context),
+        ),
       if (r.recurrence != null)
-        Chip(key: const Key('chipRepeat'), avatar: const Icon(Icons.repeat, size: 18), label: Text(describeRecurrence(context, r.recurrence!.toPayload()))),
-      for (final t in r.tags) Chip(avatar: const Icon(Icons.tag, size: 18), label: Text(t)),
+        _Pill(key: const Key('chipRepeat'), icon: AppIcons.repeat, label: describeRecurrence(context, r.recurrence!.toPayload())),
       if (r.priority != null)
-        Chip(
-          avatar: const Icon(Icons.flag_outlined, size: 18),
-          label: Text(switch (r.priority!) { 1 => l.priorityLow, 2 => l.priorityMedium, _ => l.priorityHigh }),
+        _Pill(
+          materialIcon: Icons.flag_outlined,
+          label: switch (r.priority!) { 1 => l.priorityLow, 2 => l.priorityMedium, _ => l.priorityHigh },
         ),
     ];
     return Padding(
-      padding: const EdgeInsetsDirectional.only(top: Tokens.space3),
+      padding: const EdgeInsetsDirectional.only(top: Tokens.space4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (showTitle) Text(draft.title, style: Theme.of(context).textTheme.titleSmall),
+          if (showTitle) ...[Text(draft.title, style: Theme.of(context).textTheme.titleSmall), const SizedBox(height: Tokens.space2)],
           if (chips.isNotEmpty) Wrap(spacing: Tokens.space2, runSpacing: Tokens.space2, children: chips),
           for (final (ai, a) in r.ambiguities.indexed) ...[
             const SizedBox(height: Tokens.space2),
@@ -225,12 +374,51 @@ class _DraftChips extends StatelessWidget {
                     key: Key('amb-$ai-$oi'),
                     label: Text(fmt.civil(o, today: today)),
                     selected: (draft.picks[ai] ?? a.chosen) == oi,
-                    onSelected: (_) => onPick(ai, oi),
+                    onSelected: (_) {
+                      draft
+                        ..picks[ai] = oi
+                        ..manualWhen = null;
+                      onChanged();
+                    },
                   ),
               ],
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Chip kết quả phân tích (Figma 02): nền primaryContainer, icon + chữ màu primary; chạm được thì mở bộ chọn.
+class _Pill extends StatelessWidget {
+  const _Pill({super.key, this.icon, this.materialIcon, required this.label, this.onTap});
+  final AppIcons? icon;
+  final IconData? materialIcon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Material(
+      color: scheme.primaryContainer,
+      borderRadius: BorderRadius.circular(10),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) AppIcon(icon!, size: 17, color: scheme.primary) else Icon(materialIcon, size: 17, color: scheme.primary),
+              const SizedBox(width: 7),
+              Flexible(child: Text(label, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: scheme.primary))),
+            ],
+          ),
+        ),
       ),
     );
   }
