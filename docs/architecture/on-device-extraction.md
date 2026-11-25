@@ -56,8 +56,7 @@ Tên hành khách trong BCBP/JSON-LD không được lấy ra. `EmailDecoder` ch
 không thì `Etc/GMT∓h`. `.csv` tính là `xlsx` trong `imports.kind`/`items.source`. Chạm 1 mục mở form sửa (E5.1, `candidate_editor.dart`): tên, bắt đầu/kết thúc
 (giữ múi giờ của nguồn), địa điểm, mã đặt chỗ, số chuyến/số hiệu tàu, ghế, toa, khoa, số thứ tự, dặn dò; trường < 0,7 viền `warning` + ⓘ, sửa hoặc xác nhận
 (mở bộ chọn giờ rồi OK) thì thành 1,0. Dấu "cần kiểm tra" trên thẻ chỉ tính trường form sửa được. Chưa có: evidence (đoạn chữ gốc) khi chạm ⓘ, sửa tuyến bay,
-chia sẻ vào app (share intent/extension), đổi cột ở màn xem trước
-và nhớ mapping (E5.3), hiển thị hạn mức nhập thông minh (`commit` nhận `QuotaStatus` từ cache để đánh `pending_quota`, chưa có dòng báo trên màn).
+chia sẻ vào app (share intent/extension), hiển thị hạn mức nhập thông minh (`commit` nhận `QuotaStatus` từ cache để đánh `pending_quota`, chưa có dòng báo trên màn).
 
 ## 3. T1: OCR trên thiết bị
 | Nền tảng | Engine | Hệ chữ |
@@ -161,6 +160,9 @@ Chưa có: tàu/xe nhiều chặng, ga → múi giờ (tàu/xe dùng giờ tư�
 
 ### 4.5 Học từ người dùng mà không cần AI
 - **Nhớ mapping**: người dùng sửa cột xlsx hoặc chọn đúng loại tài liệu thì lưu theo "chữ ký" (hash header / tập anchor), lần sau tự áp dụng.
+  Đã có cho bảng (E5.3, màn Ghép cột Figma 18): chữ ký `t1-<FNV-1a 64>` của các tên cột đã bỏ dấu/hoa thường (`TableTaskExtractor.signature`),
+  lưu ở `LocalPrefs` `table_mappings` (tối đa 50, chỉ tên trường + số cột + thứ tự ngày + có dòng tiêu đề, không có nội dung ô). Bảng không có
+  dòng tiêu đề thì không nhớ. Chưa có cho loại tài liệu (tập anchor).
 - **Telemetry ẩn danh** (opt-in): `{doc_type, template_id, template_version, fields_found[], fields_edited[], tier_used}`, không có giá trị trường.
   Dashboard chỉ ra mẫu nào hay sai, loại tài liệu nào chưa có mẫu.
 - **"Gửi mẫu để cải thiện"** (opt-in từng lần): app tự che dữ liệu cá nhân (thay chữ/số bằng `X`/`9`, giữ bố cục và từ khóa) rồi gửi bản đã che.

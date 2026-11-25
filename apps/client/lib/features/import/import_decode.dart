@@ -18,6 +18,9 @@ class ImportRequest {
     this.region,
     this.dateOrder,
     this.sheetIndex = 0,
+    this.columns,
+    this.hasHeader,
+    this.savedMappings = const {},
   });
 
   final String name;
@@ -32,17 +35,56 @@ class ImportRequest {
   /// Người dùng chọn lại thứ tự ngày của bảng ('dmy' | 'mdy').
   final String? dateOrder;
   final int sheetIndex;
+  /// Bảng: cột người dùng ghép lại ở màn Ghép cột (Figma 18); null = theo kết quả dò / cách ghép đã nhớ.
+  final Map<TableField, int>? columns;
+  /// Bảng: người dùng bật/tắt "Dòng 1 là tiêu đề".
+  final bool? hasHeader;
+  /// Cách ghép đã nhớ: chữ ký header → JSON của [TableMapping.toJson] (LocalPrefs, on-device-extraction §4.5).
+  final Map<String, String> savedMappings;
 
-  ImportRequest copyWith({String? dateOrder, int? sheetIndex}) => ImportRequest(
-        name: name,
-        bytes: bytes,
-        packSources: packSources,
-        now: now,
-        airportsTsv: airportsTsv,
-        region: region,
-        dateOrder: dateOrder ?? this.dateOrder,
-        sheetIndex: sheetIndex ?? this.sheetIndex,
-      );
+  /// Đổi trang tính thì bỏ cột/tiêu đề đã chọn cho trang cũ.
+  ImportRequest copyWith({String? dateOrder, int? sheetIndex, Map<TableField, int>? columns, bool? hasHeader}) {
+    final sameSheet = sheetIndex == null || sheetIndex == this.sheetIndex;
+    return ImportRequest(
+      name: name,
+      bytes: bytes,
+      packSources: packSources,
+      now: now,
+      airportsTsv: airportsTsv,
+      region: region,
+      dateOrder: dateOrder ?? (sameSheet ? this.dateOrder : null),
+      sheetIndex: sheetIndex ?? this.sheetIndex,
+      columns: columns ?? (sameSheet ? this.columns : null),
+      hasHeader: hasHeader ?? (sameSheet ? this.hasHeader : null),
+      savedMappings: savedMappings,
+    );
+  }
+}
+
+/// Cách hiểu bảng đang dùng: nhãn cột (null = không có tiêu đề), cột → trường, chữ ký để nhớ, có áp cách ghép đã nhớ không.
+class TableInfo {
+  const TableInfo({
+    required this.labels,
+    required this.columns,
+    required this.hasHeader,
+    required this.dataRows,
+    this.signature,
+    this.remembered = false,
+  });
+
+  final List<String?> labels;
+  final Map<TableField, int> columns;
+  final bool hasHeader;
+  /// Số dòng dữ liệu (kể cả dòng không có tên việc).
+  final int dataRows;
+  final String? signature;
+  final bool remembered;
+  /// JSON để nhớ cách ghép (chỉ khi có [signature]).
+  String mappingJson(String dateOrder) => jsonEncode({
+        'columns': {for (final e in columns.entries) e.key.name: e.value},
+        'date_order': dateOrder,
+        'has_header': hasHeader,
+      });
 }
 
 class ImportPreview {
@@ -60,6 +102,7 @@ class ImportPreview {
     this.templateId,
     this.reminderDefaults = const [],
     this.trips = const [],
+    this.table,
   });
 
   final ImportFormat format;
@@ -81,6 +124,8 @@ class ImportPreview {
   final List<DefaultReminders?> reminderDefaults;
   /// Gợi ý gom đặt chỗ đi lại thành chuyến đi (US-21).
   final List<TripSuggestion> trips;
+  /// Bảng tính: cách ghép cột đang dùng (màn Ghép cột, Figma 18).
+  final TableInfo? table;
 
   /// Múi giờ sân bay cho vé chỉ có offset, nhắc mặc định, gợi ý chuyến đi: cần từ điển sân bay nên làm trong isolate.
   ImportPreview _withTravel(AirportIndex? airports) {
@@ -99,6 +144,7 @@ class ImportPreview {
       templateId: templateId,
       reminderDefaults: [for (final c in cs) defaultReminders(c, airports: airports)],
       trips: suggestTrips(cs, airports: airports),
+      table: table,
     );
   }
 
@@ -196,6 +242,21 @@ ImportPreview _decode(ImportRequest r, AirportIndex? airports) {
       final sheet = sheets[index];
       final x = TableTaskExtractor(packs, region: r.region, nlu: nlu);
       var mapping = x.detect(sheet);
+      // Cách ghép đã nhớ cho bảng có cùng dòng tiêu đề (chỉ khi người dùng chưa chọn lại ở lần này).
+      final detectedSig = TableTaskExtractor.signature(sheet, mapping.headerRow);
+      var remembered = false;
+      if (r.columns == null && r.hasHeader == null && detectedSig != null && r.savedMappings[detectedSig] != null) {
+        try {
+          final saved = TableMapping.applySaved(mapping, (jsonDecode(r.savedMappings[detectedSig]!) as Map).cast<String, Object?>(),
+              columnCount: sheet.columnCount);
+          remembered = !identical(saved, mapping);
+          mapping = saved;
+        } on FormatException {
+          // Bỏ qua bản nhớ hỏng.
+        }
+      }
+      if (r.hasHeader != null) mapping = TableTaskExtractor.withHeader(mapping, r.hasHeader!);
+      if (r.columns != null) mapping = mapping.copyWith(columns: r.columns);
       if (r.dateOrder != null) mapping = mapping.copyWith(dateOrder: r.dateOrder);
       return ImportPreview(
         format: format,
@@ -205,6 +266,14 @@ ImportPreview _decode(ImportRequest r, AirportIndex? airports) {
         dateOrder: mapping.dateOrder,
         dateOrderAmbiguous: mapping.dateOrderAmbiguous,
         docLanguage: mapping.lang,
+        table: TableInfo(
+          labels: TableTaskExtractor.headerLabels(sheet, mapping.headerRow),
+          columns: mapping.columns,
+          hasHeader: mapping.headerRow != null,
+          dataRows: sheet.rows.length - (mapping.headerRow == null ? 0 : mapping.headerRow! + 1),
+          signature: TableTaskExtractor.signature(sheet, mapping.headerRow),
+          remembered: remembered,
+        ),
       );
     case ImportFormat.markdown:
       return ImportPreview(

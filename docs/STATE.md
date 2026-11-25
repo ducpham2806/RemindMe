@@ -73,10 +73,12 @@
   mở Thêm nhanh vào list), Hôm nay trống (12: thẻ mời + 2 câu mẫu mở Thêm nhanh điền sẵn).
   Nhập tài liệu: chọn nguồn (13: chụp/thư viện ảnh "Sắp có" tới khi có OCR, tệp, bảng tính), đang đọc (14: tên tệp, Hủy), không đọc được
   (25: lý do, không tính lượt, chọn tệp khác / tự nhập), đã lưu (26: danh sách mục, "Xem chuyến đi" khi vừa gộp vào chuyến).
+  Ghép cột bảng tính (18, E5.3): csv/xlsx mở màn Ghép cột thay màn Xem lại (trang tính, thứ tự ngày, dòng tiêu đề, cột → trường,
+  xem trước 10 dòng, "Nhớ cách ghép" theo chữ ký dòng tiêu đề trong `LocalPrefs`).
   Chi tiết chuyến 3 tab: Tài liệu (22: thẻ theo đặt chỗ, mã sao chép, mở tệp gốc giữ trên máy) và Hành lý (23: `trips.packing`,
   migration 10, danh sách gợi ý, nhóm, tiến độ).
   Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), C34 (pin theo hãng Android, cần native),
-  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 17-19 (nhập tay kèm tài liệu, ghép cột, hộp đề xuất).
+  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 17 (nhập tay kèm tài liệu), 19 (hộp đề xuất, cần worker/email).
 - Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09 (**10 `trip_packing` chờ chủ dự án chạy trong SQL Editor**), chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
   App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →
@@ -90,7 +92,7 @@
   vào email template để mã gửi tới email (guides/backend-setup.md §3). Sau mỗi lần đồng bộ, RemoteSync ghi ngôn ngữ, quốc gia ngày lễ,
   hệ lịch phụ vào `profiles` (không đổi `home_tz`). Migration 09 `account_delete` đã áp; test live kiểm cả ghi profile và xóa tài khoản
   (user test tự xóa qua `account_delete`, không cần SQL dọn).
-- Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
+- Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS),
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   đăng nhập Google/Apple, flavors staging/prod.
 

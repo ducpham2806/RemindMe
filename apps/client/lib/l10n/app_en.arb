@@ -3403,5 +3403,151 @@
   "docsAdd": "Add a document",
   "@docsAdd": {
     "description": "Documents tab bottom button: opens import."
+  },
+  "importMapTitle": "Match spreadsheet columns",
+  "@importMapTitle": {
+    "description": "Title of the spreadsheet column mapping screen (Figma 18)."
+  },
+  "importMapHint": "Check how your data will be read before importing.",
+  "@importMapHint": {
+    "description": "Subtitle of the column mapping screen."
+  },
+  "importMapSheet": "Sheet: {name}",
+  "@importMapSheet": {
+    "description": "Column mapping: current sheet of an Excel file.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importMapRows": "{count, plural, =1{1 row} other{{count} rows}}",
+  "@importMapRows": {
+    "description": "Column mapping: number of data rows in the sheet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importMapHeader": "First row is a header",
+  "@importMapHeader": {
+    "description": "Column mapping chip: treat the first row as column names."
+  },
+  "importMapOrderDmy": "Day/month/year",
+  "@importMapOrderDmy": {
+    "description": "Column mapping chip: dates are written day first."
+  },
+  "importMapOrderMdy": "Month/day/year",
+  "@importMapOrderMdy": {
+    "description": "Column mapping chip: dates are written month first."
+  },
+  "importMapOrderYmd": "Year/month/day",
+  "@importMapOrderYmd": {
+    "description": "Column mapping chip: dates are written year first."
+  },
+  "importMapOrderPick": "Choose date order",
+  "@importMapOrderPick": {
+    "description": "Column mapping chip when the date order cannot be told from the file."
+  },
+  "importMapFileColumn": "FILE COLUMN",
+  "@importMapFileColumn": {
+    "description": "Column mapping card: left column header (source columns). Uppercase per locale."
+  },
+  "importMapAppField": "REMINDME FIELD",
+  "@importMapAppField": {
+    "description": "Column mapping card: right column header (app fields). Uppercase per locale."
+  },
+  "importMapColumn": "Column {name}",
+  "@importMapColumn": {
+    "description": "Column with no header text, named by its spreadsheet letter (A, B, C...).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importMapColumnSemantics": "{column} goes to {field}",
+  "@importMapColumnSemantics": {
+    "description": "Screen reader label of one mapping row.",
+    "placeholders": {
+      "column": {
+        "type": "String"
+      },
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "importFieldTitle": "Task name",
+  "@importFieldTitle": {
+    "description": "App field a spreadsheet column can map to."
+  },
+  "importFieldDate": "Date",
+  "@importFieldDate": {
+    "description": "App field a spreadsheet column can map to."
+  },
+  "importFieldTime": "Time",
+  "@importFieldTime": {
+    "description": "App field a spreadsheet column can map to."
+  },
+  "importFieldNotes": "Notes",
+  "@importFieldNotes": {
+    "description": "App field a spreadsheet column can map to."
+  },
+  "importFieldPriority": "Priority",
+  "@importFieldPriority": {
+    "description": "App field a spreadsheet column can map to."
+  },
+  "importFieldStatus": "Status",
+  "@importFieldStatus": {
+    "description": "App field a spreadsheet column can map to (done / not done)."
+  },
+  "importFieldList": "List",
+  "@importFieldList": {
+    "description": "App field a spreadsheet column can map to."
+  },
+  "importFieldSkip": "Don't import",
+  "@importFieldSkip": {
+    "description": "Column mapping option: ignore this column."
+  },
+  "importMapPreview": "{count, plural, =1{Preview of 1 row} other{Preview of {count} rows}}",
+  "@importMapPreview": {
+    "description": "Column mapping: preview section title.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importMapValid": "{count} valid",
+  "@importMapValid": {
+    "description": "Column mapping: number of rows that will become tasks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importMapNoTitle": "Pick the column that holds the task name.",
+  "@importMapNoTitle": {
+    "description": "Column mapping: no column is mapped to the task name."
+  },
+  "importMapRemember": "Remember this for similar files",
+  "@importMapRemember": {
+    "description": "Column mapping checkbox: reuse this mapping for files with the same header row."
+  },
+  "importMapRemembered": "Using the columns you chose last time.",
+  "@importMapRemembered": {
+    "description": "Column mapping note when a remembered mapping was applied."
+  },
+  "importTasks": "{count, plural, =0{Import} =1{Import 1 task} other{Import {count} tasks}}",
+  "@importTasks": {
+    "description": "Column mapping primary button.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

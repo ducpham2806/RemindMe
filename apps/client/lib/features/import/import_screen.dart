@@ -16,6 +16,7 @@ import 'candidate_editor.dart';
 import 'import_decode.dart';
 import 'import_mapper.dart';
 import 'import_providers.dart';
+import 'table_mapping_view.dart';
 
 /// Nhập từ tệp → màn Xem lại (E5, bản đầu cho decoder T0): chọn mục, sửa tên, chọn thứ tự ngày/trang tính của bảng, rồi thêm.
 /// Tệp chỉ được đọc trên máy (ADR-010); không lưu bản gốc.
@@ -28,6 +29,8 @@ class ImportScreen extends ConsumerStatefulWidget {
 
 class _ImportScreenState extends ConsumerState<ImportScreen> {
   ImportRequest? _request;
+  /// Màn Ghép cột: nhớ cách ghép cho tệp cùng dòng tiêu đề.
+  bool _remember = true;
   ImportPreview? _preview;
   bool _busy = false;
   bool _failed = false;
@@ -76,6 +79,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       final req = ImportRequest(
         name: file.name,
         bytes: file.bytes,
+        savedMappings: await loadTableMappings(LocalPrefs(ref.read(appDatabaseProvider))),
         packSources: packs,
         airportsTsv: airports,
         now: ref.read(nowProvider)(),
@@ -207,6 +211,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           trips: trips,
           quota: _quota,
         );
+    // Nhớ cách ghép cột cho tệp cùng dòng tiêu đề (on-device-extraction §4.5); bỏ chọn thì quên bản đã nhớ.
+    if (preview.table?.signature case final sig?) {
+      await saveTableMapping(LocalPrefs(ref.read(appDatabaseProvider)), sig,
+          _remember ? preview.table!.mappingJson(preview.dateOrder ?? 'dmy') : null);
+    }
     // Giữ bản gốc trên máy cho tab Tài liệu của chuyến (chỉ khi có đặt chỗ); lỗi ghi tệp không làm hỏng lần nhập.
     if (preview.candidates.indexed.any((e) => _selected[e.$1] && e.$2.bookingType != null)) {
       try {
@@ -253,7 +262,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final preview = _preview;
-    final reviewing = !_busy && preview != null && preview.candidates.isNotEmpty;
+    final table = preview?.table;
+    final reviewing = !_busy && preview != null && (preview.candidates.isNotEmpty || table != null);
     final count = reviewing ? _selected.where((s) => s).length : 0;
     final missingTitle = reviewing && [for (var i = 0; i < _selected.length; i++) if (_selected[i]) i].any((i) => _titleOf(i) == null);
     final toCheck = reviewing ? _firstToCheck : null;
@@ -262,7 +272,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         title: Text(_saved != null
             ? l.importSavedTitle
             : reviewing
-                ? l.importReviewTitle
+                ? (table != null ? l.importMapTitle : l.importReviewTitle)
                 : _busy && preview == null
                     ? l.importReadingTitle
                     : _failed || preview != null
@@ -280,13 +290,19 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(l.importUnsavedNote, style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant)),
-                    const SizedBox(height: Tokens.space3),
+                    if (table == null) ...[
+                      Text(l.importUnsavedNote, style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant)),
+                      const SizedBox(height: Tokens.space3),
+                    ],
                     FilledButton.icon(
                       key: const Key('importAdd'),
                       icon: AppIcon(AppIcons.tick, size: 20, color: theme.colorScheme.onPrimary),
-                      label: Text(toCheck != null ? l.importCheckToContinue : l.importAdd(count)),
+                      label: Text(toCheck != null
+                          ? l.importCheckToContinue
+                          : table != null
+                              ? l.importTasks(count)
+                              : l.importAdd(count)),
                       onPressed: toCheck != null
                           ? () => _edit(toCheck)
                           : count == 0 || missingTitle
@@ -303,6 +319,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
               ? _reading(context)
               : _busy
                   ? const Center(child: CircularProgressIndicator())
+                  : reviewing && table != null
+                      ? TableMappingView(
+                          request: _request!,
+                          preview: preview,
+                          remember: _remember,
+                          onRemember: (v) => setState(() => _remember = v),
+                          onRequest: _decode,
+                        )
                   : reviewing
                       ? _review(context, preview)
                       : preview == null && !_failed

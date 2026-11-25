@@ -12,6 +12,15 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Figma 18: ghép cột bảng tính + nhớ cách ghép (E5.3) · Claude Code
+- **Làm:** parsers: `TableMapping.toJson/applySaved`, `TableTaskExtractor.signature` (FNV-1a 64 trên tên cột đã bỏ dấu), `headerLabels`, `withHeader`.
+  App: `ImportRequest.columns/hasHeader/savedMappings`, `ImportPreview.table`; csv/xlsx mở màn Ghép cột (`TableMappingView`): thẻ tệp + chọn trang tính,
+  chip thứ tự ngày (vàng khi mơ hồ) và "Dòng 1 là tiêu đề", mỗi cột → trường (chọn trường đang ở cột khác thì chuyển cột), xem trước 10 dòng,
+  "N hợp lệ", "Nhớ cách ghép" (LocalPrefs `table_mappings`, ≤ 50), nút "Nhập N việc". 27 key ARB.
+- **Quyết định:** bảng không còn thẻ từng mục ở màn Xem lại (theo Figma 18); việc đã xong trong tệp vẫn mặc định không nhập.
+- **Kiểm chứng:** parsers 75 (+1), client 110 (test csv viết lại cho màn mới, test thứ tự ngày qua chip); analyze 0; lint 0; ảnh chụp so với Figma.
+- **Tiếp theo:** 17 (nhập tay kèm tài liệu), 19 (hộp đề xuất, cần email chuyển tiếp/worker).
+
 ## 2026-11-25 · Figma 22-23: tài liệu và hành lý của chuyến · Claude Code
 - **Làm:** chi tiết chuyến có 3 tab (Lịch trình / Tài liệu · N / Hành lý · x/y, `?tab=` trên route). Hành lý: migration 10 `trips.packing`
   (jsonb mảng, LWW cả mảng, check ≤ 200 món), Drift schema v3, `PackingItem` + `setPacking/addPacking`, thẻ tiến độ, nhóm theo mã

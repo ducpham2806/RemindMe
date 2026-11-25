@@ -138,5 +138,36 @@ void main() {
       expect(x.extract(sheet, x.detect(sheet), source: 'csv', now: now).map((e) => e.fields.due?.local),
           ['2026-12-01T18:15', '2026-12-05T19:05', null]);
     });
+
+    test('ghép cột thủ công, bật/tắt dòng tiêu đề, chữ ký header (bỏ dấu/hoa thường) và áp cách ghép đã nhớ', () {
+      final sheet = const CsvReader().read('Công việc,Hạn chót,Thời gian,Mô tả\nGửi báo giá,25/11/2026,08:00,Khách A\nHọp,26/11/2026,9:30,\n');
+      final x = TableTaskExtractor([en, vi], region: 'VN');
+      final m = x.detect(sheet);
+      expect(TableTaskExtractor.headerLabels(sheet, m.headerRow), ['Công việc', 'Hạn chót', 'Thời gian', 'Mô tả']);
+      final sig = TableTaskExtractor.signature(sheet, m.headerRow);
+      expect(sig, startsWith('t1-'));
+      expect(TableTaskExtractor.signature(const CsvReader().read('CONG VIEC,han chot,Thoi gian,Mo ta\n'), 0), sig);
+      expect(TableTaskExtractor.signature(const CsvReader().read('Việc,Ngày\n'), 0), isNot(sig));
+      expect(TableTaskExtractor.signature(sheet, null), isNull);
+
+      // Ghi chú → cột tên việc, tên việc → ghi chú.
+      final swapped = m.copyWith(columns: {...m.columns, TableField.title: 3, TableField.notes: 0});
+      expect(x.extract(sheet, swapped, source: 'csv', now: now).map((c) => (c.fields.title, c.notes)), [('Khách A', 'Gửi báo giá')]);
+
+      // Tắt dòng tiêu đề: dòng 1 thành dữ liệu.
+      final noHeader = TableTaskExtractor.withHeader(m, false);
+      expect(x.extract(sheet, noHeader, source: 'csv', now: now).first.fields.title, 'Công việc');
+      expect(TableTaskExtractor.withHeader(noHeader, true).headerRow, 0);
+
+      // Nhớ rồi áp lại; JSON hỏng hoặc cột ngoài bảng thì giữ kết quả dò.
+      final saved = jsonDecode(jsonEncode(swapped.copyWith(dateOrder: 'mdy').toJson())) as Map<String, Object?>;
+      final again = TableMapping.applySaved(m, saved, columnCount: sheet.columnCount);
+      expect((again.columns[TableField.title], again.dateOrder, again.headerRow), (3, 'mdy', 0));
+      expect(TableMapping.applySaved(m, {'columns': {'title': 9}}, columnCount: 4).columns, m.columns);
+      expect(TableMapping.applySaved(m, {'columns': 'x'}, columnCount: 4).columns, m.columns);
+      expect(TableMapping.applySaved(m, {'columns': {'notes': 1}}, columnCount: 4).columns, m.columns);
+      expect(TableMapping.applySaved(m, {'columns': {'title': 0}, 'has_header': false}, columnCount: 4).headerRow, isNull);
+    });
   });
 }
+

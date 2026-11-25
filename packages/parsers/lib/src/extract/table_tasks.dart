@@ -30,13 +30,40 @@ class TableMapping {
   /// Mọi ngày dạng số trong bảng đều đọc được theo cả 2 thứ tự và vùng không cho biết: màn xem trước phải hỏi.
   final bool dateOrderAmbiguous;
 
-  TableMapping copyWith({Map<TableField, int>? columns, String? dateOrder}) => TableMapping(
-        headerRow: headerRow,
+  TableMapping copyWith({Map<TableField, int>? columns, String? dateOrder, int? Function()? headerRow}) => TableMapping(
+        headerRow: headerRow == null ? this.headerRow : headerRow(),
         columns: columns ?? this.columns,
         lang: lang,
         dateOrder: dateOrder ?? this.dateOrder,
         dateOrderAmbiguous: dateOrder == null && dateOrderAmbiguous,
       );
+
+  /// Phần người dùng chọn được (cột, thứ tự ngày, có dòng tiêu đề) để nhớ theo [TableTaskExtractor.signature] (§4.5).
+  Map<String, Object?> toJson() => {
+        'columns': {for (final e in columns.entries) e.key.name: e.value},
+        'date_order': dateOrder,
+        'has_header': headerRow != null,
+      };
+
+  /// Áp cách ghép đã nhớ lên kết quả dò; JSON hỏng hoặc trỏ ra ngoài bảng thì giữ nguyên [detected].
+  static TableMapping applySaved(TableMapping detected, Map<String, Object?> json, {required int columnCount}) {
+    final cols = <TableField, int>{};
+    final raw = json['columns'];
+    if (raw is! Map) return detected;
+    for (final e in raw.entries) {
+      final f = TableField.values.where((f) => f.name == e.key).firstOrNull;
+      final c = e.value;
+      if (f == null || c is! int || c < 0 || c >= columnCount) return detected;
+      cols[f] = c;
+    }
+    if (!cols.containsKey(TableField.title)) return detected;
+    final order = json['date_order'];
+    return detected.copyWith(
+      columns: cols,
+      dateOrder: order is String && const {'dmy', 'mdy', 'ymd'}.contains(order) ? order : null,
+      headerRow: json['has_header'] == false ? () => null : null,
+    );
+  }
 
   @override
   String toString() => 'TableMapping(header: $headerRow, $columns, lang: $lang, $dateOrder${dateOrderAmbiguous ? '?' : ''})';
@@ -79,6 +106,33 @@ class TableTaskExtractor {
       dateOrderAmbiguous: ambiguous,
     );
   }
+
+  /// Chữ ký của bảng để nhớ cách ghép (§4.5): băm FNV-1a 64 bit các tên cột đã bỏ dấu/hoa thường. Không có dòng tiêu đề thì null
+  /// (cột suy theo kiểu dữ liệu, không đủ ổn định để nhớ). Không chứa nội dung ô dữ liệu.
+  static String? signature(TableSheet sheet, int? headerRow) {
+    if (headerRow == null || headerRow >= sheet.rows.length) return null;
+    final names = [for (final c in sheet.rows[headerRow]) _foldHeader(c.text)];
+    while (names.isNotEmpty && names.last.isEmpty) {
+      names.removeLast();
+    }
+    if (names.every((n) => n.isEmpty)) return null;
+    var h = 0xcbf29ce484222325;
+    for (final b in names.join('\u001f').codeUnits) {
+      h ^= b;
+      h *= 0x100000001b3; // tràn 64 bit là đúng thuật toán (int của Dart VM quấn vòng)
+    }
+    return 't1-${h.toUnsigned(64).toRadixString(16)}';
+  }
+
+  /// Tên từng cột ở dòng tiêu đề (null: không có tiêu đề hoặc ô trống; màn ghép cột hiện "Cột A").
+  static List<String?> headerLabels(TableSheet sheet, int? headerRow) => [
+        for (var c = 0; c < sheet.columnCount; c++)
+          if (headerRow == null || sheet.cell(headerRow, c).text.trim().isEmpty) null else sheet.cell(headerRow, c).text.trim(),
+      ];
+
+  /// Người dùng bật/tắt "Dòng 1 là tiêu đề": bật khi chưa có thì lấy dòng đầu; tắt thì mọi dòng là dữ liệu. Giữ cột đang ghép.
+  static TableMapping withHeader(TableMapping m, bool hasHeader) =>
+      hasHeader == (m.headerRow != null) ? m : m.copyWith(headerRow: () => hasHeader ? 0 : null);
 
   /// Mỗi dòng có tên việc thành 1 candidate. [source]: `xlsx` | `csv`.
   List<Candidate> extract(TableSheet sheet, TableMapping mapping, {required String source, required DateTime now}) {

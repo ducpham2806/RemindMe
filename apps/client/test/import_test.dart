@@ -9,6 +9,7 @@ import 'package:remindme_client/core/theme/app_icons.dart';
 import 'package:remindme_client/data/originals.dart';
 import 'package:remindme_client/data/providers.dart';
 import 'package:remindme_data/remindme_data.dart';
+import 'package:remindme_parsers/remindme_parsers.dart' show TableField;
 import 'package:remindme_client/features/import/import_decode.dart';
 import 'package:remindme_client/features/import/import_providers.dart';
 
@@ -42,47 +43,77 @@ void main() {
   // Giải mã đồng bộ (không Isolate.run) để chạy trong fake-async của widget test.
   final syncDecoder = importDecoderProvider.overrideWithValue((req) async => decodeImport(req));
 
-  testWidgets('csv tiếng Việt: xem lại, bỏ chọn, đổi tên, thêm → việc + hàng imports trong DB', (tester) async {
-    final c = await pumpApp(tester, size: phone, locale: const Locale('vi'), region: 'VN', overrides: [
+  testWidgets('csv tiếng Việt: màn Ghép cột (Figma 18), đổi cột, nhập → việc + imports; lần sau tự dùng cách ghép đã nhớ', (tester) async {
+    final csv = fixture('synthetic-csv-todo-0001', 'input.csv');
+    final c = await pumpApp(tester, size: const Size(390, 1400), locale: const Locale('vi'), region: 'VN', overrides: [
       syncDecoder,
-      filePickerProvider.overrideWithValue(picker([fixture('synthetic-csv-todo-0001', 'input.csv')])),
+      filePickerProvider.overrideWithValue(picker([csv, csv])),
     ]);
     await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
     expect(find.text('Chọn tệp'), findsOneWidget);
     await tester.tap(find.byKey(const Key('importPick')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Xem lại'), findsOneWidget);
-    expect(find.text('Tìm thấy 4 mục'), findsOneWidget);
-    expect(find.text('Đã xong'), findsOneWidget, reason: 'việc đã xong trong tệp có nhãn và mặc định không chọn');
-    expect(find.text('Thêm 3 mục'), findsOneWidget);
+    expect(find.text('Ghép cột bảng tính'), findsOneWidget);
+    expect(find.text('4 dòng'), findsOneWidget);
+    expect(find.text('Ngày/tháng/năm'), findsOneWidget);
+    expect(find.text('Công việc'), findsOneWidget, reason: 'tên cột trong tệp');
+    expect(tester.widget<DropdownButton<TableField?>>(find.byKey(const Key('importColumn-1'))).value, TableField.title);
+    expect(tester.widget<DropdownButton<TableField?>>(find.byKey(const Key('importColumn-0'))).value, isNull, reason: 'cột STT bị bỏ qua');
+    expect(tester.widget<Text>(find.byKey(const Key('importMapValid'))).data, '4 hợp lệ');
+    expect(find.text('Nhập 3 việc'), findsOneWidget, reason: 'việc đã xong trong tệp mặc định không nhập');
+    expect(find.text('15/12'), findsOneWidget);
+    expect(find.text('09:00'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('importCheck-1')));
-    await tester.pump();
-    expect(find.text('Thêm 2 mục'), findsOneWidget);
-
-    await tester.tap(find.text('Nộp báo cáo quý 4'));
+    // Cột Ghi chú → Bỏ qua.
+    await tester.tap(find.byKey(const Key('importColumn-6')));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('importName')), 'Nộp báo cáo Q4');
-    await tester.tap(find.byKey(const Key('importEditSave')));
+    await tester.tap(find.text('Bỏ qua').last);
     await tester.pumpAndSettle();
-    expect(find.text('Nộp báo cáo Q4'), findsOneWidget);
+    expect(tester.widget<DropdownButton<TableField?>>(find.byKey(const Key('importColumn-6'))).value, isNull);
+    // Chọn "Tên việc" cho cột Ghi chú rồi đổi lại: tên việc chuyển cột, cột cũ thành Bỏ qua.
+    await tester.tap(find.byKey(const Key('importColumn-6')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tên việc').last);
+    await tester.pumpAndSettle();
+    expect(tester.widget<DropdownButton<TableField?>>(find.byKey(const Key('importColumn-1'))).value, isNull);
+    expect(tester.widget<Text>(find.byKey(const Key('importMapValid'))).data, '2 hợp lệ', reason: 'chỉ 2 dòng có ghi chú');
+    await tester.tap(find.byKey(const Key('importColumn-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tên việc').last);
+    await tester.pumpAndSettle();
+    expect(tester.widget<DropdownButton<TableField?>>(find.byKey(const Key('importColumn-6'))).value, isNull);
 
+    expect(tester.widget<Checkbox>(find.byKey(const Key('importRemember'))).value, isTrue);
     await tester.tap(find.byKey(const Key('importAdd')));
     await settleReminders(tester);
-    expect(find.text('Đã thêm 2 mục'), findsOneWidget);
-    expect(find.byKey(const Key('importSaved')), findsOneWidget);
+    expect(find.text('Đã thêm 3 mục'), findsOneWidget);
     await tester.tap(find.byKey(const Key('importDone')));
     await tester.pumpAndSettle();
     expect(find.text('Nhập từ tệp'), findsOneWidget, reason: 'quay về Tôi');
 
     final db = c.read(appDatabaseProvider);
     final (items, imports) = (await tester.runAsync(() async => (await db.select(db.items).get(), await db.select(db.imports).get())))!;
-    expect(items.map((i) => i.title).toSet(), {'Nộp báo cáo Q4', 'Mua quà sinh nhật mẹ'});
-    final report = items.firstWhere((i) => i.title == 'Nộp báo cáo Q4');
+    expect(items.map((i) => i.title).toSet(), {'Nộp báo cáo quý 4', 'Gia hạn bảo hiểm xe máy', 'Mua quà sinh nhật mẹ'});
+    final report = items.firstWhere((i) => i.title == 'Nộp báo cáo quý 4');
     expect((report.startsAt, report.tz, report.priority, report.notes, report.importId, report.source),
-        (DateTime.utc(2026, 12, 15, 2).millisecondsSinceEpoch, 'Asia/Ho_Chi_Minh', 3, 'Gửi chị Lan duyệt trước', imports.single.id, 'xlsx'));
+        (DateTime.utc(2026, 12, 15, 2).millisecondsSinceEpoch, 'Asia/Ho_Chi_Minh', 3, null, imports.single.id, 'xlsx'));
     expect((imports.single.kind, imports.single.docLanguage, imports.single.docType), ('xlsx', 'vi', 'todo_list'));
+
+    // Lần 2 cùng dòng tiêu đề: tự dùng cách ghép đã nhớ (Ghi chú bỏ qua).
+    await tester.tap(find.text('Nhập từ tệp'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('importPick')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('importRemembered')), findsOneWidget);
+    expect(tester.widget<DropdownButton<TableField?>>(find.byKey(const Key('importColumn-6'))).value, isNull);
+
+    // Tắt "Dòng 1 là tiêu đề": dòng tiêu đề thành 1 dòng dữ liệu, cột hiện theo chữ cái.
+    await tester.tap(find.byKey(const Key('importHeader')));
+    await tester.pumpAndSettle();
+    expect(find.text('Cột B'), findsOneWidget);
+    expect(find.text('5 dòng'), findsOneWidget);
+    expect(find.byKey(const Key('importRemember')), findsNothing, reason: 'không có tiêu đề thì không nhớ được');
   });
 
   testWidgets('en: PDF chưa hỗ trợ → chọn tệp khác; email vé máy bay có tên mặc định và mã đặt chỗ', (tester) async {
@@ -286,7 +317,7 @@ void main() {
     expect(trips.map((t) => t.title), ['Lisbon']);
   });
 
-  testWidgets('bảng mơ hồ 03/04 khi không biết vùng: hỏi thứ tự ngày, chọn lại thì đọc lại tệp', (tester) async {
+  testWidgets('bảng mơ hồ 03/04 khi không biết vùng: chip báo cần chọn thứ tự ngày, chọn lại thì đọc lại tệp', (tester) async {
     await pumpApp(tester, size: phone, region: null, overrides: [
       syncDecoder,
       filePickerProvider.overrideWithValue(picker([(name: 'rent.csv', bytes: Uint8List.fromList(utf8.encode('Task,Due\nPay rent,03/04/2027\n')))])),
@@ -294,15 +325,17 @@ void main() {
     await openImport(tester, me: 'Me', row: 'Import from file');
     await tester.tap(find.byKey(const Key('importPick')));
     await tester.pumpAndSettle();
+    expect(find.text('Choose date order'), findsOneWidget);
+    expect(find.text('4/3'), findsOneWidget, reason: 'đọc tạm theo ngày trước: 3 tháng 4, hiện kiểu en M/d');
+    await tester.tap(find.byKey(const Key('importDateOrder')));
+    await tester.pumpAndSettle();
     expect(find.text('How are dates written in this file?'), findsOneWidget);
-    expect(tester.widget<ChoiceChip>(find.byKey(const Key('importOrder-dmy'))).selected, isTrue);
-    final before = tester.widget<Text>(find.descendant(of: find.byKey(const Key('importItem-0')), matching: find.byType(Text)).at(1)).data;
     await tester.tap(find.byKey(const Key('importOrder-mdy')));
     await tester.pumpAndSettle();
-    expect(tester.widget<ChoiceChip>(find.byKey(const Key('importOrder-mdy'))).selected, isTrue);
-    final after = tester.widget<Text>(find.descendant(of: find.byKey(const Key('importItem-0')), matching: find.byType(Text)).at(1)).data;
-    expect(after, isNot(before));
-    expect(after, contains('Mar'));
+    expect(find.text('Month/day/year'), findsOneWidget);
+    expect(find.text('Choose date order'), findsNothing);
+    expect(find.text('3/4'), findsOneWidget, reason: 'đọc lại: tháng 3 ngày 4');
+    expect(find.text('4/3'), findsNothing);
   });
 
   testWidgets('pseudo-locale + chữ lớn ở 320dp: màn Xem lại không vỡ bố cục', (tester) async {
