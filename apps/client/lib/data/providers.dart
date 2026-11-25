@@ -337,12 +337,25 @@ String? _dayOf(ItemView i, String deviceTz) {
 }
 
 /// Số item theo ngày của lưới tháng (khóa: ngày đầu và cuối lưới 'YYYY-MM-DD|YYYY-MM-DD').
-final calendarCountsProvider = StreamProvider.family<Map<String, int>, String>((ref, range) {
-  final [from, to] = range.split('|');
-  return ref
-      .watch(itemsRepositoryProvider)
-      .watchCountsByDay(CivilDate.parse(from), CivilDate.parse(to), deviceTz: ref.watch(deviceTimeZoneProvider));
+/// Số item theo ngày cho lưới lịch. Khóa: `from|to` hoặc `from|to|danh-sách-id|loại` (bộ lọc Figma 24; `~` = item chưa có list).
+final calendarCountsProvider = StreamProvider.family<Map<String, int>, String>((ref, key) {
+  final parts = key.split('|');
+  return ref.watch(itemsRepositoryProvider).watchCountsByDay(
+        CivilDate.parse(parts[0]),
+        CivilDate.parse(parts[1]),
+        deviceTz: ref.watch(deviceTimeZoneProvider),
+        filter: parts.length < 4 ? null : calendarFilterOf(parts[2], parts[3]),
+      );
 });
+
+/// Bộ lọc Lịch từ khóa provider: [lists] là id nối bằng ',' ('~' = item chưa có list), [kind] rỗng = mọi loại.
+ItemFilter? calendarFilterOf(String lists, String kind) {
+  final f = ItemFilter(
+    listIds: lists.isEmpty ? null : {for (final id in lists.split(',')) id == '~' ? null : id},
+    kinds: kind.isEmpty ? null : {kind},
+  );
+  return f.isEmpty ? null : f;
+}
 
 /// Loại đặt chỗ, múi giờ nơi đến, tên chuyến cho thẻ lịch hẹn; khóa: id item nối bằng '|'.
 final bookingInfoProvider = FutureProvider.family<Map<String, ({String? bookingType, String? destinationTz, String? tripTitle})>, String>(

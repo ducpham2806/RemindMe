@@ -8,6 +8,8 @@ import 'package:remindme_data/remindme_data.dart';
 import '../../core/theme/app_icons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/app_sheet.dart';
+import '../../core/l10n/formatters.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
@@ -26,13 +28,36 @@ class CalendarScreen extends ConsumerStatefulWidget {
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   CivilDate? _month;
   CivilDate? _selected;
+  /// 'month' | 'week' | 'day' (Figma 24).
+  String _view = 'month';
+  /// Bộ lọc: id danh sách (null = mọi danh sách), loại item ('' = mọi loại).
+  String? _list;
+  String _kind = '';
 
   CivilDate get _today => CivilDate.of(ref.read(nowProvider)());
 
-  void _go(int months) => setState(() {
-        _month = (_month ?? CivilDate(_today.year, _today.month, 1)).addMonths(months);
-        _selected = null;
+  void _go(int n) => setState(() {
+        if (_view == 'month') {
+          _month = (_month ?? CivilDate(_today.year, _today.month, 1)).addMonths(n);
+          _selected = null;
+        } else {
+          final d = (_selected ?? _today).addDays(_view == 'week' ? 7 * n : n);
+          _selected = d;
+          _month = CivilDate(d.year, d.month, 1);
+        }
       });
+
+  static const _inbox = 'inbox';
+
+  /// Giá trị bộ lọc của 1 danh sách: Hộp thư là [_inbox] (có thể chưa có id), list khác là id.
+  static String _valueOf(ListSummary s) => s.isInbox ? _inbox : s.id ?? '';
+
+  /// Khóa danh sách cho provider: Hộp thư gồm cả item chưa có list ('~').
+  String _listKey(List<ListSummary> lists) {
+    final s = lists.where((x) => _valueOf(x) == _list).firstOrNull;
+    if (s == null) return '';
+    return s.isInbox ? ['~', ?s.id].join(',') : s.id!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,23 +69,35 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final month = _month ?? CivilDate(today.year, today.month, 1);
     final selected = _selected ?? (month.year == today.year && month.month == today.month ? today : month);
     final firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex; // 0 = CN
-    // Lưới bắt đầu ở ngày đầu tuần theo locale, đủ số tuần của tháng.
-    final lead = (month.weekday % 7 - firstDay) % 7;
-    final gridStart = month.addDays(-lead);
-    final daysInMonth = month.addMonths(1).addDays(-1).day;
-    final weeks = ((lead + daysInMonth) / 7).ceil();
-    final gridEnd = gridStart.addDays(weeks * 7 - 1);
-    final counts = ref.watch(calendarCountsProvider('${gridStart.toIso()}|${gridEnd.toIso()}')).value ?? const {};
+    // Tháng: lưới bắt đầu ở ngày đầu tuần theo locale, đủ số tuần của tháng. Tuần: 1 hàng chứa ngày đang chọn. Ngày: không có lưới.
+    final CivilDate gridStart;
+    final int weeks;
+    if (_view == 'month') {
+      final lead = (month.weekday % 7 - firstDay) % 7;
+      gridStart = month.addDays(-lead);
+      final daysInMonth = month.addMonths(1).addDays(-1).day;
+      weeks = ((lead + daysInMonth) / 7).ceil();
+    } else {
+      gridStart = selected.addDays(-((selected.weekday % 7 - firstDay) % 7));
+      weeks = _view == 'week' ? 1 : 0;
+    }
+    final gridEnd = _view == 'day' ? selected : gridStart.addDays(weeks * 7 - 1);
+    final lists = ref.watch(listsProvider).value ?? const <ListSummary>[];
+    final listKey = _listKey(lists);
+    final filter = calendarFilterOf(listKey, _kind);
+    final counts = ref.watch(calendarCountsProvider('${gridStart.toIso()}|${gridEnd.toIso()}|$listKey|$_kind')).value ?? const {};
     final holidays = ref.watch(holidayCalendarProvider).value;
     final lunarSystem =
         effectiveLunarSystem(ref.watch(calendarSystemSettingProvider).value ?? prefAuto, Localizations.localeOf(context).languageCode);
     final lunar = lunarSystem == null ? null : LunarCalendar(lunarSystem);
     final trips = [
       for (final t in ref.watch(tripsProvider).value ?? const <TripSummary>[])
-        if (t.startsOn != null && t.overlaps(gridStart.toIso(), gridEnd.toIso(), slackDays: 0)) t,
+        if (t.startsOn != null && t.overlaps((_view == 'day' ? selected : gridStart).toIso(), gridEnd.toIso(), slackDays: 0)) t,
     ];
     bool inTrip(CivilDate d) => trips.any((t) => t.overlaps(d.toIso(), d.toIso(), slackDays: 0));
-    final isCurrentMonth = month.year == today.year && month.month == today.month;
+    final number = NumberFormat.decimalPattern(locale);
+    final fmt = Fmt.of(context);
+    final now = ref.read(nowProvider)();
 
     return Scaffold(
       body: SafeArea(
@@ -70,11 +107,23 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           children: [
             Semantics(header: true, child: Text(l.navCalendar, style: theme.textTheme.headlineLarge)),
             Text(DateFormat.MMMMEEEEd(locale).format(DateTime(selected.year, selected.month, selected.day)), style: theme.textTheme.bodySmall),
-            if (!isCurrentMonth || _selected != null) ...[
-              const SizedBox(height: Tokens.space3),
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: _Chip(
+            const SizedBox(height: Tokens.space3),
+            Wrap(
+              spacing: Tokens.space2,
+              runSpacing: Tokens.space2,
+              children: [
+                for (final (v, label) in [('month', l.calendarViewMonth), ('week', l.calendarViewWeek), ('day', l.calendarViewDay)])
+                  _Chip(
+                    key: Key('calendarView-$v'),
+                    label: label,
+                    selected: _view == v,
+                    onTap: () => setState(() {
+                      _view = v;
+                      _selected = selected;
+                      _month = CivilDate(selected.year, selected.month, 1);
+                    }),
+                  ),
+                _Chip(
                   key: const Key('calendarToday'),
                   label: l.navToday,
                   onTap: () => setState(() {
@@ -82,8 +131,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     _selected = null;
                   }),
                 ),
-              ),
-            ],
+              ],
+            ),
             const SizedBox(height: Tokens.space4),
             DecoratedBox(
               decoration: BoxDecoration(color: scheme.surface, borderRadius: BorderRadius.circular(Tokens.radiusXl)),
@@ -94,29 +143,48 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            toBeginningOfSentenceCase(DateFormat.yMMMM(locale).format(DateTime(month.year, month.month)), locale),
-                            style: theme.textTheme.titleMedium?.copyWith(fontSize: 18, height: 26 / 18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                switch (_view) {
+                                  'week' => l.tripDates(fmt.date(_dt(gridStart), now: now), fmt.date(_dt(gridEnd), now: now)),
+                                  'day' => DateFormat.MMMMEEEEd(locale).format(_dt(selected)),
+                                  _ => toBeginningOfSentenceCase(DateFormat.yMMMM(locale).format(DateTime(month.year, month.month)), locale),
+                                },
+                                key: const Key('calendarPeriod'),
+                                style: theme.textTheme.titleMedium?.copyWith(fontSize: 18, height: 26 / 18),
+                              ),
+                              if (_view == 'day' && lunar != null)
+                                Text(
+                                  switch (lunar.fromSolar(selected)) {
+                                    final ld => l.calendarLunarDate(number.format(ld.day), number.format(ld.month)),
+                                  },
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                            ],
                           ),
                         ),
                         IconButton(
                           key: const Key('calendarPrev'),
-                          tooltip: l.calendarPrevMonth,
+                          tooltip: switch (_view) { 'week' => l.calendarPrevWeek, 'day' => l.calendarPrevDay, _ => l.calendarPrevMonth },
                           visualDensity: VisualDensity.compact,
                           icon: AppIcon(AppIcons.back, color: scheme.onSurfaceVariant),
                           onPressed: () => _go(-1),
                         ),
                         IconButton(
                           key: const Key('calendarNext'),
-                          tooltip: l.calendarNextMonth,
+                          tooltip: switch (_view) { 'week' => l.calendarNextWeek, 'day' => l.calendarNextDay, _ => l.calendarNextMonth },
                           visualDensity: VisualDensity.compact,
                           icon: AppIcon(AppIcons.chevron, color: scheme.onSurfaceVariant),
                           onPressed: () => _go(1),
                         ),
                       ],
                     ),
-                    const SizedBox(height: Tokens.space2),
-                    _weekdayHeader(context, firstDay),
+                    if (weeks > 0) ...[
+                      const SizedBox(height: Tokens.space2),
+                      _weekdayHeader(context, firstDay),
+                    ],
                     for (var w = 0; w < weeks; w++)
                       Padding(
                         padding: const EdgeInsetsDirectional.only(top: Tokens.space1),
@@ -129,7 +197,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                     padding: EdgeInsetsDirectional.only(start: d == 0 ? 0 : 2, end: d == 6 ? 0 : 2),
                                     child: _DayCell(
                                       date: date,
-                                      inMonth: date.month == month.month,
+                                      inMonth: _view != 'month' || date.month == month.month,
                                       isToday: date == today,
                                       isSelected: date == selected,
                                       inTrip: inTrip(date),
@@ -167,12 +235,81 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: Tokens.space5),
-            _DayDetails(date: selected, holidays: holidays?.on(selected) ?? const []),
+            const SizedBox(height: Tokens.space4),
+            Wrap(
+              spacing: Tokens.space2,
+              runSpacing: Tokens.space2,
+              children: [
+                _Chip(
+                  key: const Key('calendarFilterList'),
+                  label: switch (lists.where((x) => _valueOf(x) == _list).firstOrNull) {
+                    final s? => s.isInbox ? l.listsInbox : s.name ?? '',
+                    _ => l.calendarAllLists,
+                  },
+                  tinted: true,
+                  onTap: () => _pickList(lists),
+                ),
+                _Chip(key: const Key('calendarFilterKind'), label: _kindLabel(l, _kind), tinted: true, onTap: _pickKind),
+              ],
+            ),
+            const SizedBox(height: Tokens.space4),
+            _DayDetails(date: selected, holidays: holidays?.on(selected) ?? const [], filter: filter),
           ],
         ),
       ),
     );
+  }
+
+  static DateTime _dt(CivilDate d) => DateTime(d.year, d.month, d.day);
+
+  static String _kindLabel(AppLocalizations l, String kind) => switch (kind) {
+        'task' => l.calendarKindTask,
+        'event' => l.calendarKindEvent,
+        'appointment' => l.calendarKindAppointment,
+        'booking' => l.calendarKindBooking,
+        _ => l.calendarAllKinds,
+      };
+
+  Future<void> _pickList(List<ListSummary> lists) async {
+    final l = AppLocalizations.of(context);
+    final picked = await showAppSheet<String>(
+      context,
+      (context) => AppSheet(
+        title: l.calendarFilterList,
+        children: [
+          for (final (id, name) in [('', l.calendarAllLists), for (final s in lists) (_valueOf(s), s.isInbox ? l.listsInbox : s.name ?? '')])
+            SheetOption(
+              key: Key('calendarList-${id.isEmpty ? 'all' : id}'),
+              icon: AppIcons.list,
+              title: name,
+              selected: (_list ?? '') == id,
+              onTap: () => Navigator.pop(context, id),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) setState(() => _list = picked.isEmpty ? null : picked);
+  }
+
+  Future<void> _pickKind() async {
+    final l = AppLocalizations.of(context);
+    final picked = await showAppSheet<String>(
+      context,
+      (context) => AppSheet(
+        title: l.calendarFilterKind,
+        children: [
+          for (final k in const ['', 'task', 'event', 'appointment', 'booking'])
+            SheetOption(
+              key: Key('calendarKind-${k.isEmpty ? 'all' : k}'),
+              icon: AppIcons.calendar,
+              title: _kindLabel(l, k),
+              selected: _kind == k,
+              onTap: () => Navigator.pop(context, k),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) setState(() => _kind = picked);
   }
 
   Widget _weekdayHeader(BuildContext context, int firstDay) {
@@ -201,22 +338,34 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
 /// Chip nhỏ của Figma (Hôm nay): nền thẻ, bo 8, chữ 11/16 primary.
 class _Chip extends StatelessWidget {
-  const _Chip({super.key, required this.label, required this.onTap});
+  const _Chip({super.key, required this.label, required this.onTap, this.selected, this.tinted = false});
   final String label;
   final VoidCallback onTap;
+  /// null: nút hành động (chữ primary); true/false: lựa chọn chế độ xem (đang chọn thì nền primary).
+  final bool? selected;
+  /// Chip bộ lọc: nền primary nhạt.
+  final bool tinted;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Material(
-      color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(Tokens.radiusSm),
-      child: InkWell(
+    final scheme = theme.colorScheme;
+    final on = selected ?? false;
+    final bg = on ? scheme.primary : (tinted ? scheme.primaryContainer : scheme.surface);
+    final fg = on ? scheme.onPrimary : (selected == false ? scheme.onSurfaceVariant : scheme.primary);
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+        color: bg,
         borderRadius: BorderRadius.circular(Tokens.radiusSm),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.all(Tokens.space2),
-          child: Text(label, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Tokens.radiusSm),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: Tokens.space2),
+            child: Text(label, style: theme.textTheme.labelSmall?.copyWith(color: fg)),
+          ),
         ),
       ),
     );
@@ -318,9 +467,10 @@ class _DayCell extends StatelessWidget {
 
 /// Ngày lễ + lịch hẹn/đặt chỗ + việc của ngày đang chọn.
 class _DayDetails extends ConsumerWidget {
-  const _DayDetails({required this.date, required this.holidays});
+  const _DayDetails({required this.date, required this.holidays, this.filter});
   final CivilDate date;
   final List<Holiday> holidays;
+  final ItemFilter? filter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -329,7 +479,10 @@ class _DayDetails extends ConsumerWidget {
     final lang = Localizations.localeOf(context).languageCode;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final sections = ref.watch(daySectionsProvider(date.toIso())).value;
-    final items = [...?sections?.today, ...?sections?.doneToday];
+    final items = [
+      for (final i in [...?sections?.today, ...?sections?.doneToday])
+        if (filter == null || filter!.matches(listId: i.listId, kind: i.kind)) i,
+    ];
     final timed = [for (final i in items) if (i.kind != 'task' && i.startsAt != null && !i.allDay) i];
     final others = [for (final i in items) if (!timed.contains(i)) i];
     final info = ref.watch(bookingInfoProvider(timed.map((i) => i.id).join('|'))).value ?? const {};

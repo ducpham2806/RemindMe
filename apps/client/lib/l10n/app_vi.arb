@@ -704,5 +704,20 @@
   "checklistAddHint": "Thêm việc chuẩn bị",
   "checklistEditTitle": "Sửa việc chuẩn bị",
   "checklistSave": "Lưu",
-  "checklistRemove": "Xóa dòng này"
+  "checklistRemove": "Xóa dòng này",
+  "calendarViewMonth": "Tháng",
+  "calendarViewWeek": "Tuần",
+  "calendarViewDay": "Ngày",
+  "calendarPrevWeek": "Tuần trước",
+  "calendarNextWeek": "Tuần sau",
+  "calendarPrevDay": "Hôm trước",
+  "calendarNextDay": "Hôm sau",
+  "calendarAllLists": "Tất cả danh sách",
+  "calendarAllKinds": "Mọi loại",
+  "calendarFilterList": "Xem danh sách",
+  "calendarFilterKind": "Xem loại",
+  "calendarKindTask": "Việc",
+  "calendarKindEvent": "Sự kiện",
+  "calendarKindAppointment": "Lịch hẹn",
+  "calendarKindBooking": "Đặt chỗ"
 }

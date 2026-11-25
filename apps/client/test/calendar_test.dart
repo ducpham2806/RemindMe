@@ -42,6 +42,73 @@ void main() {
     expect(find.text('Tháng 12 năm 2026'), findsOneWidget);
   });
 
+  testWidgets('vi: chế độ Tuần/Ngày (Figma 24), Hôm nay, lọc theo loại và danh sách áp cho cả chấm và danh sách ngày', (tester) async {
+    await pumpApp(tester, size: const Size(390, 1000), locale: const Locale('vi'), region: 'VN', seed: (repo) async {
+      await repo.create(title: 'Nộp hồ sơ', startDate: '2026-12-03');
+      await repo.create(title: 'Họp nhóm', kind: 'event', startDate: '2026-12-03');
+    });
+    await tester.tap(find.text('Lịch').last);
+    await tester.pumpAndSettle();
+
+    // Tuần chứa hôm nay (1/12, tuần bắt đầu thứ Hai theo vi): 30/11 – 6/12.
+    await tester.tap(find.byKey(const Key('calendarView-week')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('calendarDay-2026-11-30')), findsOneWidget);
+    expect(find.byKey(const Key('calendarDay-2026-12-06')), findsOneWidget);
+    expect(find.byKey(const Key('calendarDay-2026-12-07')), findsNothing);
+    expect(inDay('2026-12-03', find.byIcon(Icons.circle)), findsOneWidget);
+    await tester.tap(find.byKey(const Key('calendarNext')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('calendarDay-2026-12-07')), findsOneWidget);
+    expect(find.byKey(const Key('calendarDay-2026-12-06')), findsNothing);
+
+    // Ngày: không có lưới, tới/lui từng ngày, có ngày âm.
+    await tester.tap(find.byKey(const Key('calendarToday')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('calendarView-day')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('calendarDay-2026-12-01')), findsNothing);
+    await tester.tap(find.byKey(const Key('calendarNext')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('calendarNext')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('âm lịch'), findsOneWidget);
+    final list = find.byKey(const Key('calendarDayList'));
+    expect(find.descendant(of: list, matching: find.text('Nộp hồ sơ')), findsOneWidget);
+    expect(find.descendant(of: list, matching: find.text('Họp nhóm')), findsOneWidget);
+
+    // Lọc theo loại: Sự kiện.
+    await tester.tap(find.byKey(const Key('calendarFilterKind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('calendarKind-event')));
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: list, matching: find.text('Nộp hồ sơ')), findsNothing);
+    expect(find.descendant(of: list, matching: find.text('Họp nhóm')), findsOneWidget);
+    expect(find.text('Sự kiện'), findsOneWidget, reason: 'chip hiện loại đang lọc');
+
+    // Tháng + lọc Đặt chỗ: ngày 3/12 hết chấm.
+    await tester.tap(find.byKey(const Key('calendarView-month')));
+    await tester.pumpAndSettle();
+    expect(inDay('2026-12-03', find.byIcon(Icons.circle)), findsOneWidget);
+    await tester.tap(find.byKey(const Key('calendarFilterKind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('calendarKind-booking')));
+    await tester.pumpAndSettle();
+    expect(inDay('2026-12-03', find.byIcon(Icons.circle)), findsNothing);
+
+    // Mọi loại + Hộp thư: cả 2 việc chưa có list vẫn hiện.
+    await tester.tap(find.byKey(const Key('calendarFilterKind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('calendarKind-all')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('calendarFilterList')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('calendarList-inbox')));
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: list, matching: find.text('Họp nhóm')), findsOneWidget);
+    expect(inDay('2026-12-03', find.byIcon(Icons.circle)), findsOneWidget);
+  });
+
   testWidgets('en, US: 4/7/2027 là Chủ nhật → nghỉ bù thứ Hai 5/7; không có ngày âm; ngày trống có thông báo', (tester) async {
     await pumpApp(tester, size: const Size(390, 844), region: 'US');
     await tester.tap(find.text('Calendar').last);

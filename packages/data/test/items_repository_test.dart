@@ -92,6 +92,12 @@ void main() {
       await repo.skipOccurrence(daily, DateTime.utc(2026, 12, 3, 1));
       final counts = await repo.countsByDay(CivilDate(2026, 12, 1), CivilDate(2026, 12, 4), deviceTz: tz);
       expect(counts, {'2026-12-01': 1, '2026-12-02': 3, '2026-12-04': 1});
+      // Bộ lọc của màn Lịch: theo loại, theo danh sách (null = Hộp thư).
+      await repo.create(title: 'meeting', kind: 'event', startDate: '2026-12-02', listId: 'work');
+      final range = (CivilDate(2026, 12, 1), CivilDate(2026, 12, 4));
+      expect(await repo.countsByDay(range.$1, range.$2, deviceTz: tz, filter: const ItemFilter(kinds: {'event'})), {'2026-12-02': 1});
+      expect(await repo.countsByDay(range.$1, range.$2, deviceTz: tz, filter: const ItemFilter(listIds: {'work'})), {'2026-12-02': 1});
+      expect((await repo.countsByDay(range.$1, range.$2, deviceTz: tz, filter: const ItemFilter(listIds: {null}, kinds: {'task'})))['2026-12-02'], 3);
     });
 
     test('lặp ngày làm việc của VN: Hôm nay không có lần vào ngày nghỉ lễ 30/4, có lại 4/5', () async {

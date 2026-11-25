@@ -704,5 +704,20 @@
   "checklistAddHint": "[Àđđ à šţéþ~~~]",
   "checklistEditTitle": "[Éđîţ šţéþ~~~]",
   "checklistSave": "[Šàṽé~~]",
-  "checklistRemove": "[Ŕéɱöṽé~~]"
+  "checklistRemove": "[Ŕéɱöṽé~~]",
+  "calendarViewMonth": "[Ṁöñţĥ~~]",
+  "calendarViewWeek": "[Ŵééķ~~]",
+  "calendarViewDay": "[Đàý~]",
+  "calendarPrevWeek": "[Þŕéṽîöûš ŵééķ~~~~~]",
+  "calendarNextWeek": "[Ñéẋţ ŵééķ~~~]",
+  "calendarPrevDay": "[Þŕéṽîöûš đàý~~~~]",
+  "calendarNextDay": "[Ñéẋţ đàý~~~]",
+  "calendarAllLists": "[Àļļ ļîšţš~~~]",
+  "calendarAllKinds": "[Àļļ ţýþéš~~~]",
+  "calendarFilterList": "[Šĥöŵ ļîšţ~~~]",
+  "calendarFilterKind": "[Šĥöŵ ţýþé~~~]",
+  "calendarKindTask": "[Ţàšķš~~]",
+  "calendarKindEvent": "[Éṽéñţš~~]",
+  "calendarKindAppointment": "[Àþþöîñţɱéñţš~~~~~]",
+  "calendarKindBooking": "[Ɓööķîñĝš~~~]"
 }

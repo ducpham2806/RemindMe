@@ -3727,5 +3727,65 @@
   "checklistRemove": "Remove",
   "@checklistRemove": {
     "description": "Checklist line sheet: remove the line."
+  },
+  "calendarViewMonth": "Month",
+  "@calendarViewMonth": {
+    "description": "Calendar view switch: month grid (Figma 24)."
+  },
+  "calendarViewWeek": "Week",
+  "@calendarViewWeek": {
+    "description": "Calendar view switch: one week."
+  },
+  "calendarViewDay": "Day",
+  "@calendarViewDay": {
+    "description": "Calendar view switch: one day."
+  },
+  "calendarPrevWeek": "Previous week",
+  "@calendarPrevWeek": {
+    "description": "Tooltip of the previous-week button."
+  },
+  "calendarNextWeek": "Next week",
+  "@calendarNextWeek": {
+    "description": "Tooltip of the next-week button."
+  },
+  "calendarPrevDay": "Previous day",
+  "@calendarPrevDay": {
+    "description": "Tooltip of the previous-day button."
+  },
+  "calendarNextDay": "Next day",
+  "@calendarNextDay": {
+    "description": "Tooltip of the next-day button."
+  },
+  "calendarAllLists": "All lists",
+  "@calendarAllLists": {
+    "description": "Calendar filter chip: no list filter."
+  },
+  "calendarAllKinds": "All types",
+  "@calendarAllKinds": {
+    "description": "Calendar filter chip: no type filter."
+  },
+  "calendarFilterList": "Show list",
+  "@calendarFilterList": {
+    "description": "Title of the calendar list filter sheet."
+  },
+  "calendarFilterKind": "Show type",
+  "@calendarFilterKind": {
+    "description": "Title of the calendar type filter sheet."
+  },
+  "calendarKindTask": "Tasks",
+  "@calendarKindTask": {
+    "description": "Calendar type filter option."
+  },
+  "calendarKindEvent": "Events",
+  "@calendarKindEvent": {
+    "description": "Calendar type filter option."
+  },
+  "calendarKindAppointment": "Appointments",
+  "@calendarKindAppointment": {
+    "description": "Calendar type filter option."
+  },
+  "calendarKindBooking": "Bookings",
+  "@calendarKindBooking": {
+    "description": "Calendar type filter option."
   }
 }

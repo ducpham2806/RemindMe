@@ -98,6 +98,19 @@ class ItemView {
   bool get isScheduled => startsAt != null || startDate != null;
 }
 
+/// Bộ lọc của màn Lịch (Figma 24). [listIds]: null = mọi danh sách; chứa null = item chưa có list (Hộp thư).
+/// [kinds]: null = mọi loại; 'task' gồm cả 'habit'.
+class ItemFilter {
+  const ItemFilter({this.listIds, this.kinds});
+  final Set<String?>? listIds;
+  final Set<String>? kinds;
+
+  bool get isEmpty => listIds == null && kinds == null;
+
+  bool matches({required String? listId, required String kind}) =>
+      (listIds == null || listIds!.contains(listId)) && (kinds == null || kinds!.contains(kind == 'habit' ? 'task' : kind));
+}
+
 /// 1 dòng checklist của item (data-model: `items.checklist jsonb [{text, done}]`).
 class ChecklistItem {
   const ChecklistItem(this.text, {this.done = false});
@@ -270,16 +283,20 @@ class ItemsRepository {
 
   /// Số item (mở hoặc đã xong) theo ngày địa phương 'YYYY-MM-DD' trong [from, to] (gồm 2 đầu), cho chấm trên lịch tháng (UX §2.6).
   /// Item có giờ tính theo ngày ở [deviceTz]; chuỗi lặp trải từng lần (bỏ lần đã bỏ qua).
-  Future<Map<String, int>> countsByDay(CivilDate from, CivilDate to, {required String deviceTz}) async {
+  /// [filter]: chỉ đếm item thỏa (bộ lọc danh sách/loại ở màn Lịch); null = mọi item.
+  Future<Map<String, int>> countsByDay(CivilDate from, CivilDate to, {required String deviceTz, ItemFilter? filter}) async {
     final out = <String, int>{};
     void add(CivilDate d) {
       if (d.isBefore(from) || d.isAfter(to)) return;
       out.update(d.toIso(), (n) => n + 1, ifAbsent: () => 1);
     }
 
-    final rows = await (_db.select(_db.items)
-          ..where((t) => t.deletedAt.isNull() & t.status.isIn(const ['open', 'pending_quota', 'done'])))
-        .get();
+    final rows = [
+      for (final r in await (_db.select(_db.items)
+            ..where((t) => t.deletedAt.isNull() & t.status.isIn(const ['open', 'pending_quota', 'done'])))
+          .get())
+        if (filter == null || filter.matches(listId: r.listId, kind: r.kind ?? 'task')) r,
+    ];
     final recs = {for (final r in await (_db.select(_db.recurrences)..where((t) => t.deletedAt.isNull())).get()) r.itemId: r};
     final fromUtc = TimeZones.toUtc(CivilDateTime(from.addDays(-1), CivilTime(0)), deviceTz).utc;
     final toUtc = TimeZones.toUtc(CivilDateTime(to.addDays(2), CivilTime(0)), deviceTz).utc;
@@ -313,10 +330,10 @@ class ItemsRepository {
     return out;
   }
 
-  Stream<Map<String, int>> watchCountsByDay(CivilDate from, CivilDate to, {required String deviceTz}) async* {
-    yield await countsByDay(from, to, deviceTz: deviceTz);
+  Stream<Map<String, int>> watchCountsByDay(CivilDate from, CivilDate to, {required String deviceTz, ItemFilter? filter}) async* {
+    yield await countsByDay(from, to, deviceTz: deviceTz, filter: filter);
     await for (final _ in _db.tableUpdates(TableUpdateQuery.onAllTables([_db.items, _db.recurrences, _db.occurrenceLog]))) {
-      yield await countsByDay(from, to, deviceTz: deviceTz);
+      yield await countsByDay(from, to, deviceTz: deviceTz, filter: filter);
     }
   }
 

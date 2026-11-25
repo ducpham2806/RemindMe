@@ -78,7 +78,8 @@
   Tài liệu gốc (28): đọc lại bản gốc trên máy, thẻ vé/khách sạn/mục khác, "Mở bằng ứng dụng khác".
   Chi tiết chuyến 3 tab: Tài liệu (22: thẻ theo đặt chỗ, mã sao chép, mở tệp gốc giữ trên máy) và Hành lý (23: `trips.packing`,
   migration 10, danh sách gợi ý, nhóm, tiến độ).
-  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), C34 (pin theo hãng Android, cần native),
+  Lịch (24): Tháng/Tuần/Ngày, Hôm nay, lọc theo danh sách và loại (áp cho cả chấm trên lưới, `ItemFilter`).
+  Chưa làm theo Figma: C34 (pin theo hãng Android, cần native),
   tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 17 (nhập tay kèm tài liệu, cần OCR có tọa độ chữ), 19 (hộp đề xuất, cần worker/email), C56 (chỉ là hộp thoại của prototype).
 - Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09 (**10 `trip_packing` chờ chủ dự án chạy trong SQL Editor**), chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
