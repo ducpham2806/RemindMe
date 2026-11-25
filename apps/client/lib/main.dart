@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 
 import 'app.dart';
 import 'core/l10n/locale_resolution.dart';
+import 'data/originals.dart';
 import 'data/providers.dart';
 import 'data/remote/account.dart';
 import 'data/remote/remote_sync.dart';
@@ -96,6 +97,7 @@ Future<({SupabaseSyncApi api, RemoteSync Function(SyncEngine) sync, AccountApi F
     api: SupabaseSyncApi(client),
     sync: (SyncEngine engine) => RemoteSync(client: client, engine: engine, deviceId: deviceId, profile: profile),
     account: (SyncEngine engine, RemoteSync sync) =>
-        SupabaseAccount(client: client, engine: engine, sync: sync, deviceId: deviceId, deviceProfile: profile),
+        SupabaseAccount(
+            client: client, engine: engine, sync: sync, deviceId: deviceId, deviceProfile: profile, clearLocalFiles: FileOriginalsStore().clear),
   );
 }

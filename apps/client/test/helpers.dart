@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_client/app.dart';
+import 'package:remindme_client/data/originals.dart';
 import 'package:remindme_client/data/providers.dart';
 import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_platform/remindme_platform.dart';
@@ -20,7 +21,7 @@ late InMemoryNotificationScheduler testOs;
 Future<ProviderContainer> pumpApp(WidgetTester tester,
     {required Size size, Locale? locale, double textScale = 1.0, String? region = 'US', Future<void> Function(ItemsRepository repo)? seed,
     NotificationHealth health = const NotificationHealth(notificationsAllowed: true), Stream<NotificationTap>? taps,
-    List<Override> overrides = const []}) async {
+    List<Override> overrides = const [], OriginalsStore? originals}) async {
   testOs = InMemoryNotificationScheduler(maxPending: 60, healthValue: health);
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   tester.view.physicalSize = size;
@@ -38,6 +39,7 @@ Future<ProviderContainer> pumpApp(WidgetTester tester,
     notificationSchedulerProvider.overrideWithValue(testOs),
     notificationTapsProvider.overrideWithValue(taps ?? const Stream.empty()),
     nowProvider.overrideWithValue(() => testNow),
+    originalsStoreProvider.overrideWithValue(originals ?? MemoryOriginalsStore()),
     ...overrides,
   ]);
   addTearDown(() async {

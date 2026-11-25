@@ -5,7 +5,7 @@
 ## Đã có
 - Bộ docs v2 (`docs/INDEX.md`) + 17 ADR (ADR-017: ngày lễ là gói luật tự viết, tính trên máy; ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
 - DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
-  + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói, chặn/kẹp `field_clock` sai) + 109 test pgTAP.
+  + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói, chặn/kẹp `field_clock` sai) + 120 test pgTAP.
 - Khung repo: CI `.github/workflows/ci.yml` (3 job docs-and-lint, db + contract test, flutter đều pass trên GitHub, run #10), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
 - Workspace Dart/Flutter 3.50.1 (`pubspec.yaml` gốc): `packages/core` (HLC khớp server, UUIDv7, id Inbox, loại thiết bị, entitlement, giao thức sync),
   `packages/platform` (interface + `PlatformCapabilities`), `packages/data` (Drift mirror bảng server, outbox, `SyncEngine` merge HLC; contract test với RPC Postgres thật),
@@ -73,9 +73,11 @@
   mở Thêm nhanh vào list), Hôm nay trống (12: thẻ mời + 2 câu mẫu mở Thêm nhanh điền sẵn).
   Nhập tài liệu: chọn nguồn (13: chụp/thư viện ảnh "Sắp có" tới khi có OCR, tệp, bảng tính), đang đọc (14: tên tệp, Hủy), không đọc được
   (25: lý do, không tính lượt, chọn tệp khác / tự nhập), đã lưu (26: danh sách mục, "Xem chuyến đi" khi vừa gộp vào chuyến).
-  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, C34 (pin theo hãng Android, cần native),
-  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 17-19 (nhập tay kèm tài liệu, ghép cột, hộp đề xuất), 22-23 (tài liệu, hành lý của chuyến).
-- Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09, chạy thử
+  Chi tiết chuyến 3 tab: Tài liệu (22: thẻ theo đặt chỗ, mã sao chép, mở tệp gốc giữ trên máy) và Hành lý (23: `trips.packing`,
+  migration 10, danh sách gợi ý, nhóm, tiến độ).
+  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), C34 (pin theo hãng Android, cần native),
+  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 17-19 (nhập tay kèm tài liệu, ghép cột, hộp đề xuất).
+- Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09 (**10 `trip_packing` chờ chủ dự án chạy trong SQL Editor**), chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
   App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →
   sync, thử lại 1 lần khi thiếu profile/phiên), `RemoteSyncBinding` (đồng bộ lúc mở app, khi trở lại, 3 giây sau sửa, 15 phút/lần);
@@ -90,7 +92,7 @@
   (user test tự xóa qua `account_delete`, không cần SQL dọn).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
-  tab Tài liệu + checklist hành lý của chuyến, đăng nhập Google/Apple, flavors staging/prod.
+  đăng nhập Google/Apple, flavors staging/prod.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;

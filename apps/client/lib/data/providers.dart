@@ -10,6 +10,7 @@ import 'package:remindme_parsers/remindme_parsers.dart';
 import 'package:remindme_platform/remindme_platform.dart';
 
 import '../platform/device_time.dart';
+import 'originals.dart';
 import 'reminders.dart';
 import 'remote/account.dart';
 import 'remote/remote_sync.dart';
@@ -112,6 +113,12 @@ const inboxRouteId = 'inbox';
 final remindersProvider = StreamProvider.family<List<Reminder>, String>((ref, itemId) => ref.watch(itemsRepositoryProvider).watchReminders(itemId));
 
 /// Giờ hiện tại; test override để cố định ngày.
+/// Bản gốc tệp đã nhập, giữ trên máy (tab Tài liệu của chuyến). Test override bằng [MemoryOriginalsStore].
+final originalsStoreProvider = Provider<OriginalsStore>((ref) => FileOriginalsStore());
+
+/// Tên tệp gốc trên máy của 1 lần nhập (null: không có trên máy này).
+final originalNameProvider = FutureProvider.family<String?, String>((ref, importId) => ref.watch(originalsStoreProvider).nameOf(importId));
+
 final nowProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
 /// API đồng bộ. Build không có cấu hình Supabase (`SupabaseConfig`) thì chạy offline: mọi thay đổi nằm trong outbox.

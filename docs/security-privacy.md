@@ -17,6 +17,8 @@
 - **Worker** dùng service role, mạng riêng; mọi endpoint xác thực JWT và kiểm `user_id` của tài nguyên.
 - **Secrets**: Secret Manager; không có secret trong app; quét secret trong CI (gitleaks).
 - **File trên server** (chỉ MIME email và "Giữ bản gốc" của Plus): bucket private, signed URL 10 phút, quét MIME thật, giới hạn kích thước, xóa theo `expires_at`.
+- **Bản gốc trên máy** (tab Tài liệu của chuyến): tệp vé/đặt phòng đã nhập được chép vào thư mục riêng của app, không đồng bộ, không tải lên;
+  xóa khi đăng xuất, đổi tài khoản hoặc xóa tài khoản. Mở bằng app của hệ điều hành qua FileProvider, không xin quyền đọc bộ nhớ.
 - **Trích xuất trên máy**: ảnh, file, email được phân tích trên điện thoại, nội dung không gửi cho bên thứ ba. LLM của OS (nếu dùng) chạy cục bộ;
   đầu ra là JSON theo schema qua validator, nên nội dung độc hại trong tài liệu không ra lệnh được cho hệ thống.
 - **Giọng nói**: audio không lưu, không gửi lên server RemindMe. Nếu locale chỉ có STT online của Apple/Google, app báo rõ và xin đồng ý 1 lần;

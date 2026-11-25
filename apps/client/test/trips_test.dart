@@ -1,5 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:remindme_client/data/originals.dart';
 import 'package:remindme_client/data/providers.dart';
 
 import 'helpers.dart';
@@ -140,5 +144,51 @@ void main() {
     final db = c.read(appDatabaseProvider);
     final row = (await tester.runAsync(() async => (await db.select(db.trips).get()).single))!;
     expect(row.packing, contains('Áo mưa mỏng'));
+  });
+
+  testWidgets('en: tab Documents: vé máy bay có tuyến + mã, đặt chỗ nhập ở máy khác thì "Xem chi tiết"; không đặt chỗ thì trống', (tester) async {
+    final originals = MemoryOriginalsStore();
+    final c = await pumpApp(tester, size: const Size(390, 1100), originals: originals);
+    final ids = (await tester.runAsync(() async {
+      final trips = c.read(tripsRepositoryProvider), items = c.read(itemsRepositoryProvider);
+      final trip = await trips.create(title: 'Hanoi', startsOn: '2099-01-02', endsOn: '2099-01-04');
+      const tz = 'Asia/Ho_Chi_Minh';
+      final flight = await items.create(
+          title: 'ZZ 245', kind: 'booking', startsAt: DateTime.utc(2099, 1, 2, 3, 30), tz: tz, tripId: trip, importId: 'imp-1',
+          booking: const {'booking_type': 'flight', 'carrier_code': 'ZZ', 'number': '245', 'confirmation_code': 'ABC123',
+            'origin': {'code': 'SGN'}, 'destination': {'code': 'HAN', 'tz': tz}});
+      final hotel = await items.create(
+          title: 'Lotus Hotel', kind: 'booking', startsAt: DateTime.utc(2099, 1, 2, 7), tz: tz, endsAt: DateTime.utc(2099, 1, 4, 5), endTz: tz,
+          tripId: trip, importId: 'imp-2', booking: const {'booking_type': 'hotel', 'confirmation_code': 'HT2048'});
+      await originals.save('imp-1', 'itinerary.pkpass', Uint8List(3));
+      final empty = await trips.create(title: 'Empty', startsOn: '2099-02-02');
+      return (trip, flight, hotel, empty);
+    }))!;
+    final (trip, flight, hotel, empty) = ids;
+    await tester.tap(find.text('Trips').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('trip-$trip')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tripTab-docs')));
+    await tester.pumpAndSettle();
+    expect(find.text('Documents · 2'), findsOneWidget);
+    expect(find.text('Flight ZZ245'), findsOneWidget);
+    expect(find.textContaining('SGN → HAN'), findsOneWidget);
+    expect(find.text('ABC123'), findsOneWidget);
+    expect(find.text('HT2048'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('docsSummary'))).data, '2 bookings · 1 original file');
+    expect(tester.widget<Text>(find.byKey(Key('docFile-$hotel'))).data, 'Original file not on this device');
+    await tester.tap(find.byKey(Key('docOpen-$flight')));
+    await tester.pumpAndSettle();
+    expect(originals.opened, ['imp-1']);
+    await tester.ensureVisible(find.byKey(Key('docDetails-$hotel')));
+    await tester.tap(find.byKey(Key('docDetails-$hotel')));
+    await tester.pumpAndSettle();
+    expect(find.text('Lotus Hotel'), findsWidgets, reason: 'mở chi tiết đặt chỗ');
+
+    GoRouter.of(tester.element(find.byType(Scaffold).last)).go('/trips/$empty?tab=docs');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('docsEmpty')), findsOneWidget);
+    expect(find.byKey(const Key('docsAdd')), findsOneWidget);
   });
 }

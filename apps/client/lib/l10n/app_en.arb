@@ -3291,5 +3291,117 @@
   "packingTplJacket": "Warm jacket",
   "@packingTplJacket": {
     "description": "Suggested packing item (personal)."
+  },
+  "tripTabDocs": "Documents · {count}",
+  "@tripTabDocs": {
+    "description": "Trip detail tab: booking documents with count (Figma 22).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tripTabDocsEmpty": "Documents",
+  "@tripTabDocsEmpty": {
+    "description": "Trip detail tab: documents, none yet."
+  },
+  "docsOfflineTitle": "Available on this device",
+  "@docsOfflineTitle": {
+    "description": "Documents tab banner title."
+  },
+  "docsOfflineBody": "Opens instantly, even without a connection.",
+  "@docsOfflineBody": {
+    "description": "Documents tab banner body."
+  },
+  "docsHeader": "Trip documents",
+  "@docsHeader": {
+    "description": "Documents tab section header."
+  },
+  "docsSummary": "{count, plural, =1{1 booking} other{{count} bookings}} · {files, plural, =0{no original files} =1{1 original file} other{{files} original files}}",
+  "@docsSummary": {
+    "description": "Documents tab: number of bookings and of original files kept on the device.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "files": {
+        "type": "int"
+      }
+    }
+  },
+  "docsFlight": "Flight {number}",
+  "@docsFlight": {
+    "description": "Document card title for a flight; number like VN245.",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "docsTrain": "Train ticket {number}",
+  "@docsTrain": {
+    "description": "Document card title for a train ticket.",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "docsBus": "Bus ticket {number}",
+  "@docsBus": {
+    "description": "Document card title for a bus ticket.",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "docsHotel": "Hotel booking",
+  "@docsHotel": {
+    "description": "Document card title for a hotel booking."
+  },
+  "tripRouteShort": "{from} → {to}",
+  "@tripRouteShort": {
+    "description": "Route between two places, e.g. SGN → HAN.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "docsNoOriginal": "Original file not on this device",
+  "@docsNoOriginal": {
+    "description": "Document card: the original file was imported on another device."
+  },
+  "docsOpenOriginal": "Open original file",
+  "@docsOpenOriginal": {
+    "description": "Document card action: open the original imported file with the system viewer."
+  },
+  "docsOpenDetails": "View details",
+  "@docsOpenDetails": {
+    "description": "Document card action when there is no original file: open the booking."
+  },
+  "docsOpenFailed": "Couldn't open this file on your device.",
+  "@docsOpenFailed": {
+    "description": "Snackbar when no app can open the original file."
+  },
+  "docsFooter": "Original files stay on this device and are not uploaded.",
+  "@docsFooter": {
+    "description": "Documents tab footer about where originals are stored."
+  },
+  "docsEmptyTitle": "No documents yet",
+  "@docsEmptyTitle": {
+    "description": "Documents tab empty state title."
+  },
+  "docsEmptyBody": "Import a ticket or booking confirmation to keep it here, ready offline.",
+  "@docsEmptyBody": {
+    "description": "Documents tab empty state body."
+  },
+  "docsAdd": "Add a document",
+  "@docsAdd": {
+    "description": "Documents tab bottom button: opens import."
   }
 }

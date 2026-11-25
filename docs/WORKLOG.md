@@ -12,6 +12,17 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Figma 22-23: tài liệu và hành lý của chuyến · Claude Code
+- **Làm:** chi tiết chuyến có 3 tab (Lịch trình / Tài liệu · N / Hành lý · x/y, `?tab=` trên route). Hành lý: migration 10 `trips.packing`
+  (jsonb mảng, LWW cả mảng, check ≤ 200 món), Drift schema v3, `PackingItem` + `setPacking/addPacking`, thẻ tiến độ, nhóm theo mã
+  (Giấy tờ/Thiết bị/Cá nhân/Quần áo/Khác, tên nhóm theo ARB), danh sách gợi ý 6 món, sheet thêm/sửa, bỏ + Hoàn tác. Tài liệu: bản gốc tệp
+  nhập có đặt chỗ được giữ trên máy (`OriginalsStore`, `path_provider`), thẻ theo đặt chỗ (loại + số hiệu, ngày + tuyến, tên tệp gốc, mã sao chép,
+  "Mở tệp gốc" qua `open_filex` hoặc "Xem chi tiết" khi tệp ở máy khác), xóa bản gốc khi đăng xuất/đổi/xóa tài khoản. 47 key ARB.
+- **Quyết định:** checklist hành lý là cột trên `trips` (không phải item) để không lẫn vào Hôm nay/tìm kiếm; bản gốc chỉ trên máy (đúng
+  `max_originals_mb` = 0 của Free). Bỏ quyền READ_EXTERNAL_STORAGE/READ_MEDIA_* mà `open_filex` tự khai (`tools:node="remove"`).
+- **Kiểm chứng:** pgTAP 120 (+4), data 56 (+1), contract Postgres 8, client 110 (+2); analyze 0; lint 0; ảnh chụp so với Figma.
+- **Tiếp theo:** chủ dự án chạy migration 10 trên dev (SQL Editor); CI `android-build` kiểm `open_filex`. Còn 17-19, 03, C34, C40-C49.
+
 ## 2026-11-25 · Figma 13, 14, 25, 26: luồng nhập tài liệu · Claude Code
 - **Làm:** màn Nhập có 4 trạng thái mới: chọn nguồn (chụp/thư viện "Sắp có"), đang đọc (tên tệp, thanh chạy, Hủy bỏ kết quả giải mã),
   không đọc được (lý do theo trường hợp, "Không tính lượt nhập", chọn tệp khác, Tự nhập → Thêm nhanh), đã lưu (thay snackbar + quay về:

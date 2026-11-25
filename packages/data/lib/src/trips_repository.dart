@@ -69,7 +69,16 @@ class PackingItem {
 
 /// 1 đặt chỗ trong timeline chuyến đi (UX §2.5): item + chi tiết đặt chỗ.
 class TripSegment {
-  const TripSegment({required this.item, this.bookingType, this.origin, this.destination, this.confirmationCode, this.carrierCode, this.number});
+  const TripSegment({
+    required this.item,
+    this.bookingType,
+    this.origin,
+    this.destination,
+    this.confirmationCode,
+    this.carrierCode,
+    this.number,
+    this.importId,
+  });
   final ItemView item;
   final String? bookingType;
   final Map<String, Object?>? origin;
@@ -77,6 +86,8 @@ class TripSegment {
   final String? confirmationCode;
   final String? carrierCode;
   final String? number;
+  /// Lần nhập tạo ra đặt chỗ này (tab Tài liệu tìm bản gốc trên máy theo id này).
+  final String? importId;
 }
 
 /// Đặt chỗ đã có (để màn Xem lại nhận ra vé nhập lại: trùng thì bỏ, đổi giờ thì đề xuất cập nhật).
@@ -215,6 +226,7 @@ class TripsRepository {
           confirmationCode: details[i.id]?.confirmationCode,
           carrierCode: details[i.id]?.carrierCode,
           number: details[i.id]?.number,
+          importId: i.importId,
         ),
     ];
   }

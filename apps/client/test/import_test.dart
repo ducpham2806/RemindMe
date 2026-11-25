@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_client/core/theme/app_icons.dart';
+import 'package:remindme_client/data/originals.dart';
 import 'package:remindme_client/data/providers.dart';
 import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_client/features/import/import_decode.dart';
@@ -192,7 +193,8 @@ void main() {
 
   testWidgets('vi: đặt phòng → chuyến đi mới, tab Chuyến đi + timeline; nhập lại cùng email: "Đã có", gộp vào chuyến có sẵn', (tester) async {
     final hotel = fixture('synthetic-email-hotel-0001', 'input.eml');
-    final c = await pumpApp(tester, size: phone, locale: const Locale('vi'), region: 'VN', overrides: [
+    final originals = MemoryOriginalsStore();
+    final c = await pumpApp(tester, size: phone, locale: const Locale('vi'), region: 'VN', originals: originals, overrides: [
       syncDecoder,
       filePickerProvider.overrideWithValue(picker([hotel, hotel])),
     ]);
@@ -221,6 +223,19 @@ void main() {
     expect(find.byKey(Key('tripSegment-${items.single.id}')), findsOneWidget);
     expect(find.text('14:00 · Nhận phòng'), findsOneWidget, reason: 'nhận phòng và trả phòng theo giờ nơi ở');
     expect(find.text('12:00 · Trả phòng'), findsOneWidget);
+
+    // Bản gốc giữ trên máy, tab Tài liệu (Figma 22) hiện tên tệp và mở bằng app của hệ điều hành.
+    final importId = items.single.importId!;
+    expect(originals.files[importId]?.$1, 'input.eml');
+    expect(find.text('Tài liệu · 1'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tripTab-docs')));
+    await tester.pumpAndSettle();
+    expect(find.text('Xác nhận đặt phòng'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(Key('docFile-${items.single.id}'))).data, 'input.eml');
+    expect(tester.widget<Text>(find.byKey(const Key('docsSummary'))).data, '1 đặt chỗ · 1 tệp gốc');
+    await tester.tap(find.byKey(Key('docOpen-${items.single.id}')));
+    await tester.pumpAndSettle();
+    expect(originals.opened, [importId]);
 
     await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
     await tester.tap(find.byKey(const Key('importPick')));

@@ -207,6 +207,15 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           trips: trips,
           quota: _quota,
         );
+    // Giữ bản gốc trên máy cho tab Tài liệu của chuyến (chỉ khi có đặt chỗ); lỗi ghi tệp không làm hỏng lần nhập.
+    if (preview.candidates.indexed.any((e) => _selected[e.$1] && e.$2.bookingType != null)) {
+      try {
+        await ref.read(originalsStoreProvider).save(result.importId, _request!.name, _request!.bytes);
+        ref.invalidate(originalNameProvider(result.importId));
+      } on Object {
+        // Hết dung lượng / không ghi được: bỏ qua, tab Tài liệu vẫn hiện thông tin đặt chỗ.
+      }
+    }
     if (!mounted) return;
     setState(() {
       _busy = false;

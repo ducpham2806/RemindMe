@@ -7,7 +7,7 @@
 
 | Môi trường | Project ref | Region | Ghi chú |
 |---|---|---|---|
-| dev | `msgamxrlohgszgpvvyfd` (tên RemindMe) | `ap-southeast-1` | Tạo 2026-11-25, đã áp migrations 01-09 (09 do chủ dự án chạy trong SQL Editor) |
+| dev | `msgamxrlohgszgpvvyfd` (tên RemindMe) | `ap-southeast-1` | Tạo 2026-11-25, đã áp migrations 01-09 (09 do chủ dự án chạy trong SQL Editor); 10 `trip_packing` chờ chạy trong SQL Editor |
 
 Region chọn lúc tạo, không đổi được. Đề xuất region cho bản chính thức vẫn chờ chủ dự án duyệt (STATE "Tiếp theo" mục 1).
 

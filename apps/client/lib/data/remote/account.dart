@@ -93,13 +93,27 @@ abstract interface class AccountApi {
 /// - Email đã có tài khoản: `signInWithOtp` → mã `email` → sang tài khoản đó; dữ liệu trên máy (của user ẩn danh) được thay bằng dữ liệu tài khoản.
 /// Email template "Magic Link" và "Change Email Address" phải có `{{ .Token }}` (guides/backend-setup.md §3).
 class SupabaseAccount implements AccountApi {
-  SupabaseAccount({required this.client, required this.engine, required this.sync, required this.deviceId, required this.deviceProfile});
+  SupabaseAccount({
+    required this.client,
+    required this.engine,
+    required this.sync,
+    required this.deviceId,
+    required this.deviceProfile,
+    this.clearLocalFiles,
+  });
 
   final SupabaseClient client;
   final SyncEngine engine;
   final RemoteSync sync;
   final String deviceId;
   final Future<DeviceProfile> Function() deviceProfile;
+  /// Xóa tệp chỉ có trên máy (bản gốc đã nhập) cùng lúc với dữ liệu local.
+  final Future<void> Function()? clearLocalFiles;
+
+  Future<void> _resetLocal() async {
+    await engine.resetLocalData();
+    await clearLocalFiles?.call();
+  }
 
   @override
   AccountInfo? get current {
@@ -147,7 +161,7 @@ class SupabaseAccount implements AccountApi {
 
   @override
   Future<void> finishSwitch() async {
-    await engine.resetLocalData();
+    await _resetLocal();
     await sync.resume(reset: true);
   }
 
@@ -166,7 +180,7 @@ class SupabaseAccount implements AccountApi {
           // Phiên đã bị kết thúc ở server: vẫn đăng xuất trên máy.
         }
         await client.auth.signOut();
-        await engine.resetLocalData();
+        await _resetLocal();
         await sync.resume(reset: true);
       });
 
@@ -181,7 +195,7 @@ class SupabaseAccount implements AccountApi {
         }
         // User đã bị xóa ở server: chỉ bỏ phiên trên máy, không gọi /logout.
         await client.auth.signOut(scope: SignOutScope.local);
-        await engine.resetLocalData();
+        await _resetLocal();
         await sync.resume(reset: true);
       });
 

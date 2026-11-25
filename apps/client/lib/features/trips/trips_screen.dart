@@ -16,6 +16,7 @@ import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 import '../items/item_tile.dart';
 import '../common/text_prompt.dart';
+import 'trip_documents.dart';
 import 'trip_packing.dart';
 
 /// Tab Chuyến đi (US-20, Figma 20): lọc Sắp tới / Đã qua, thẻ chuyến (ngày, số ngày, nơi đến, tuyến, vài chặng đầu, "Xem lịch trình"),
@@ -367,7 +368,7 @@ Map<String, (DateTime, String)> freeGapsAfter(List<TripSegment> segments, {Durat
 class TripDetailScreen extends ConsumerStatefulWidget {
   const TripDetailScreen({super.key, required this.id, this.initialTab = 'itinerary'});
   final String id;
-  /// 'itinerary' | 'packing'.
+  /// 'itinerary' | 'docs' | 'packing'.
   final String initialTab;
 
   static IconData iconFor(String? type) => switch (type) {
@@ -545,6 +546,14 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                           selected: _tab == 'itinerary',
                           onTap: () => setState(() => _tab = 'itinerary')),
                       _FilterChip(
+                          key: const Key('tripTab-docs'),
+                          label: switch (documentSegments(segments).length) {
+                            0 => l.tripTabDocsEmpty,
+                            final n => l.tripTabDocs(n),
+                          },
+                          selected: _tab == 'docs',
+                          onTap: () => setState(() => _tab = 'docs')),
+                      _FilterChip(
                           key: const Key('tripTab-packing'),
                           label: switch (trip?.packing) {
                             final p? when p.isNotEmpty => l.tripTabPacking(p.where((x) => x.done).length, p.length),
@@ -557,6 +566,8 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                   const SizedBox(height: Tokens.space4),
                   if (_tab == 'packing')
                     if (trip != null) PackingTab(trip: trip) else const SizedBox.shrink()
+                  else if (_tab == 'docs')
+                    DocumentsTab(segments: segments)
                   else ...[
                   if (zones.isNotEmpty)
                     DecoratedBox(
@@ -586,17 +597,19 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space3, Tokens.screenMargin, Tokens.space3),
               child: FilledButton.icon(
-                key: Key(_tab == 'packing' ? 'packingAdd' : 'tripAddToItinerary'),
+                key: Key(switch (_tab) { 'packing' => 'packingAdd', 'docs' => 'docsAdd', _ => 'tripAddToItinerary' }),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsetsDirectional.all(14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.radiusMd)),
                   textStyle: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 icon: AppIcon(AppIcons.plus, size: 20, color: scheme.onPrimary),
-                label: Text(_tab == 'packing' ? l.packingAdd : l.tripAddToItinerary),
-                onPressed: _tab == 'packing'
-                    ? (trip == null ? null : () => editPackingItem(context, ref, trip))
-                    : () => _addMenu(context, start),
+                label: Text(switch (_tab) { 'packing' => l.packingAdd, 'docs' => l.docsAdd, _ => l.tripAddToItinerary }),
+                onPressed: switch (_tab) {
+                  'packing' => trip == null ? null : () => editPackingItem(context, ref, trip),
+                  'docs' => () => context.push('/import'),
+                  _ => () => _addMenu(context, start),
+                },
               ),
             ),
           ],
@@ -693,8 +706,8 @@ String _hm(BuildContext context, CivilDateTime w) => MaterialLocalizations.of(co
     .formatTimeOfDay(TimeOfDay(hour: w.time!.hour, minute: w.time!.minute), alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
 
 /// Hàng mã đặt chỗ + nút sao chép (Figma 21).
-class _CodeRow extends StatelessWidget {
-  const _CodeRow({required this.code});
+class TripCodeRow extends StatelessWidget {
+  const TripCodeRow({super.key, required this.code});
   final String code;
 
   @override
@@ -794,7 +807,7 @@ class _LegCard extends ConsumerWidget {
                 ],
               ),
             ],
-            if (segment.confirmationCode != null) ...[const SizedBox(height: Tokens.space3), _CodeRow(code: segment.confirmationCode!)],
+            if (segment.confirmationCode != null) ...[const SizedBox(height: Tokens.space3), TripCodeRow(code: segment.confirmationCode!)],
             if (offsets.isNotEmpty) ...[
               const SizedBox(height: Tokens.space3),
               Row(children: [
@@ -875,7 +888,7 @@ class _HotelCard extends StatelessWidget {
               ]),
               if (!checkOut && segment.confirmationCode != null) ...[
                 const SizedBox(height: Tokens.space3),
-                _CodeRow(code: segment.confirmationCode!),
+                TripCodeRow(code: segment.confirmationCode!),
               ],
             ],
           ),
