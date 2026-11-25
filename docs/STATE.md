@@ -43,6 +43,7 @@
   + dòng giải thích (số lấy từ gói). Chuyến mới vẫn bị server từ chối thì máy bỏ chuyến, gỡ `trip_id` khỏi đặt chỗ và gửi lại (không mất item, data-model §4).
 - US-12b phần đầu: ngày lễ VN/US/GB từ gói luật tự viết (ADR-017, `HolidayCalendar` trong `packages/core`); tab Lịch dạng tháng (UX §2.6): chấm ở ngày
   có item (gồm từng lần của chuỗi lặp), ngày âm dưới ngày dương khi ngôn ngữ có âm lịch, ngày nghỉ lễ tô màu, chạm ngày → ngày lễ (nghỉ lễ/nghỉ bù) + item.
+  Lặp "Các ngày làm việc" (US-11): thứ không phải cuối tuần theo CLDR + bỏ ngày nghỉ lễ của vùng (`workdays_region`), áp cho Hôm nay, lịch và nhắc.
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.
@@ -81,7 +82,7 @@
 - Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
 - Hệ âm lịch trong lựa chọn lặp và trên tab Lịch đang suy theo ngôn ngữ giao diện (vi/zh/ko), vùng ngày lễ theo vùng máy; chuyển sang cài đặt
   `profiles.calendar_systems`/`region` (+ bật/tắt ngày âm) khi có màn Cài đặt.
-- Ngày lễ còn thiếu: gợi ý "Ngày lễ: dời nhắc công việc?", lặp "ngày làm việc" (cần cuối tuần theo CLDR weekData + `workdays_region`), gói ngày lễ
+- Ngày lễ còn thiếu: gợi ý "Ngày lễ: dời nhắc công việc?", server `app.rrule_fires_on` chưa trừ ngày lễ khi đếm quota (đếm dư, an toàn), gói ngày lễ
   cho các nước khác (AU, CA, IN, đợt locale cấp B), màu loại item trên chấm lịch.
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.
 

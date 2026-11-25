@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:remindme_client/data/providers.dart';
 import 'package:remindme_data/remindme_data.dart';
 
 import 'helpers.dart';
@@ -41,7 +42,7 @@ void main() {
     expect(chip('pickTime', '6:00 PM'), findsOneWidget, reason: '11:00Z = 18:00 giờ VN (máy test giả lập múi giờ VN)');
     await tester.tap(find.byKey(const Key('repeatRow')));
     await tester.pumpAndSettle();
-    expect(find.text('Every weekday'), findsOneWidget);
+    expect(find.text('Every working day'), findsOneWidget);
     await tester.tap(find.text('Every Tue'));
     await settleReminders(tester);
     expect(find.descendant(of: find.byKey(const Key('repeatRow')), matching: find.text('Every Tue')), findsOneWidget);
@@ -67,4 +68,20 @@ void main() {
     await settleReminders(tester);
     expect(find.descendant(of: find.byKey(const Key('repeatRow')), matching: find.text('Ngày 23 tháng 10 âm lịch hằng năm')), findsOneWidget);
   });
+
+  for (final (region, byday, workdays) in [('VN', 'MO,TU,WE,TH,FR', 'VN'), ('SA', 'MO,TU,WE,TH,SU', 'SA')]) {
+    testWidgets('ngày làm việc ở $region: BYDAY theo cuối tuần CLDR + workdays_region', (tester) async {
+      final c = await pumpApp(tester, size: phone, locale: const Locale('vi'), region: region, seed: seedTimed);
+      await openDetail(tester);
+      await tester.tap(find.byKey(const Key('repeatRow')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Các ngày làm việc'));
+      await settleReminders(tester);
+      final db = c.read(appDatabaseProvider);
+      final rec = (await tester.runAsync(() => db.select(db.recurrences).getSingle()))!;
+      expect(rec.rrule, 'FREQ=WEEKLY;BYDAY=$byday');
+      expect(rec.workdaysRegion, workdays);
+      expect(find.descendant(of: find.byKey(const Key('repeatRow')), matching: find.text('Các ngày làm việc')), findsOneWidget);
+    });
+  }
 }

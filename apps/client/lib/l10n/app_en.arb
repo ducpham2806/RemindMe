@@ -586,6 +586,10 @@
   "@recurNone": {
     "description": "Repeat option: no recurrence."
   },
+  "recurWorkdays": "Every working day",
+  "@recurWorkdays": {
+    "description": "Repeat option: every day that is not a weekend day or a public holiday in the user's country."
+  },
   "recurWeekdays": "Every weekday",
   "@recurWeekdays": {
     "description": "Repeat option: Monday to Friday."

@@ -16,6 +16,7 @@ String describeRecurrence(BuildContext context, Map<String, Object?> r) {
     return month == null ? l.recurLunarMonthly(day) : l.recurLunarYearly(day, month);
   }
   if (r['kind'] == 'after_completion') return l.recurCustom;
+  if (r['workdays_region'] != null) return l.recurWorkdays;
   final parts = <String, String>{
     for (final p in (r['rrule'] as String? ?? '').split(';'))
       if (p.contains('=')) p.split('=').first.toUpperCase(): p.split('=').last.toUpperCase(),

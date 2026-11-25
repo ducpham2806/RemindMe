@@ -5,7 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:remindme_core/remindme_core.dart';
 import 'package:remindme_data/remindme_data.dart';
 
-import '../data/providers.dart' show OfflineSyncApi, openAppDatabase;
+import '../data/providers.dart' show OfflineSyncApi, loadBundledHolidays, openAppDatabase;
 import '../data/reminders.dart';
 import '../l10n/app_localizations.dart';
 import 'device_time.dart';
@@ -27,6 +27,7 @@ Future<void> _handle(String? actionId, String? payload) async {
     final engine = SyncEngine(db: db, api: const OfflineSyncApi(), clock: HlcClock(deviceId), deviceId: deviceId);
     final changed = await NotificationActionHandler(ItemsRepository(engine)).handle(actionId, payload);
     if (!changed) return;
+    await loadBundledHolidays(deviceRegion());
     final locale = await savedUiLocale(db) ?? PlatformDispatcher.instance.locale;
     final os = LocalNotificationScheduler();
     await os.init(AppNotificationTexts(lookupAppLocalizations(locale), localeTag: locale.toLanguageTag(), use24h: false).labels);

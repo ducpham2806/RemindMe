@@ -1,6 +1,7 @@
 import 'package:rrule/rrule.dart' as rr;
 
 import 'civil.dart';
+import 'holidays.dart';
 import 'lunar.dart';
 
 /// Lặp lại (reminder-engine.md §4), cùng dạng hàng bảng `recurrences`: rrule | calendar | after_completion.
@@ -9,6 +10,12 @@ sealed class Recurrence {
   const Recurrence();
 
   factory Recurrence.fromRow(Map<String, Object?> row) {
+    final inner = Recurrence._fromRow(row);
+    final region = row['workdays_region'] as String?;
+    return region == null || inner is AfterCompletion ? inner : WorkdaysRecurrence(inner, region);
+  }
+
+  static Recurrence _fromRow(Map<String, Object?> row) {
     switch (row['kind']) {
       case 'rrule':
         return RRuleRecurrence(row['rrule']! as String);
@@ -53,6 +60,8 @@ class RRuleRecurrence extends Recurrence {
     // rrule tính trên DateTime UTC như giờ tường: không có DST xen vào.
     final s = _utc(start);
     final fromUtc = DateTime.utc(from.year, from.month, from.day);
+    // Khoảng nằm hẳn trước ngày bắt đầu chuỗi: không có lần nào (thư viện rrule assert `before >= start`).
+    if (DateTime.utc(to.year, to.month, to.day).add(const Duration(days: 1)).isBefore(s)) return const [];
     final out = <CivilDateTime>[];
     for (final d in _rule.getInstances(
       start: s,
@@ -122,4 +131,21 @@ class AfterCompletion extends Recurrence {
   List<CivilDateTime> between(CivilDateTime start, CivilDate from, CivilDate to,
           {Set<CivilDateTime> exdates = const {}, int limit = 1000}) =>
       !start.date.isBefore(from) && !start.date.isAfter(to) && !exdates.contains(start) ? [start] : const [];
+}
+
+/// "Ngày làm việc" (reminder-engine.md §4): quy tắc gốc (thường là RRULE theo các ngày không phải cuối tuần của vùng) bỏ thêm
+/// ngày nghỉ lễ của [region] (`recurrences.workdays_region`, gói ngày lễ ADR-017). Vùng chưa có gói thì giữ nguyên quy tắc gốc.
+class WorkdaysRecurrence extends Recurrence {
+  WorkdaysRecurrence(this.inner, this.region);
+  final Recurrence inner;
+  final String region;
+
+  @override
+  List<CivilDateTime> between(CivilDateTime start, CivilDate from, CivilDate to,
+      {Set<CivilDateTime> exdates = const {}, int limit = 1000}) {
+    final cal = HolidayCalendars.of(region);
+    final all = inner.between(start, from, to, exdates: exdates, limit: limit);
+    if (cal == null) return all;
+    return [for (final o in all) if (!cal.isDayOff(o.date)) o];
+  }
 }

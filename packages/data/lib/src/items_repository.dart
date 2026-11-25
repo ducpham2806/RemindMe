@@ -302,6 +302,7 @@ class ItemsRepository {
               'rrule': r.rrule,
               'calendar': r.calendar == null ? null : jsonDecode(r.calendar!),
               'interval_days': r.intervalDays,
+              'workdays_region': r.workdaysRegion,
             });
 
   Future<Map<String, Object?>?> recurrenceOf(String itemId) async {
@@ -312,6 +313,7 @@ class ItemsRepository {
       'rrule': r.rrule,
       'calendar': r.calendar == null ? null : jsonDecode(r.calendar!),
       'interval_days': r.intervalDays,
+      'workdays_region': r.workdaysRegion,
     };
   }
 
@@ -484,7 +486,7 @@ class ItemsRepository {
     });
   }
 
-  /// Đặt quy tắc lặp ([rule] dạng hàng `recurrences`: kind + rrule/calendar) hoặc bỏ lặp (null).
+  /// Đặt quy tắc lặp ([rule] dạng hàng `recurrences`: kind + rrule/calendar, `workdays_region` cho "ngày làm việc") hoặc bỏ lặp (null).
   Future<void> setRecurrence(String itemId, Map<String, Object?>? rule, {DateTime? start}) async {
     if (rule == null) {
       if (await isRecurring(itemId)) await engine.delete(SyncTable.recurrences, itemId);
@@ -495,6 +497,7 @@ class ItemsRepository {
       'kind': rule['kind'],
       'rrule': rule['rrule'],
       'calendar': rule['calendar'],
+      'workdays_region': rule['workdays_region'],
       'dtstart': start.toUtc().toIso8601String(),
     });
     // Việc lặp kêu theo giờ nơi đang đứng (reminder-engine.md §5).

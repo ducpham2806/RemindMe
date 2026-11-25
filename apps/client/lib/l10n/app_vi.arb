@@ -100,6 +100,7 @@
   "itemRemoveDate": "Bỏ ngày",
   "itemRepeatLabel": "Lặp lại",
   "recurNone": "Không lặp",
+  "recurWorkdays": "Các ngày làm việc",
   "recurWeekdays": "Các ngày trong tuần",
   "recurNeedsDate": "Đặt ngày để lặp lại",
   "listsInbox": "Hộp thư",

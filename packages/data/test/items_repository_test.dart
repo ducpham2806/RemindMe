@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:remindme_core/remindme_core.dart';
@@ -90,6 +92,22 @@ void main() {
       await repo.skipOccurrence(daily, DateTime.utc(2026, 12, 3, 1));
       final counts = await repo.countsByDay(CivilDate(2026, 12, 1), CivilDate(2026, 12, 4), deviceTz: tz);
       expect(counts, {'2026-12-01': 1, '2026-12-02': 3, '2026-12-04': 1});
+    });
+
+    test('lặp ngày làm việc của VN: Hôm nay không có lần vào ngày nghỉ lễ 30/4, có lại 4/5', () async {
+      HolidayCalendars.register(HolidayCalendar.parse(File('../core/data/holidays/VN.json').readAsStringSync()));
+      addTearDown(HolidayCalendars.clear);
+      const tz = 'Asia/Ho_Chi_Minh';
+      final id = await repo.create(title: 'Chấm công', startsAt: DateTime.utc(2026, 4, 1, 1), tz: tz,
+          recurrence: {'kind': 'rrule', 'rrule': 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR', 'workdays_region': 'VN'},
+          recurrenceStart: DateTime.utc(2026, 4, 1, 1));
+      DayWindow vnDay(int m, int d) => DayWindow(
+          startUtc: DateTime.utc(2026, m, d).subtract(const Duration(hours: 7)), endUtc: DateTime.utc(2026, m, d + 1).subtract(const Duration(hours: 7)),
+          localDate: DayWindow.isoDate(DateTime.utc(2026, m, d)));
+      expect((await repo.watchToday(vnDay(4, 29), deviceTz: tz).first).today.map((i) => i.id), [id]);
+      expect((await repo.watchToday(vnDay(4, 30), deviceTz: tz).first).today, isEmpty);
+      expect((await repo.watchToday(vnDay(5, 4), deviceTz: tz).first).today.map((i) => i.id), [id]);
+      expect((await repo.recurrenceOf(id))!['workdays_region'], 'VN');
     });
 
     test('đổi tên, ghi chú, ưu tiên, xóa', () async {

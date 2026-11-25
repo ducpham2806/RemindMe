@@ -13,6 +13,14 @@ import '../../l10n/app_localizations.dart';
 
 const _byday = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 
+/// "Ngày làm việc" (US-11): các thứ không phải cuối tuần của [region] (CLDR weekData) + `workdays_region` để bỏ ngày nghỉ lễ
+/// (vùng chưa có gói ngày lễ thì chỉ bỏ cuối tuần, có gói rồi thì tự áp dụng).
+Map<String, Object?> workdaysRule(String? region) {
+  final weekend = weekendDays(region);
+  final days = [for (var d = DateTime.monday; d <= DateTime.sunday; d++) if (!weekend.contains(d)) _byday[d - 1]];
+  return {'kind': 'rrule', 'rrule': 'FREQ=WEEKLY;BYDAY=${days.join(',')}', 'workdays_region': ?region?.toUpperCase()};
+}
+
 /// Hệ âm lịch gợi ý theo ngôn ngữ giao diện. Sau này lấy từ `profiles.calendar_systems` (cài đặt người dùng).
 LunarSystem? lunarSystemForLanguage(String languageCode) => switch (languageCode) {
       'vi' => LunarSystem.vi,
@@ -123,7 +131,7 @@ class ScheduleEditor extends ConsumerWidget {
           enabled: wall != null,
           onTap: wall == null
               ? null
-              : () => _pickRepeat(context, current: rule, date: wall.date, onPick: (r) async {
+              : () => _pickRepeat(context, region: ref.read(deviceRegionProvider), current: rule, date: wall.date, onPick: (r) async {
                     final start = wall.time == null
                         ? TimeZones.toUtc(CivilDateTime(wall.date, CivilTime(0)), tz).utc
                         : TimeZones.toUtc(wall, tz).utc;
@@ -142,13 +150,14 @@ class ScheduleEditor extends ConsumerWidget {
   }
 
   Future<void> _pickRepeat(BuildContext context,
-      {required Map<String, Object?>? current, required CivilDate date, required Future<void> Function(Map<String, Object?>?) onPick}) {
+      {required String? region,
+      required Map<String, Object?>? current, required CivilDate date, required Future<void> Function(Map<String, Object?>?) onPick}) {
     final lunarSystem = lunarSystemForLanguage(Localizations.localeOf(context).languageCode);
     final lunar = lunarSystem == null ? null : LunarCalendar(lunarSystem).fromSolar(date);
     final options = <Map<String, Object?>?>[
       null,
       {'kind': 'rrule', 'rrule': 'FREQ=DAILY'},
-      {'kind': 'rrule', 'rrule': 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'},
+      workdaysRule(region),
       {'kind': 'rrule', 'rrule': 'FREQ=WEEKLY;BYDAY=${_byday[date.weekday - 1]}'},
       {'kind': 'rrule', 'rrule': 'FREQ=MONTHLY;BYMONTHDAY=${date.day}'},
       {'kind': 'rrule', 'rrule': 'FREQ=YEARLY'},
@@ -157,8 +166,10 @@ class ScheduleEditor extends ConsumerWidget {
         {'kind': 'calendar', 'calendar': {'system': lunarSystem.wire, 'month': lunar.month, 'day': lunar.day}},
       ],
     ];
-    String key(Map<String, Object?>? r) => r == null ? '' : '${r['kind']}|${r['rrule']}|${jsonEncode(r['calendar'])}';
-    final selected = key(current == null ? null : {'kind': current['kind'], 'rrule': current['rrule'], 'calendar': current['calendar']});
+    String key(Map<String, Object?>? r) => r == null ? '' : '${r['kind']}|${r['rrule']}|${jsonEncode(r['calendar'])}|${r['workdays_region']}';
+    final selected = key(current == null
+        ? null
+        : {'kind': current['kind'], 'rrule': current['rrule'], 'calendar': current['calendar'], 'workdays_region': current['workdays_region']});
     final l = AppLocalizations.of(context);
     return showModalBottomSheet<void>(
       context: context,

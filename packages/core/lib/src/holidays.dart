@@ -3,6 +3,30 @@ import 'dart:convert';
 import 'civil.dart';
 import 'lunar.dart';
 
+/// Cuối tuần theo vùng (CLDR supplemental weekData: weekendStart/weekendEnd), thứ theo `DateTime.monday` = 1 … `sunday` = 7.
+/// Vùng không có trong bảng hoặc null: Thứ Bảy + Chủ nhật.
+Set<int> weekendDays(String? region) => switch (region?.toUpperCase()) {
+      'AF' => const {DateTime.thursday, DateTime.friday},
+      'IR' => const {DateTime.friday},
+      'IN' || 'UG' => const {DateTime.sunday},
+      'BH' || 'DZ' || 'EG' || 'IL' || 'IQ' || 'JO' || 'KW' || 'LY' || 'OM' || 'QA' || 'SA' || 'SD' || 'SY' || 'YE' =>
+        const {DateTime.friday, DateTime.saturday},
+      _ => const {DateTime.saturday, DateTime.sunday},
+    };
+
+/// Gói ngày lễ đã nạp trong tiến trình (app nạp gói của vùng lúc khởi động, test nạp từ tệp). Lặp "ngày làm việc" tra ở đây;
+/// vùng chưa nạp thì chỉ bỏ cuối tuần.
+abstract final class HolidayCalendars {
+  static final Map<String, HolidayCalendar> _loaded = {};
+
+  static void register(HolidayCalendar c) => _loaded[c.region.toUpperCase()] = c;
+
+  static HolidayCalendar? of(String region) => _loaded[region.toUpperCase()];
+
+  /// Chỉ cho test.
+  static void clear() => _loaded.clear();
+}
+
 /// 1 ngày lễ đã tính ra cho 1 năm.
 class Holiday {
   const Holiday({required this.date, required this.id, required this.names, this.dayOff = true, this.substitute = false});

@@ -138,13 +138,20 @@ final todaySectionsProvider =
 /// Gói ngày lễ có sẵn trong app (packages/core/data/holidays, ADR-017).
 const bundledHolidayRegions = {'VN', 'US', 'GB'};
 
+/// Nạp gói ngày lễ của [region] có sẵn trong app và đăng ký cho lặp "ngày làm việc" ([HolidayCalendars]); null = chưa có gói.
+/// `main()` và isolate nền gọi trước khi lập lịch nhắc.
+Future<HolidayCalendar?> loadBundledHolidays(String? region) async {
+  final r = region?.toUpperCase();
+  if (r == null || !bundledHolidayRegions.contains(r)) return null;
+  if (HolidayCalendars.of(r) case final c?) return c;
+  final data = await rootBundle.load('packages/remindme_core/data/holidays/$r.json');
+  final c = HolidayCalendar.parse(utf8.decode(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)));
+  HolidayCalendars.register(c);
+  return c;
+}
+
 /// Ngày lễ theo vùng của máy; null = vùng chưa có gói hoặc không biết vùng.
-final holidayCalendarProvider = FutureProvider<HolidayCalendar?>((ref) async {
-  final region = ref.watch(deviceRegionProvider)?.toUpperCase();
-  if (region == null || !bundledHolidayRegions.contains(region)) return null;
-  final data = await rootBundle.load('packages/remindme_core/data/holidays/$region.json');
-  return HolidayCalendar.parse(utf8.decode(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)));
-});
+final holidayCalendarProvider = FutureProvider<HolidayCalendar?>((ref) => loadBundledHolidays(ref.watch(deviceRegionProvider)));
 
 /// Số item theo ngày của lưới tháng (khóa: ngày đầu và cuối lưới 'YYYY-MM-DD|YYYY-MM-DD').
 final calendarCountsProvider = StreamProvider.family<Map<String, int>, String>((ref, range) {

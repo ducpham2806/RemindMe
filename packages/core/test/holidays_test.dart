@@ -75,4 +75,31 @@ void main() {
       }
     }
   });
+
+  test('cuối tuần theo CLDR weekData', () {
+    expect(weekendDays('VN'), {DateTime.saturday, DateTime.sunday});
+    expect(weekendDays('SA'), {DateTime.friday, DateTime.saturday});
+    expect(weekendDays('IN'), {DateTime.sunday});
+    expect(weekendDays(null), {DateTime.saturday, DateTime.sunday});
+  });
+
+  group('lặp ngày làm việc', () {
+    tearDown(HolidayCalendars.clear);
+    final row = {'kind': 'rrule', 'rrule': 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR', 'workdays_region': 'VN'};
+    final start = CivilDateTime(CivilDate(2026, 4, 1), CivilTime(8));
+
+    test('bỏ ngày nghỉ lễ của vùng (30/4, 1/5), giữ ngày kỷ niệm', () {
+      HolidayCalendars.register(pack('VN'));
+      final r = Recurrence.fromRow(row);
+      expect([for (final o in r.between(start, CivilDate(2026, 4, 27), CivilDate(2026, 5, 4))) o.date.toIso()],
+          ['2026-04-27', '2026-04-28', '2026-04-29', '2026-05-04']);
+      expect(r.nextAfter(start, CivilDateTime(CivilDate(2026, 4, 29), CivilTime(9)))!.date.toIso(), '2026-05-04');
+      expect(r.between(start, CivilDate(2026, 10, 20), CivilDate(2026, 10, 20)), hasLength(1), reason: '20/10 (thứ Ba) là ngày kỷ niệm, không nghỉ');
+      expect(r.between(start, CivilDate(2026, 3, 1), CivilDate(2026, 3, 31)), isEmpty, reason: 'khoảng trước ngày bắt đầu chuỗi');
+    });
+
+    test('vùng chưa nạp gói: chỉ bỏ cuối tuần như quy tắc gốc', () {
+      expect(Recurrence.fromRow(row).between(start, CivilDate(2026, 4, 27), CivilDate(2026, 5, 4)), hasLength(6));
+    });
+  });
 }

@@ -134,6 +134,7 @@ PlannerItem plannerItemOf(Item i, RecurrenceRow? rec, {required String deviceTz}
         'rrule': rec.rrule,
         'calendar': rec.calendar == null ? null : jsonDecode(rec.calendar!),
         'interval_days': rec.intervalDays,
+        'workdays_region': rec.workdaysRegion,
       });
     } on Object {
       recurrence = null; // quy tắc hỏng/chưa hỗ trợ (hijri ở Phase 2): coi như không lặp
