@@ -64,6 +64,23 @@ void main() {
     expect(find.text('No time set'), findsNothing);
   });
 
+  testWidgets('vuốt về đầu dòng = Hoãn nhắc; việc chưa có nhắc thì thêm nhắc vào giờ hoãn', (tester) async {
+    final c = await pumpApp(tester, size: phone, locale: en, seed: seedDay);
+    await tester.drag(find.text('Client meeting'), const Offset(-300, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('Snooze'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('snooze-1h')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('snoozeApply')));
+    await settleReminders(tester);
+    expect(find.text('Client meeting'), findsOneWidget, reason: 'hoãn không đổi giờ của việc');
+    final db = c.read(appDatabaseProvider);
+    final r = (await tester.runAsync(() => db.select(db.reminders).getSingle()))!;
+    expect(find.textContaining('Snoozed until'), findsOneWidget);
+    expect(r.offsetMinutes, isNull);
+    expect(DateTime.fromMillisecondsSinceEpoch(r.at!, isUtc: true), testNow.toUtc().add(const Duration(hours: 1)));
+  });
+
   testWidgets('chi tiết: đổi tên, ưu tiên, xóa có xác nhận', (tester) async {
     final c = await pumpApp(tester, size: phone, locale: en, seed: seedDay);
     await tester.tap(find.text('Buy a gift'));

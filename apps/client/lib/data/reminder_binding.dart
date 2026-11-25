@@ -133,7 +133,9 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
       return; // DB đổi → tự lập lịch lại
     }
     final p = NotificationPayload.tryParse(tap.payload);
-    if (p != null && mounted) unawaited(widget.router.push('/item/${p.itemId}'));
+    if (p != null && mounted) {
+      unawaited(widget.router.push('/item/${p.itemId}?reminder=${p.reminderId}&at=${p.occurrenceAt.millisecondsSinceEpoch}'));
+    }
   }
 
   @override

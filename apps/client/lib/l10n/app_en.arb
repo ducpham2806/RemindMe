@@ -1946,5 +1946,350 @@
   "revokedSignIn": "Sign in again",
   "@revokedSignIn": {
     "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "dtSheetTitle": "Date & time",
+  "@dtSheetTitle": {
+    "description": "Title of the date and time picker sheet (Figma 05)"
+  },
+  "dtQuickToday": "Today",
+  "@dtQuickToday": {
+    "description": "Quick pick in the date sheet"
+  },
+  "dtQuickTomorrow": "Tomorrow",
+  "@dtQuickTomorrow": {
+    "description": "Quick pick in the date sheet"
+  },
+  "dtQuickWeekend": "Weekend",
+  "@dtQuickWeekend": {
+    "description": "Quick pick: the next weekend day (weekend days follow the region)"
+  },
+  "dtTimeLabel": "Time",
+  "@dtTimeLabel": {
+    "description": "Label of the time row in the date sheet and lunar repeat sheet"
+  },
+  "dtConfirm": "Confirm · {when}",
+  "@dtConfirm": {
+    "description": "Confirm button of the date sheet. {when} is a short date with time, e.g. '11/25, 8:00 AM'",
+    "placeholders": {
+      "when": {
+        "type": "String",
+        "example": "11/25, 8:00 AM"
+      }
+    }
+  },
+  "dtConfirmAllDay": "{date}, all day",
+  "@dtConfirmAllDay": {
+    "description": "Value inside dtConfirm when no time is set",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "11/25"
+      }
+    }
+  },
+  "repeatDaily": "Daily",
+  "@repeatDaily": {
+    "description": "Repeat option (Figma 06)"
+  },
+  "repeatDailyHint": "Every day",
+  "@repeatDailyHint": {
+    "description": "Subtitle of the Daily option when the item has no time"
+  },
+  "repeatDailyAt": "Every day at {time}",
+  "@repeatDailyAt": {
+    "description": "Subtitle of the Daily option",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "8:00 PM"
+      }
+    }
+  },
+  "repeatWorkdays": "Working days",
+  "@repeatWorkdays": {
+    "description": "Repeat option: weekdays minus the user's weekend and public holidays"
+  },
+  "repeatWorkdaysHint": "Skips your weekend and the holidays you chose",
+  "@repeatWorkdaysHint": {
+    "description": "Subtitle of the Working days option"
+  },
+  "repeatWeekly": "Weekly",
+  "@repeatWeekly": {
+    "description": "Repeat option; subtitle is the weekday name"
+  },
+  "repeatMonthly": "Monthly",
+  "@repeatMonthly": {
+    "description": "Repeat option and lunar frequency value"
+  },
+  "repeatMonthlyHint": "Day {day}",
+  "@repeatMonthlyHint": {
+    "description": "Subtitle of the Monthly option: day of the month",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "repeatYearly": "Yearly",
+  "@repeatYearly": {
+    "description": "Repeat option and lunar frequency value; subtitle is the date"
+  },
+  "repeatLunar": "Lunar",
+  "@repeatLunar": {
+    "description": "Button opening the lunar repeat sheet"
+  },
+  "repeatCustom": "Custom",
+  "@repeatCustom": {
+    "description": "Button opening the custom repeat sheet"
+  },
+  "repeatApply": "Apply · {name}",
+  "@repeatApply": {
+    "description": "Apply button of the repeat sheets. {name} is the chosen repeat, e.g. 'Daily'",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Daily"
+      }
+    }
+  },
+  "repeatEnds": "Ends: {end}",
+  "@repeatEnds": {
+    "description": "Tappable line under the repeat options",
+    "placeholders": {
+      "end": {
+        "type": "String",
+        "example": "Never"
+      }
+    }
+  },
+  "repeatEndTitle": "Ends",
+  "@repeatEndTitle": {
+    "description": "Title of the repeat end sheet"
+  },
+  "repeatEndNever": "Never",
+  "@repeatEndNever": {
+    "description": "Repeat end option"
+  },
+  "repeatEndOnDate": "On a date",
+  "@repeatEndOnDate": {
+    "description": "Repeat end option"
+  },
+  "repeatEndAfterCount": "After a number of times",
+  "@repeatEndAfterCount": {
+    "description": "Repeat end option"
+  },
+  "repeatEndCountPrompt": "Number of times",
+  "@repeatEndCountPrompt": {
+    "description": "Dialog title asking how many times the series repeats"
+  },
+  "repeatEndOn": "on {date}",
+  "@repeatEndOn": {
+    "description": "Value in repeatEnds",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12/31/2026"
+      }
+    }
+  },
+  "repeatEndAfter": "{n, plural, =1{after 1 time} other{after {n} times}}",
+  "@repeatEndAfter": {
+    "description": "Value in repeatEnds",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "repeatCustomTitle": "Custom repeat",
+  "@repeatCustomTitle": {
+    "description": "Title of the custom repeat sheet"
+  },
+  "repeatEvery": "Every",
+  "@repeatEvery": {
+    "description": "Label before the interval stepper in the custom repeat sheet"
+  },
+  "repeatIncrease": "Increase",
+  "@repeatIncrease": {
+    "description": "Tooltip of the + button"
+  },
+  "repeatDecrease": "Decrease",
+  "@repeatDecrease": {
+    "description": "Tooltip of the − button"
+  },
+  "repeatUnitDay": "Day",
+  "@repeatUnitDay": {
+    "description": "Unit in the custom repeat sheet"
+  },
+  "repeatUnitWeek": "Week",
+  "@repeatUnitWeek": {
+    "description": "Unit in the custom repeat sheet"
+  },
+  "repeatUnitMonth": "Month",
+  "@repeatUnitMonth": {
+    "description": "Unit in the custom repeat sheet"
+  },
+  "repeatUnitYear": "Year",
+  "@repeatUnitYear": {
+    "description": "Unit in the custom repeat sheet"
+  },
+  "recurUntil": "{rule}, until {date}",
+  "@recurUntil": {
+    "description": "Repeat description with an end date",
+    "placeholders": {
+      "rule": {
+        "type": "String",
+        "example": "Every day"
+      },
+      "date": {
+        "type": "String",
+        "example": "Dec 31"
+      }
+    }
+  },
+  "recurTimes": "{n, plural, =1{{rule}, once} other{{rule}, {n} times}}",
+  "@recurTimes": {
+    "description": "Repeat description with a count",
+    "placeholders": {
+      "rule": {
+        "type": "String",
+        "example": "Every day"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "lunarSheetTitle": "Lunar repeat",
+  "@lunarSheetTitle": {
+    "description": "Title of the lunar repeat sheet (Figma 07)"
+  },
+  "lunarSheetHint": "For death anniversaries, full moons and family occasions.",
+  "@lunarSheetHint": {
+    "description": "Under the lunar calendar name"
+  },
+  "lunarFirstDay": "1st day",
+  "@lunarFirstDay": {
+    "description": "Preset: first day of every lunar month"
+  },
+  "lunarFullMoon": "Full moon",
+  "@lunarFullMoon": {
+    "description": "Preset: 15th day of every lunar month"
+  },
+  "lunarOwnDate": "Specific date",
+  "@lunarOwnDate": {
+    "description": "Preset: a chosen lunar day and month, yearly"
+  },
+  "lunarDayLabel": "Lunar day",
+  "@lunarDayLabel": {
+    "description": "Card label"
+  },
+  "lunarMonthLabel": "Lunar month",
+  "@lunarMonthLabel": {
+    "description": "Card label"
+  },
+  "lunarEveryMonth": "Every month",
+  "@lunarEveryMonth": {
+    "description": "Lunar month card value when the repeat is monthly"
+  },
+  "lunarFrequency": "Frequency",
+  "@lunarFrequency": {
+    "description": "Row label: yearly or monthly"
+  },
+  "lunarLeap": "In a leap month",
+  "@lunarLeap": {
+    "description": "Row label: what to do when the lunar year has a leap month"
+  },
+  "lunarLeapSkip": "Regular month only",
+  "@lunarLeapSkip": {
+    "description": "Leap month option"
+  },
+  "lunarLeapBoth": "Both months",
+  "@lunarLeapBoth": {
+    "description": "Leap month option"
+  },
+  "lunarDay30Note": "Short months have 29 days. Day 30 then falls on the 29th.",
+  "@lunarDay30Note": {
+    "description": "Note in the lunar day picker"
+  },
+  "lunarNext": "Next: {date}.",
+  "@lunarNext": {
+    "description": "Next solar date of a lunar repeat",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Aug 27"
+      }
+    }
+  },
+  "lunarRecalc": "The solar date is recalculated each time.",
+  "@lunarRecalc": {
+    "description": "Explains that lunar dates move on the solar calendar"
+  },
+  "lunarNoNext": "No date in the next two years.",
+  "@lunarNoNext": {
+    "description": "Shown when the lunar rule has no occurrence soon (e.g. only leap months)"
+  },
+  "lunarApply": "Apply lunar repeat",
+  "@lunarApply": {
+    "description": "Apply button of the lunar sheet"
+  },
+  "snoozeTitle": "Snooze",
+  "@snoozeTitle": {
+    "description": "Title of the snooze sheet (Figma 08) and button on item details"
+  },
+  "snoozeMinutes": "{n, plural, =1{1 minute} other{{n} minutes}}",
+  "@snoozeMinutes": {
+    "description": "Snooze option",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "snoozeHours": "{n, plural, =1{1 hour} other{{n} hours}}",
+  "@snoozeHours": {
+    "description": "Snooze option",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "snoozeTonight": "Tonight",
+  "@snoozeTonight": {
+    "description": "Snooze option"
+  },
+  "snoozeTomorrowMorning": "Tomorrow morning",
+  "@snoozeTomorrowMorning": {
+    "description": "Snooze option"
+  },
+  "snoozePick": "Pick date & time",
+  "@snoozePick": {
+    "description": "Snooze option"
+  },
+  "snoozeNote": "Only this reminder moves. The repeat schedule stays the same.",
+  "@snoozeNote": {
+    "description": "Note under the snooze options"
+  },
+  "snoozeApply": "Snooze until {when}",
+  "@snoozeApply": {
+    "description": "Snooze button",
+    "placeholders": {
+      "when": {
+        "type": "String",
+        "example": "2:40 PM"
+      }
+    }
+  },
+  "snoozeDone": "Snoozed until {when}",
+  "@snoozeDone": {
+    "description": "Snackbar after snoozing",
+    "placeholders": {
+      "when": {
+        "type": "String",
+        "example": "2:40 PM"
+      }
+    }
   }
 }

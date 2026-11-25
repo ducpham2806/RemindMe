@@ -19,6 +19,15 @@ class Fmt {
         alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(_context),
       );
 
+  /// Giờ tường (không đổi múi giờ), theo cài đặt 12/24 giờ của máy.
+  String clock(CivilTime t) => MaterialLocalizations.of(_context).formatTimeOfDay(
+        TimeOfDay(hour: t.hour, minute: t.minute),
+        alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(_context),
+      );
+
+  /// Ngày tháng dạng số ngắn: en-US "11/25", vi "25/11".
+  String monthDay(CivilDate d) => DateFormat.Md(_locale).format(DateTime(d.year, d.month, d.day));
+
   /// Ngày dạng số đầy đủ: en-US "11/25/2026", vi "25/11/2026".
   String numericDate(DateTime local) => DateFormat.yMd(_locale).format(local);
 

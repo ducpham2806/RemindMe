@@ -31,7 +31,9 @@ enum AppIcons {
   mic,
   camera,
   image,
-  flag;
+  flag,
+  clock,
+  moon;
 
   String get asset => 'assets/icons/${switch (this) {
         chevronSmall => 'chevron_small',

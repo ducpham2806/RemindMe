@@ -11,20 +11,24 @@ import '../../data/providers.dart';
 import '../../data/reminders.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
+import '../schedule/snooze_sheet.dart';
 import 'schedule_editor.dart';
 
 /// Chi tiết item (UX §2.3, Figma 04): list + trạng thái (chạm để xong/mở lại), tên, ghi chú, thẻ Ngày & giờ / Nhắc / Lặp / Danh sách / Ưu tiên.
 /// Tự lưu khi rời trường (không có nút Lưu). Checklist, tag chưa có.
 class ItemDetailScreen extends ConsumerWidget {
-  const ItemDetailScreen({super.key, required this.id});
+  const ItemDetailScreen({super.key, required this.id, this.reminderId, this.occurrence});
   final String id;
+  /// Mở từ thông báo: nhắc và lần nhắc vừa kêu (cho nút Hoãn nhắc).
+  final String? reminderId;
+  final DateTime? occurrence;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final item = ref.watch(itemProvider(id));
     return switch (item) {
-      AsyncData(:final value?) => _Editor(key: ValueKey(id), item: value),
+      AsyncData(:final value?) => _Editor(key: ValueKey(id), item: value, reminderId: reminderId, occurrence: occurrence),
       AsyncData() => Scaffold(
           appBar: AppBar(),
           body: EmptyState(icon: Icons.inbox_outlined, title: l.itemNotFound),
@@ -36,8 +40,10 @@ class ItemDetailScreen extends ConsumerWidget {
 }
 
 class _Editor extends ConsumerStatefulWidget {
-  const _Editor({super.key, required this.item});
+  const _Editor({super.key, required this.item, this.reminderId, this.occurrence});
   final ItemView item;
+  final String? reminderId;
+  final DateTime? occurrence;
 
   @override
   ConsumerState<_Editor> createState() => _EditorState();
@@ -140,6 +146,20 @@ class _EditorState extends ConsumerState<_Editor> {
     if (picked != null) await _repo.setPriority(widget.item.id, picked);
   }
 
+  /// Nhắc + lần nhắc có thể hoãn: lần vừa kêu (mở từ thông báo) hoặc việc 1 lần đang tới giờ (trong 1 giờ tới / đã qua trong ngày).
+  (String, DateTime)? _snoozeTarget(List<Reminder> reminders, DateTime now) {
+    if (widget.item.isDone || reminders.isEmpty) return null;
+    if (widget.reminderId != null && reminders.any((r) => r.id == widget.reminderId)) {
+      return (widget.reminderId!, widget.occurrence ?? widget.item.startsAt ?? now);
+    }
+    final at = widget.item.startsAt;
+    final recurring = ref.watch(recurrenceProvider(widget.item.id)).value != null;
+    if (at == null || widget.item.allDay || recurring) return null;
+    final diff = at.difference(now);
+    if (diff > const Duration(hours: 1) || diff < const Duration(hours: -24)) return null;
+    return (reminders.first.id, at);
+  }
+
   static String _priorityName(AppLocalizations l, int p) => switch (p) {
         1 => l.priorityLow,
         2 => l.priorityMedium,
@@ -156,6 +176,7 @@ class _EditorState extends ConsumerState<_Editor> {
     final lists = ref.watch(listsProvider).value ?? const <ListSummary>[];
     final list = lists.where((s) => item.listId == null ? s.isInbox : s.id == item.listId).firstOrNull;
     final listName = list == null || list.isInbox ? l.listsInbox : list.name!;
+    final snoozeTarget = _snoozeTarget(ref.watch(remindersProvider(item.id)).value ?? const [], ref.watch(nowProvider)());
     Widget pill(String text, {required Color bg, required Color fg, Key? key, VoidCallback? onTap}) => Material(
           key: key,
           color: bg,
@@ -184,6 +205,8 @@ class _EditorState extends ConsumerState<_Editor> {
             runSpacing: Tokens.space2,
             children: [
               pill(listName, bg: scheme.primaryContainer, fg: scheme.primary),
+              if (snoozeTarget != null)
+                pill(l.snoozeTitle, key: const Key('itemSnooze'), bg: scheme.surface, fg: scheme.primary, onTap: () => snoozeItem(context, ref, item: item, reminderId: snoozeTarget.$1, occurrence: snoozeTarget.$2)),
               Semantics(
                 button: true,
                 toggled: item.isDone,

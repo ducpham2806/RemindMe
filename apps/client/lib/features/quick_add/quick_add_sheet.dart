@@ -12,6 +12,7 @@ import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../data/reminders.dart';
 import '../../l10n/app_localizations.dart';
+import '../schedule/date_time_sheet.dart';
 
 /// Quick Add (UX §2.2): gõ câu tự nhiên, NLU (V1) phân tích ngay khi gõ và hiện chip thời điểm / lặp / tag / ưu tiên.
 /// Mơ hồ thì hiện lựa chọn, không đoán im lặng (voice-and-text-input.md §5). Mic (V2) thêm sau.
@@ -290,17 +291,17 @@ class _DraftChips extends StatelessWidget {
   final VoidCallback onChanged;
 
   Future<void> _pickWhen(BuildContext context) async {
-    final current = draft.when ?? CivilDateTime(today);
-    final date = await showDatePicker(
-      context: context,
-      initialDate: DateTime(current.date.year, current.date.month, current.date.day),
-      firstDate: DateTime(today.year - 1),
-      lastDate: DateTime(today.year + 20),
-    );
-    if (date == null || !context.mounted) return;
-    final t = current.time;
-    final time = await showTimePicker(context: context, initialTime: TimeOfDay(hour: t?.hour ?? 9, minute: t?.minute ?? 0));
-    draft.manualWhen = CivilDateTime(CivilDate.of(date), time == null ? t : CivilTime(time.hour, time.minute));
+    final container = ProviderScope.containerOf(context, listen: false);
+    final current = draft.when;
+    final picked = await showDateTimeSheet(context,
+        today: today,
+        tz: container.read(deviceTimeZoneProvider),
+        now: container.read(nowProvider)(),
+        region: container.read(holidayRegionProvider).value ?? container.read(deviceRegionProvider),
+        date: current?.date,
+        time: current == null ? CivilTime(9) : current.time);
+    if (picked == null) return;
+    draft.manualWhen = CivilDateTime(picked.date, picked.time);
     onChanged();
   }
 

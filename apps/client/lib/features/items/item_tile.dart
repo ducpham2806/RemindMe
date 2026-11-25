@@ -9,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
+import '../schedule/snooze_sheet.dart';
 
 /// Một dòng item (UX §2.1): ô đánh dấu xong, tiêu đề, dòng "khi nào". Vuốt từ đầu dòng = Xong (có Hoàn tác).
 class ItemTile extends ConsumerWidget {
@@ -148,9 +149,26 @@ class ItemTile extends ConsumerWidget {
       child: card,
     );
     if (item.isDone) return tile;
+    final snoozable = item.startsAt != null && !item.allDay;
     return Dismissible(
       key: ValueKey('dismiss-${item.rowKey}'),
-      direction: DismissDirection.startToEnd,
+      // Vuốt từ đầu dòng = Xong; vuốt về đầu dòng = Hoãn nhắc (việc có giờ, UX §2.1).
+      direction: snoozable ? DismissDirection.horizontal : DismissDirection.startToEnd,
+      secondaryBackground: !snoozable
+          ? null
+          : Padding(
+              padding: EdgeInsetsDirectional.symmetric(horizontal: inset ? Tokens.screenMargin : 0, vertical: Tokens.space1),
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(Tokens.radiusMd)),
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(end: Tokens.space4),
+                    child: AppIcon(AppIcons.clock, size: 22, color: scheme.primary, semanticLabel: AppLocalizations.of(context).snoozeTitle),
+                  ),
+                ),
+              ),
+            ),
       background: Padding(
         padding: EdgeInsetsDirectional.symmetric(horizontal: inset ? Tokens.screenMargin : 0, vertical: Tokens.space1),
         child: DecoratedBox(
@@ -164,7 +182,11 @@ class ItemTile extends ConsumerWidget {
           ),
         ),
       ),
-      confirmDismiss: (_) async {
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart) {
+          await snoozeItem(context, ref, item: item);
+          return false;
+        }
         await _toggle(context, ref);
         return false; // stream DB tự bỏ dòng; không để Dismissible giữ widget đã gỡ
       },

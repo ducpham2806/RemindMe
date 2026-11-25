@@ -39,7 +39,17 @@ GoRouter buildRouter() => GoRouter(
             ]),
           ],
         ),
-        GoRoute(path: '/item/:id', builder: (_, state) => ItemDetailScreen(id: state.pathParameters['id']!)),
+        GoRoute(
+          path: '/item/:id',
+          // Mở từ thông báo: ?reminder=<id>&at=<ms UTC của lần nhắc> để hiện nút Hoãn nhắc cho đúng lần đó.
+          builder: (_, state) => ItemDetailScreen(
+            id: state.pathParameters['id']!,
+            reminderId: state.uri.queryParameters['reminder'],
+            occurrence: int.tryParse(state.uri.queryParameters['at'] ?? '') == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(int.parse(state.uri.queryParameters['at']!), isUtc: true),
+          ),
+        ),
         GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
         GoRoute(path: '/import', builder: (_, _) => const ImportScreen()),
         GoRoute(path: '/login', builder: (_, state) => LoginScreen(email: state.uri.queryParameters['email']), routes: [

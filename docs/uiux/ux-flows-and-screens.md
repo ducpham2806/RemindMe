@@ -72,6 +72,8 @@ Vuốt phải: Xong. Vuốt trái: Hoãn (mở SnoozePicker). Nhấn giữ: ch�
 ### 2.3 Chi tiết item
 Tiêu đề, ghi chú (markdown nhẹ), thời gian (bắt đầu/kết thúc, cả ngày, múi giờ), lặp (preset + tùy chỉnh + âm lịch),
 nhắc (nhiều mốc, kiểu báo thức), list, tag, ưu tiên, checklist, vị trí, nguồn ("Từ email Vietjet 24/11" + mở bản gốc).
+Ngày & giờ, Lặp lại, Lặp âm lịch, Hoãn nhắc là bottom sheet (Figma 05-08, `design-system.md` §6). Nút "Hoãn nhắc" hiện khi mở
+chi tiết từ thông báo (hoãn đúng lần vừa kêu) hoặc việc 1 lần tới giờ trong 1 giờ tới / đã qua trong ngày. Lặp âm lịch dời item về lần tới.
 
 ### 2.4 Import → Xem lại
 ```
