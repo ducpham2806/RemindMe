@@ -51,7 +51,11 @@
   tab Chuyến đi (lọc Sắp tới/Đã qua, thẻ chuyến: ngày, số ngày, nơi đến, tuyến, 3 chặng đầu, Xem lịch trình; thẻ Thêm vé; dòng hạn mức từ cache),
   chi tiết chuyến (theo ngày "Ngày N", banner giờ địa phương UTC±, thẻ bay giờ đi/đến + thời lượng + mã đặt chỗ sao chép được + nhắc,
   thẻ nhận/trả phòng, ngày trống, nút Thêm vào lịch trình → hoạt động hoặc nhập vé).
-  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, các màn còn lại (Xem lại, Tôi, cài đặt, onboarding…).
+  Đợt 2: màn Xem lại khi nhập (thẻ mục, tuyến lớn, ô "Cần kiểm tra"/"Đã kiểm tra", trường vàng phải xác nhận trước khi lưu, thẻ gộp chuyến
+  chạm để chọn, thẻ hạn mức lịch hẹn từ cache), form sửa dạng thẻ + "Đúng, giữ nguyên", màn Tôi (lối tắt, cài đặt, chọn ngôn ngữ giao diện và
+  sáng/tối trong app, lưu trên máy).
+  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, Ngôn ngữ & vùng (C50),
+  Thêm nhanh (02), chi tiết nhắc (04), onboarding/đăng nhập/gói (chờ auth, paywall).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.
@@ -89,7 +93,8 @@
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).
 - Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
 - Tôi → Ngôn ngữ & vùng (quốc gia ngày lễ, hệ lịch phụ; mặc định theo máy/ngôn ngữ) lưu ở `LocalPrefs` trên máy: chuyển sang
-  `profiles.region`/`calendar_systems` khi có `SupabaseSyncApi`. Chưa có chọn ngôn ngữ giao diện, định dạng, giọng nói.
+  `profiles.region`/`calendar_systems` khi có `SupabaseSyncApi`. Ngôn ngữ giao diện + sáng/tối chọn ở Tôi cũng chỉ trên máy
+  (chưa gọi per-app language của OS); chưa có chọn định dạng, giọng nói.
 - Ngày lễ còn thiếu: server `app.rrule_fires_on` chưa trừ ngày lễ khi đếm quota (đếm dư, an toàn), gói ngày lễ
   cho các nước khác (AU, CA, IN, đợt locale cấp B), màu loại item trên chấm lịch.
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.

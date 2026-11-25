@@ -12,6 +12,19 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · UI theo Figma đợt 2: Xem lại khi nhập, form sửa, Tôi + chọn ngôn ngữ/giao diện · Claude Code
+- **Làm:** màn Xem lại (Figma 15/15b): thẻ tệp nguồn, thẻ từng mục (ô chọn, nút sửa, tuyến lớn SGN ✈ HAN, giờ đi/đến hoặc nhận/trả phòng,
+  ô "Cần kiểm tra: <trường>" / "Đã kiểm tra"), banner cần kiểm tra / đã xác nhận đủ, thẻ gộp chuyến chạm mở danh sách chọn (thay dropdown),
+  thẻ hạn mức lịch hẹn từ cache `quota_status`. Form sửa (16): ô dạng thẻ, trường vàng nền `warningContainer`, thẻ "Bạn kiểm tra giúp mình"
+  + "Đúng, giữ nguyên", nút "Xác nhận & quay lại". Tôi (27): lối tắt, Tài khoản & cài đặt (mục chưa làm ghi "Sắp có"), chọn ngôn ngữ giao diện
+  (Theo máy / Tiếng Việt / English) và giao diện (Theo máy / Sáng / Tối), lưu `LocalPrefs`, đọc trước `runApp`. Token `warningContainer`/`onWarningContainer`,
+  9 icon SVG mới, 42 key ARB.
+- **Quyết định:** trường độ tin cậy thấp phải được xác nhận trước khi lưu (theo Figma): còn mục đang chọn có trường vàng thì nút chính là
+  "Kiểm tra để tiếp tục" và mở form mục đó (ux-flows §2.4). Bỏ chọn mục cũng mở khóa nút lưu.
+- **Kiểm chứng:** client 74 (+3 màn Tôi; test nhập đổi theo UI mới + luồng xác nhận + thẻ hạn mức); analyze 0; ARB 267 key 0 lỗi; lint chuỗi 0;
+  unslop không đổi; ảnh chụp sáng/tối đối chiếu Figma 15/15b/16/27.
+- **Tiếp theo:** Ngôn ngữ & vùng (C50) theo Figma, Thêm nhanh (02), chi tiết nhắc (04); evidence khi chạm ⓘ (cần lưu vị trí chữ ở T2).
+
 ## 2026-11-25 · UI theo Figma đợt 1 (Hôm nay, Lịch, Chuyến đi, chi tiết chuyến) + 2 lỗi dữ liệu · Claude Code
 - **Làm:** đọc file Figma qua MCP (236 frame); token màu/chữ/bo góc theo Figma (design-system.md §2-5), font Be Vietnam Pro bundle (OFL ở màn
   giấy phép), icon SVG + `AppIcon` (tô theo theme, lật khi RTL), thanh dưới 4 tab + nút "+" giữa; làm lại Hôm nay, Lịch, Chuyến đi, chi tiết chuyến.
