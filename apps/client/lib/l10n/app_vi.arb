@@ -156,6 +156,7 @@
   "importTripLabel": "Gộp vào chuyến đi",
   "importTripNew": "Chuyến mới: {title}",
   "importTripNone": "Không gộp",
+  "importTripLimit": "Gói của bạn có {limit, plural, other{{limit} chuyến đi}} đang hoạt động. Xóa bớt chuyến hoặc nâng cấp để thêm.",
   "importDuplicate": "Đã có, sẽ bỏ qua",
   "importWillUpdate": "Đã có, sẽ cập nhật giờ",
   "tripTitleTo": "Chuyến đi {destination}",

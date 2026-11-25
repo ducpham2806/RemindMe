@@ -148,4 +148,8 @@ class OfflineSyncApi implements SyncApi {
   @override
   Future<PullPage> pull(int since, {int limit = 500}) =>
       Future.error(const SyncException(SyncErrorCode.network, 'offline: chưa cấu hình server'));
+
+  @override
+  Future<Map<String, Object?>> quotaStatus() =>
+      Future.error(const SyncException(SyncErrorCode.network, 'offline: chưa cấu hình server'));
 }

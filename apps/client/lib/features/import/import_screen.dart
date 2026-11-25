@@ -42,6 +42,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   /// Lựa chọn cho từng gợi ý chuyến đi: [_newTrip], [_noTrip] hoặc id chuyến có sẵn.
   final Map<int, String> _tripChoice = {};
   static const _newTrip = 'new', _noTrip = 'none';
+  /// Hạn mức từ cache `quota_status` (null = chưa sync lần nào, để server quyết khi sync).
+  QuotaStatus? _quota;
+  /// Số chuyến mới còn tạo được (giới hạn `max_active_trips` trừ chuyến đang hoạt động trên máy); null = không giới hạn/chưa biết.
+  int? _tripRoom;
+
+  int _newTripsExcept(int k) => _tripChoice.entries.where((e) => e.key != k && e.value == _newTrip).length;
+
+  bool _canCreateTrip(int k) => _tripRoom == null || _tripChoice[k] == _newTrip || _newTripsExcept(k) < _tripRoom!;
 
   Future<void> _pick() async {
     final file = await ref.read(filePickerProvider)();
@@ -78,6 +86,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       final existing = await trips.bookingsWithCodes({for (final c in preview.candidates) ?c.fields.confirmationCode});
       final today = CivilDate.of(ref.read(nowProvider)()).toIso();
       final active = [for (final t in await trips.trips()) if (t.activeOn(today)) t];
+      final quota = await ref.read(syncEngineProvider).cachedQuota();
       if (!mounted) return;
       final matches = matchExistingBookings(preview.candidates, existing, deviceTz: ref.read(deviceTimeZoneProvider));
       setState(() {
@@ -86,13 +95,20 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         _edits.clear();
         _matches = matches;
         _activeTrips = active;
+        _quota = quota;
+        _tripRoom = quota == null || quota.isUnlimited(EntitlementKey.maxActiveTrips)
+            ? null
+            : (quota.limit(EntitlementKey.maxActiveTrips) - active.length).clamp(0, 1 << 20);
         _selected = [
           for (var i = 0; i < preview.candidates.length; i++)
             (!preview.candidates[i].done || preview.candidates.every((x) => x.done)) && !(matches[i]?.duplicate ?? false),
         ];
-        _tripChoice
-          ..clear()
-          ..addAll({for (var k = 0; k < preview.trips.length; k++) k: _defaultTrip(preview.trips[k], matches, active)});
+        _tripChoice.clear();
+        for (var k = 0; k < preview.trips.length; k++) {
+          final choice = _defaultTrip(preview.trips[k], matches, active);
+          // Hết lượt chuyến đi: vé vẫn lưu, chỉ không gộp (không để server từ chối chuyến khi sync).
+          _tripChoice[k] = choice == _newTrip && !_canCreateTrip(k) ? _noTrip : choice;
+        }
       });
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -177,6 +193,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           drafts,
           deviceTz: tz,
           trips: trips,
+          quota: _quota,
         );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.importAdded(result.itemIds.length + result.updatedItemIds.length))));
@@ -316,18 +333,38 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     return ListTile(
       leading: const Icon(Icons.luggage_outlined),
       title: Text(l.importTripLabel),
-      subtitle: DropdownButton<String>(
-        key: Key('importTrip-$k'),
-        isExpanded: true,
-        value: _tripChoice[k] ?? _noTrip,
-        items: [
-          DropdownMenuItem(value: _newTrip, child: Text(l.importTripNew(_newTripTitle(context, s)), overflow: TextOverflow.ellipsis)),
-          for (final t in _activeTrips)
-            DropdownMenuItem(value: t.id, child: Text(t.title ?? l.navTrips, overflow: TextOverflow.ellipsis)),
-          DropdownMenuItem(value: _noTrip, child: Text(l.importTripNone)),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _tripDropdown(context, k, s),
+          if (!_canCreateTrip(k))
+            Text(
+              l.importTripLimit(_quota!.limit(EntitlementKey.maxActiveTrips)),
+              key: Key('importTripLimit-$k'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
         ],
-        onChanged: (v) => setState(() => _tripChoice[k] = v ?? _noTrip),
       ),
+    );
+  }
+
+  Widget _tripDropdown(BuildContext context, int k, TripSuggestion s) {
+    final l = AppLocalizations.of(context);
+    return DropdownButton<String>(
+      key: Key('importTrip-$k'),
+      isExpanded: true,
+      value: _tripChoice[k] ?? _noTrip,
+      items: [
+        DropdownMenuItem(
+          value: _newTrip,
+          enabled: _canCreateTrip(k),
+          child: Text(l.importTripNew(_newTripTitle(context, s)), overflow: TextOverflow.ellipsis),
+        ),
+        for (final t in _activeTrips)
+          DropdownMenuItem(value: t.id, child: Text(t.title ?? l.navTrips, overflow: TextOverflow.ellipsis)),
+        DropdownMenuItem(value: _noTrip, child: Text(l.importTripNone)),
+      ],
+      onChanged: (v) => setState(() => _tripChoice[k] = v ?? _noTrip),
     );
   }
 

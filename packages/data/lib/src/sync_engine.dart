@@ -43,6 +43,7 @@ class SyncEngine {
 
   static const pushBatchSize = 200;
   static const _sinceKey = 'pull_since';
+  static const _quotaKey = 'quota_status';
 
   // ------------------------------------------------------------------ sửa local
 
@@ -112,8 +113,24 @@ class SyncEngine {
       await _pull(report);
     } on SyncException catch (e) {
       report.error = e.code;
+      return report;
+    }
+    // Hạn mức không chặn đồng bộ: lỗi thì giữ cache cũ.
+    try {
+      await _setState(_quotaKey, jsonEncode({'fetched_at': _now().toUtc().toIso8601String(), 'status': await api.quotaStatus()}));
+    } on SyncException {
+      // giữ cache cũ
     }
     return report;
+  }
+
+  /// `quota_status` lấy ở lần sync thành công gần nhất (có thể đã cũ hơn [QuotaStatus.cacheTtl]); null = chưa sync lần nào.
+  /// Mức dùng trong đó là lúc lấy về: đếm lại ở máy cho dữ liệu tạo offline sau đó.
+  Future<QuotaStatus?> cachedQuota() async {
+    final raw = await _getState(_quotaKey);
+    if (raw == null) return null;
+    final j = jsonDecode(raw) as Map<String, Object?>;
+    return QuotaStatus.fromJson((j['status']! as Map).cast<String, Object?>(), fetchedAt: DateTime.parse(j['fetched_at']! as String));
   }
 
   /// Lỗi khóa ngoại của Postgres: hàng cha (chuyến, item) chưa có trên server.

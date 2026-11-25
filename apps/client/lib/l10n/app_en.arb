@@ -866,6 +866,16 @@
   "@importTripNone": {
     "description": "Dropdown option: keep the bookings outside any trip."
   },
+  "importTripLimit": "Your plan includes {limit, plural, =1{1 active trip} other{{limit} active trips}}. Delete a trip or upgrade to add another.",
+  "@importTripLimit": {
+    "description": "Review screen, under the trip dropdown when the new-trip option is unavailable. The limit comes from the user's plan (pricing-entitlements §4, paywall for the 2nd trip).",
+    "placeholders": {
+      "limit": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
   "importDuplicate": "Already added, will be skipped",
   "@importDuplicate": {
     "description": "Review screen: the same booking (same code and time) is already in the app, so it is unselected."

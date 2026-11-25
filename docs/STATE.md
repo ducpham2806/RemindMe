@@ -38,6 +38,8 @@
   khách sạn bằng nhắc tuyệt đối), trùng/đổi giờ với đặt chỗ đã có (bỏ qua hoặc cập nhật), gợi ý gom chuyến ở màn Xem lại (mới / có sẵn / không gộp),
   tab Chuyến đi (danh sách + timeline giờ địa phương từng điểm, xóa chuyến giữ đặt chỗ), múi giờ sân bay cho vé chỉ có offset. `TripsRepository` trong `packages/data`.
   Contract test Postgres: trips + booking_details + nhắc tuyệt đối + cập nhật qua `sync_push` thật.
+- Hạn mức chuyến đi: `SyncEngine` cache `quota_status` sau mỗi lần sync; màn Xem lại đếm chuyến đang hoạt động trên máy, hết lượt thì khóa "Chuyến mới"
+  + dòng giải thích (số lấy từ gói). Chuyến mới vẫn bị server từ chối thì máy bỏ chuyến, gỡ `trip_id` khỏi đặt chỗ và gửi lại (không mất item, data-model §4).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + hạn mức ở màn Xem lại, sửa/đổi tên chuyến, gợi ý "Thêm hoạt động" khi trống > 3h,
   tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.
@@ -65,12 +67,11 @@
   method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
   onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
   hủy thông báo khi `session_revoked` (chờ luồng sync thật), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
-- T2: chưa có dedupe với item đã có + gom trip (S6), tên thành phố → sân bay, ga → múi giờ, tàu/xe nhiều chặng, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
+- T2: chưa có tên thành phố → sân bay, ga → múi giờ, tàu/xe nhiều chặng, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
   nên không tính `smart_imports_per_month` (cần chủ dự án chốt: văn bản dán vào có tính là nhập thông minh không).
-- Chuyến đi: server từ chối trip vượt `max_active_trips` (Free: 1) thì item trỏ `trip_id` tới trip đó cũng bị từ chối (khóa ngoại) → SyncEngine cần gỡ
-  `trip_id` khỏi item khi trip bị `quota_exceeded`; app chưa kiểm hạn mức trip khi offline (chưa có cache `quota_status`).
-- Nhập từ tệp: chưa thử `file_picker` trên máy thật; hạn mức `smart_imports_per_month` chưa kiểm khi offline (chưa có cache `quota_status`);
-  đặt chỗ chưa thành `booking_details` + chuyến đi (S6); lặp âm lịch từ dòng chữ trong tệp .txt chưa giữ (chỉ RRULE).
+- Chuyến đi: chưa có UI báo/paywall từ `SyncReport.rejectedTrips` (chờ luồng sync thật); dòng hạn mức ở màn Xem lại chưa có nút nâng cấp (chưa có paywall).
+- Nhập từ tệp: chưa thử `file_picker` trên máy thật; `quota_status` được cache sau mỗi lần sync (`SyncEngine.cachedQuota`) nhưng app còn offline
+  nên cache rỗng tới khi có server; lặp âm lịch từ dòng chữ trong tệp .txt chưa giữ (chỉ RRULE).
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).

@@ -176,6 +176,18 @@ void main() {
     expect(await a.engine.pendingCount(), 0);
   });
 
+  test('quota_status được cache sau lần sync thành công; lỗi lấy hạn mức giữ cache cũ', () async {
+    final a = Device('phone', server, now: now);
+    expect(await a.engine.cachedQuota(), isNull);
+    server.quota = {'plan': 'free', 'limits': {'max_active_trips': 1}, 'usage': {'max_active_trips': 0}, 'features': {}};
+    await a.engine.sync();
+    final q = (await a.engine.cachedQuota())!;
+    expect(q.limit(EntitlementKey.maxActiveTrips), 1);
+    server.quota = null;
+    expect((await a.engine.sync()).error, isNull);
+    expect((await a.engine.cachedQuota())!.plan, 'free');
+  });
+
   test('lỗi khóa ngoại không do chuyến bị từ chối vẫn được báo, không gửi lại', () async {
     final a = Device('phone', server, now: now);
     server.checkForeignKeys = true;

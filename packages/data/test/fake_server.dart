@@ -11,6 +11,9 @@ class FakeServer {
   /// Mô phỏng khóa ngoại của Postgres: item trỏ `trip_id`/`list_id` chưa có, hoặc hàng con trỏ `item_id` chưa có → invalid 23503.
   bool checkForeignKeys = false;
 
+  /// Trả về cho `quota_status()`; null = lỗi mạng.
+  Map<String, Object?>? quota;
+
   MutationResult? _foreignKey(Mutation m) {
     if (!checkForeignKeys || m.op == MutationOp.delete) return null;
     final refs = <String, Object?>{
@@ -104,5 +107,11 @@ class FakeApi implements SyncApi {
   Future<PullPage> pull(int since, {int limit = 500}) async {
     if (server.failWith != null) throw SyncException(server.failWith!);
     return server.pull(since, pullLimit);
+  }
+
+  @override
+  Future<Map<String, Object?>> quotaStatus() async {
+    if (server.failWith != null) throw SyncException(server.failWith!);
+    return server.quota ?? (throw const SyncException(SyncErrorCode.network));
   }
 }

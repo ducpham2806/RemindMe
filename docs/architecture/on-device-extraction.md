@@ -57,7 +57,7 @@ không thì `Etc/GMT∓h`. `.csv` tính là `xlsx` trong `imports.kind`/`items.s
 (giữ múi giờ của nguồn), địa điểm, mã đặt chỗ, số chuyến/số hiệu tàu, ghế, toa, khoa, số thứ tự, dặn dò; trường < 0,7 viền `warning` + ⓘ, sửa hoặc xác nhận
 (mở bộ chọn giờ rồi OK) thì thành 1,0. Dấu "cần kiểm tra" trên thẻ chỉ tính trường form sửa được. Chưa có: evidence (đoạn chữ gốc) khi chạm ⓘ, sửa tuyến bay,
 chia sẻ vào app (share intent/extension), đổi cột ở màn xem trước
-và nhớ mapping (E5.3), hiển thị hạn mức (chưa có `quota_status` khi offline; `commit` đã nhận `QuotaStatus` để đánh `pending_quota`).
+và nhớ mapping (E5.3), hiển thị hạn mức nhập thông minh (`commit` nhận `QuotaStatus` từ cache để đánh `pending_quota`, chưa có dòng báo trên màn).
 
 ## 3. T1: OCR trên thiết bị
 | Nền tảng | Engine | Hệ chữ |
@@ -142,7 +142,8 @@ Mẫu dạng JSON khai báo, không phải code, nên **cập nhật qua CDN mà
 - Gom trip (US-21, `suggestTrips`): chỉ đặt chỗ đi lại (bay, tàu, xe, phà, lưu trú, thuê xe), sắp theo ngày bắt đầu; đặt chỗ bắt đầu trong vòng 2 ngày
   sau khi đặt chỗ trước kết thúc thì cùng chuyến. Tên mặc định theo thành phố của sân bay đến chặng đầu (hoặc ga/điểm đến), không có thì theo ngày.
   Mặc định gộp khi ≥ 2 đặt chỗ hoặc có lưu trú; vé lẻ mặc định không gộp (giữ lượt `max_active_trips`). Khoảng ngày chồng chuyến đang có (±1 ngày)
-  hoặc đặt chỗ đã thuộc 1 chuyến thì mặc định gộp vào chuyến đó.
+  hoặc đặt chỗ đã thuộc 1 chuyến thì mặc định gộp vào chuyến đó. Hết lượt (giới hạn trong cache `quota_status` trừ chuyến đang hoạt động trên máy):
+  "Chuyến mới" bị khóa, mặc định không gộp, kèm dòng `importTripLimit`. Chưa sync lần nào (không có cache) thì để server quyết (data-model §4).
 - Nhắc mặc định: `reminder-engine.md` mục 5 (`defaultReminders`; bay nội địa/quốc tế theo nước của 2 sân bay, không biết thì như quốc tế).
 - Vé chỉ có offset (JSON-LD, `.ics` không TZID): `withAirportTimeZones` lấy múi giờ sân bay khi offset khớp múi đó lúc bay.
 

@@ -127,6 +127,9 @@ class TripsRepository {
     }
   }
 
+  /// Số chuyến còn hoạt động trên máy (cách đếm `max_active_trips`, data-model §4), gồm cả chuyến tạo offline chưa đồng bộ.
+  Future<int> activeCount(String today) async => (await trips()).where((t) => t.activeOn(today)).length;
+
   Future<TripSummary?> trip(String id) async => (await trips()).where((t) => t.id == id).firstOrNull;
 
   /// Đặt chỗ của chuyến theo thời điểm bắt đầu.

@@ -53,6 +53,9 @@ class PgSyncApi implements SyncApi {
     return PullPage.fromJson((r! as Map).cast<String, Object?>());
   }
 
+  @override
+  Future<Map<String, Object?>> quotaStatus() async => ((await _rpc('select public.quota_status()', {}))! as Map).cast<String, Object?>();
+
   Future<Object?> call(String sql, [Map<String, Object?> params = const {}]) => _rpc(sql, params);
 }
 
@@ -305,6 +308,10 @@ void main() {
     await repo.commit(const ImportRecord(kind: 'text', docType: 'hotel', tierUsed: 't1t2'), [hotel('H-1', DateTime.utc(2027, 2, 1, 7))],
         deviceTz: 'Asia/Ho_Chi_Minh', trips: const [TripDraft(title: 'Đà Nẵng', startsOn: '2027-02-01', endsOn: '2027-02-03')]);
     expect((await phone.sync()).issues, isEmpty);
+    final quota = (await phone.cachedQuota())!;
+    expect(quota.plan, 'free');
+    expect(quota.limit(EntitlementKey.maxActiveTrips), 1);
+    expect(quota.used(EntitlementKey.maxActiveTrips), 1);
 
     final second = await repo.commit(const ImportRecord(kind: 'text', docType: 'hotel', tierUsed: 't1t2'),
         [hotel('H-2', DateTime.utc(2027, 3, 1, 7)), hotel('H-3', DateTime.utc(2027, 3, 2, 7))],

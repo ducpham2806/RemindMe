@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_client/data/providers.dart';
+import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_client/features/import/import_decode.dart';
 import 'package:remindme_client/features/import/import_providers.dart';
 
@@ -192,6 +193,36 @@ void main() {
     expect(find.textContaining('Đã có, sẽ bỏ qua'), findsOneWidget);
     expect(tester.widget<Checkbox>(find.byKey(const Key('importCheck-0'))).value, isFalse);
     expect(tester.widget<DropdownButton<String>>(find.byKey(const Key('importTrip-0'))).value, trips.single.id);
+  });
+
+  testWidgets('en: hết lượt chuyến đi theo cache quota_status → không gộp, "chuyến mới" bị khóa, có dòng giải thích', (tester) async {
+    final c = await pumpApp(tester, size: phone, overrides: [
+      syncDecoder,
+      filePickerProvider.overrideWithValue(picker([fixture('synthetic-email-hotel-0001', 'input.eml')])),
+    ]);
+    final db = c.read(appDatabaseProvider);
+    await tester.runAsync(() async {
+      await c.read(tripsRepositoryProvider).create(title: 'Lisbon', startsOn: '2099-01-01');
+      await db.into(db.syncState).insert(SyncStateCompanion.insert(
+            key: 'quota_status',
+            value: jsonEncode({
+              'fetched_at': '2026-11-25T00:00:00Z',
+              'status': {'plan': 'free', 'limits': {'max_active_trips': 1}, 'usage': {'max_active_trips': 1}, 'features': {}},
+            }),
+          ));
+    });
+    await openImport(tester, me: 'Me', row: 'Import from file');
+    await tester.tap(find.byKey(const Key('importPick')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<DropdownButton<String>>(find.byKey(const Key('importTrip-0'))).value, 'none');
+    expect(find.text('Your plan includes 1 active trip. Delete a trip or upgrade to add another.'), findsOneWidget);
+    final items = tester.widget<DropdownButton<String>>(find.byKey(const Key('importTrip-0'))).items!;
+    expect(items.firstWhere((i) => i.value == 'new').enabled, isFalse);
+    await tester.tap(find.byKey(const Key('importAdd')));
+    await settleReminders(tester);
+    final (saved, trips) = (await tester.runAsync(() async => (await db.select(db.items).get(), await db.select(db.trips).get())))!;
+    expect(saved.single.tripId, isNull);
+    expect(trips.map((t) => t.title), ['Lisbon']);
   });
 
   testWidgets('bảng mơ hồ 03/04 khi không biết vùng: hỏi thứ tự ngày, chọn lại thì đọc lại tệp', (tester) async {
