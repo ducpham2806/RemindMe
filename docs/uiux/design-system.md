@@ -24,6 +24,7 @@ Nguồn thiết kế: file Figma "RemindMe" (~59 màn × VI/EN × sáng/tối, k
 | `color.divider` | `#E4E7EC` | `#2A2E35` | |
 | `color.primaryContainer` | `#EAF0FF` | `#172443` | Thẻ tiến độ, nền nút phụ, ngày đang chọn |
 | `color.primaryTrack` | `#D4E0FF` | `#26385E` | Rãnh thanh tiến độ trên `primaryContainer` |
+| `color.dangerContainer` | `#FDEDEE` | `#3A1A1C` | Thẻ cảnh báo xóa tài khoản (`errorContainer`) |
 | `color.danger` | `#BF3035` | `#FF7A7A` | Quá hạn, xóa (`#D93A3A` cũ chỉ ~4,3:1 trên nền trắng, chưa đạt AA chữ nhỏ) |
 | `color.checkOutline` / `checkOverdue` | `#BDC5D1` / `#DA8B8F` | `#596575` / `#A45259` | Vòng "đánh dấu xong" thường / quá hạn |
 | `color.warning` | `#C98A00` | `#FFC94D` | Trường đọc tự động có độ tin cậy thấp, sắp tới hạn |

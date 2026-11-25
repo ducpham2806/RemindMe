@@ -12,6 +12,20 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Figma 05-08, Gói & mức sử dụng, Thông báo & nhắc, quyền riêng tư, xuất dữ liệu, xóa tài khoản · Claude Code
+- **Làm:** `AppSheet`/`SheetOption`/`SheetChips`; sheet Ngày & giờ (05), Lặp lại + Tùy chỉnh + Kết thúc (06, `UNTIL`/`COUNT` trong RRULE),
+  Lặp âm lịch (07), Hoãn nhắc (08, `snoozeItem`: nút ở chi tiết, vuốt trái ở danh sách, mở từ thông báo qua `?reminder=&at=`).
+  Tôi → Gói & mức sử dụng (C46), Thông báo & nhắc (C51: `default_reminder`, `all_day_time` → `ReminderPlanner.allDayTime`),
+  Dữ liệu & quyền riêng tư / Xuất dữ liệu / Xóa tài khoản / Đã nhận yêu cầu xóa (C52-C55). `DataExporter` (JSON `export_version` 1 + ICS)
+  trong `packages/data`. Migration 09 `account_delete()` + `app.account_deletions`, pgTAP 008. RemoteSync ghi `ui_locale`/`region`/`calendar_systems`
+  vào `profiles` sau mỗi lần đồng bộ (không đổi `home_tz`). Token `lunarContainer`, `dangerContainer`; icon `clock`, `moon`. ARB 495 key.
+- **Quyết định:** xóa tài khoản xóa `auth.users` ngay (không có thời gian chờ), việc ngoài DB để worker làm qua `app.account_deletions`.
+  Từ xác nhận xóa dịch theo ngôn ngữ ("XÓA"/"DELETE"). Hoãn việc chưa có nhắc thì thêm nhắc tuyệt đối vào giờ hoãn.
+- **Kiểm chứng:** client 100 pass (+14), data 54 (+2 xuất dữ liệu), pgTAP 116 (+7) trên Postgres 16 cục bộ; analyze 0; lint chuỗi/nền tảng 0;
+  check-arb 0; ảnh chụp các màn mới so với Figma.
+- **Dở dang / tiếp theo:** migration 09 chưa áp lên dev (Supabase MCP báo không có quyền sau khi phiên khởi động lại); test live chưa chạy lại
+  (không dọn được user ẩn danh khi không có SQL). Onboarding C30-C34, màn 09-14.
+
 ## 2026-11-25 · Đăng nhập email (OTP), Tài khoản & thiết bị, màn bị đăng xuất · Claude Code
 - **Làm:** `AccountApi` + `SupabaseAccount` (gửi mã: user ẩn danh thử `updateUser(email)`, email đã có thì `signInWithOtp`; xác nhận mã; đổi tài khoản
   hỏi trước rồi `resetLocalData` + claim phiên mới; đăng xuất qua `session_end`; lịch sử phiên từ `user_sessions`; `revokedBy` từ `session_status`).

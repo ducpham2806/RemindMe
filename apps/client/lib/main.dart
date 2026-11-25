@@ -72,9 +72,13 @@ Future<({SupabaseSyncApi api, RemoteSync Function(SyncEngine) sync, AccountApi F
     final dispatcher = WidgetsBinding.instance.platformDispatcher;
     final view = dispatcher.views.firstOrNull;
     final shortest = view == null ? 0.0 : (view.physicalSize / view.devicePixelRatio).shortestSide;
-    final locale = appearance.language == prefAuto ? dispatcher.locale : Locale(appearance.language, dispatcher.locale.countryCode);
-    final region = effectiveHolidayRegion(await LocalPrefs(db).get(holidayRegionPref) ?? prefAuto, deviceRegion()) ??
+    final prefs = LocalPrefs(db);
+    // Đọc lại mỗi lượt: người dùng đổi ngôn ngữ, quốc gia ngày lễ, hệ lịch trong app thì profile trên server đổi theo.
+    final language = await prefs.get(appLanguagePref) ?? appearance.language;
+    final locale = language == prefAuto ? dispatcher.locale : Locale(language, dispatcher.locale.countryCode);
+    final region = effectiveHolidayRegion(await prefs.get(holidayRegionPref) ?? prefAuto, deviceRegion()) ??
         deviceRegion()?.toUpperCase();
+    final lunar = effectiveLunarSystem(await prefs.get(calendarSystemPref) ?? prefAuto, locale.languageCode);
     return (
       uiLocale: locale.toLanguageTag(),
       region: region,
@@ -82,6 +86,7 @@ Future<({SupabaseSyncApi api, RemoteSync Function(SyncEngine) sync, AccountApi F
       platform: sessionPlatform(),
       deviceClass: shortest >= 600 ? 'tablet' : 'phone',
       appVersion: null,
+      calendarSystems: [?lunar?.wire],
     );
   }
 

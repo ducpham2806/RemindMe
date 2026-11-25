@@ -2489,5 +2489,191 @@
   "settingsDone": "Done",
   "@settingsDone": {
     "description": "Bottom button that closes a settings screen"
+  },
+  "privacyHint": "Your data, your choices.",
+  "@privacyHint": {
+    "description": "Subtitle of Me → Data & privacy (Figma C52)"
+  },
+  "privacyHeadline": "Private by default.",
+  "@privacyHeadline": {
+    "description": "Headline of the privacy card"
+  },
+  "privacyBody": "Documents are read on your device. Account data syncs only to your own account.",
+  "@privacyBody": {
+    "description": "Body of the privacy card"
+  },
+  "privacyExport": "Export a copy of your data",
+  "@privacyExport": {
+    "description": "Row opening the export screen"
+  },
+  "privacyExportHint": "ZIP with versioned JSON and ICS",
+  "@privacyExportHint": {
+    "description": "Row subtitle"
+  },
+  "privacyDelete": "Delete account",
+  "@privacyDelete": {
+    "description": "Row opening the delete account screen; title of that screen (Figma C54)"
+  },
+  "privacyDeleteHint": "See what is removed before you confirm.",
+  "@privacyDeleteHint": {
+    "description": "Row subtitle"
+  },
+  "privacyDeleteOffline": "Available after you sync with an account.",
+  "@privacyDeleteOffline": {
+    "description": "Row subtitle when the build has no server"
+  },
+  "exportTitle": "Export data",
+  "@exportTitle": {
+    "description": "Title of the export screen (Figma C53)"
+  },
+  "exportHint": "A copy for you to keep.",
+  "@exportHint": {
+    "description": "Subtitle"
+  },
+  "exportPreparing": "Preparing your export…",
+  "@exportPreparing": {
+    "description": "While the ZIP is built"
+  },
+  "exportReady": "Your export is ready.",
+  "@exportReady": {
+    "description": "Headline when the ZIP is built"
+  },
+  "exportJsonHint": "Versioned data: items, lists, reminders and repeats.",
+  "@exportJsonHint": {
+    "description": "Description of remindme-export.json"
+  },
+  "exportIcsHint": "Events and tasks. Lunar dates are listed for two years.",
+  "@exportIcsHint": {
+    "description": "Description of calendar.ics"
+  },
+  "exportOnDevice": "Made on this device",
+  "@exportOnDevice": {
+    "description": "Info card title"
+  },
+  "exportOnDeviceBody": "Includes changes not synced yet. Original documents are not included.",
+  "@exportOnDeviceBody": {
+    "description": "Info card body"
+  },
+  "exportPrivateNote": "The file contains private information. Share it only with people you trust.",
+  "@exportPrivateNote": {
+    "description": "Note"
+  },
+  "exportSave": "Save file",
+  "@exportSave": {
+    "description": "Button opening the system save dialog"
+  },
+  "exportSaved": "File saved",
+  "@exportSaved": {
+    "description": "Snackbar after saving"
+  },
+  "exportFailed": "Couldn’t create the export. Try again.",
+  "@exportFailed": {
+    "description": "Error"
+  },
+  "deleteHint": "Read this before you confirm.",
+  "@deleteHint": {
+    "description": "Subtitle of the delete account screen"
+  },
+  "deleteHeadline": "This deletes your account and synced data.",
+  "@deleteHeadline": {
+    "description": "Danger card headline"
+  },
+  "deleteBody": "Items, lists, trips, saved originals and connected integrations are removed. Deleted data can’t be recovered.",
+  "@deleteBody": {
+    "description": "Danger card body"
+  },
+  "deleteSubscriptionTitle": "Deleting doesn’t cancel a subscription",
+  "@deleteSubscriptionTitle": {
+    "description": "Warning card title"
+  },
+  "deleteSubscriptionBody": "If you pay for a plan, cancel it in your app store.",
+  "@deleteSubscriptionBody": {
+    "description": "Warning card body"
+  },
+  "deleteExportFirst": "Keep a copy first",
+  "@deleteExportFirst": {
+    "description": "Row opening the export screen"
+  },
+  "deleteExportFirstHint": "Export your data before you send the request.",
+  "@deleteExportFirstHint": {
+    "description": "Row subtitle"
+  },
+  "deleteAccountLabel": "Account",
+  "@deleteAccountLabel": {
+    "description": "Label above the email"
+  },
+  "deleteAnonymous": "Account on this device (no email)",
+  "@deleteAnonymous": {
+    "description": "Shown instead of an email"
+  },
+  "deleteConfirmWord": "DELETE",
+  "@deleteConfirmWord": {
+    "description": "Word the user types to confirm deletion. Must be short and easy to type in this language."
+  },
+  "deleteTypeToConfirm": "Type {word} to confirm",
+  "@deleteTypeToConfirm": {
+    "description": "Label of the confirm field",
+    "placeholders": {
+      "word": {
+        "type": "String",
+        "example": "DELETE"
+      }
+    }
+  },
+  "deleteTiming": "Deletion finishes within 30 days. Backups expire within 35 days.",
+  "@deleteTiming": {
+    "description": "Note under the form"
+  },
+  "deleteKeep": "Keep account",
+  "@deleteKeep": {
+    "description": "Secondary button"
+  },
+  "deleteSend": "Send deletion request",
+  "@deleteSend": {
+    "description": "Destructive primary button"
+  },
+  "deleteFailed": "Couldn’t delete the account. Check your connection and try again.",
+  "@deleteFailed": {
+    "description": "Error"
+  },
+  "deletedTitle": "Deletion request received",
+  "@deletedTitle": {
+    "description": "Title of the confirmation screen (Figma C55)"
+  },
+  "deletedHint": "You can leave this screen.",
+  "@deletedHint": {
+    "description": "Subtitle"
+  },
+  "deletedHeadline": "Your request is being processed.",
+  "@deletedHeadline": {
+    "description": "Headline"
+  },
+  "deleted30Title": "Within 30 days",
+  "@deleted30Title": {
+    "description": "Card title"
+  },
+  "deleted30Body": "Account data, saved files and integrations are removed.",
+  "@deleted30Body": {
+    "description": "Card body"
+  },
+  "deleted35Title": "Backups expire within 35 days",
+  "@deleted35Title": {
+    "description": "Card title"
+  },
+  "deleted35Body": "Backups expire under the retention policy.",
+  "@deleted35Body": {
+    "description": "Card body"
+  },
+  "deletedStoreTitle": "Cancel any paid subscription separately",
+  "@deletedStoreTitle": {
+    "description": "Card title"
+  },
+  "deletedStoreBody": "Deleting the account doesn’t stop store billing.",
+  "@deletedStoreBody": {
+    "description": "Card body"
+  },
+  "deletedHome": "Back to Today",
+  "@deletedHome": {
+    "description": "Button leaving the confirmation screen"
   }
 }

@@ -25,7 +25,16 @@ enum RemoteSyncState {
 typedef RemoteSyncStatus = ({RemoteSyncState state, DateTime? lastOk});
 
 /// Thông tin máy gửi lên `profile_init` / `session_claim`. [region] null thì chưa tạo được profile.
-typedef DeviceProfile = ({String uiLocale, String? region, String homeTz, String platform, String deviceClass, String? appVersion});
+/// [calendarSystems]: hệ lịch phụ đang dùng (`profiles.calendar_systems`, ví dụ `['lunar_vi']`).
+typedef DeviceProfile = ({
+  String uiLocale,
+  String? region,
+  String homeTz,
+  String platform,
+  String deviceClass,
+  String? appVersion,
+  List<String> calendarSystems,
+});
 
 /// Luồng S1 (STATE "Tiếp theo" mục 6): đăng nhập (ẩn danh nếu chưa có phiên) → `profile_init` → `session_claim` → [SyncEngine.sync].
 /// Chạy tuần tự (không chồng 2 lượt); lỗi phiên/profile thì làm lại bước thiếu rồi thử 1 lần nữa.
@@ -42,6 +51,8 @@ class RemoteSync {
   DateTime? _lastOk;
   Future<SyncReport?>? _running;
   String? _claimedSession;
+  /// Cài đặt profile đã gửi lên trong lần chạy app này (tránh ghi lặp mỗi lượt).
+  String? _pushedProfile;
 
   RemoteSyncState get state => _current;
   RemoteSyncStatus get status => (state: _current, lastOk: _lastOk);
@@ -69,6 +80,7 @@ class RemoteSync {
     _paused = false;
     if (reset) {
       _claimedSession = null;
+      _pushedProfile = null;
       _lastOk = null;
       _set(RemoteSyncState.idle);
     }
@@ -95,6 +107,7 @@ class RemoteSync {
         await _ensureClaimed(p);
         report = await engine.sync();
       }
+      if (report.error == null) await _pushProfile(p);
       _set(switch (report.error) {
         null => RemoteSyncState.ok,
         SyncErrorCode.network => RemoteSyncState.offline,
@@ -117,6 +130,25 @@ class RemoteSync {
       // Mạng chập chờn khi đăng nhập/refresh token: thử lại lượt sau.
       _set(RemoteSyncState.offline);
       return null;
+    }
+  }
+
+  /// Ngôn ngữ, quốc gia ngày lễ, hệ lịch phụ chọn trên máy → `profiles` (server dùng cho email, gợi ý, đếm hạn mức theo vùng).
+  /// `profile_init` chỉ tạo profile lần đầu nên đổi sau đó phải ghi ở đây. Không đổi `home_tz` theo máy (đi du lịch không đổi nhà).
+  /// Lỗi thì bỏ qua, lượt sau thử lại.
+  Future<void> _pushProfile(DeviceProfile p) async {
+    final uid = client.auth.currentUser?.id;
+    if (uid == null) return;
+    final values = {'ui_locale': p.uiLocale, 'region': p.region, 'calendar_systems': p.calendarSystems};
+    final key = jsonEncode(values);
+    if (key == _pushedProfile) return;
+    try {
+      await client.from('profiles').update(values).eq('id', uid);
+      _pushedProfile = key;
+    } on PostgrestException {
+      // RLS/phiên hết hạn: lượt đồng bộ sau thử lại.
+    } on Exception {
+      // mạng
     }
   }
 

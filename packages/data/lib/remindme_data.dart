@@ -1,5 +1,6 @@
 library;
 
+export 'src/data_export.dart';
 export 'src/database.dart';
 export 'src/imports_repository.dart';
 export 'src/items_repository.dart';

@@ -1,6 +1,6 @@
 # STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 
-**Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (đồng bộ với Supabase dev chạy thật; chờ Firebase, đăng nhập có tài khoản) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
+**Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (đồng bộ với Supabase dev chạy thật; chờ Firebase, mua trong app) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
 
 ## Đã có
 - Bộ docs v2 (`docs/INDEX.md`) + 17 ADR (ADR-017: ngày lễ là gói luật tự viết, tính trên máy; ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
@@ -59,8 +59,15 @@
   Chi tiết (04): chip list + trạng thái (chạm để xong/mở lại), tên lớn, thẻ ghi chú, thẻ Ngày & giờ / Nhắc / Lặp / Danh sách / Ưu tiên
   (`SettingRow` dùng chung, ưu tiên chọn ở bottom sheet); tự lưu, không có nút Lưu; checklist chưa có.
   Ngôn ngữ & vùng (C50): ngôn ngữ giao diện, định dạng + múi giờ (theo máy, chỉ xem), quốc gia ngày lễ kèm ngày nghỉ cuối tuần, hệ lịch phụ, xem trước.
-  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến,
-  bước chọn ngày giờ/lặp/hoãn (05-08), onboarding/đăng nhập/gói (chờ auth, paywall).
+  Sheet Ngày & giờ (05: chọn nhanh, lịch tháng theo CLDR, bỏ giờ), Lặp lại (06: kiểu thường dùng, Tùy chỉnh mỗi N ngày/tuần/tháng/năm + thứ,
+  Kết thúc vào ngày/sau N lần), Lặp âm lịch (07: mùng 1/rằm/ngày riêng, tháng nhuận, lần tới; item dời về lần tới), Hoãn nhắc (08: nút ở chi tiết
+  khi mở từ thông báo hoặc việc đang tới giờ, vuốt trái ở danh sách; việc chưa có nhắc thì thêm nhắc tuyệt đối).
+  Tôi: Gói & mức sử dụng (C46, từng hạn mức từ cache `quota_status`, số thiết bị; nút Nâng cấp/Khôi phục mờ tới khi có RevenueCat),
+  Thông báo & nhắc (C51: quyền + báo thức chính xác, mốc nhắc mặc định cho Thêm nhanh, giờ nhắc việc cả ngày → lập lịch lại),
+  Dữ liệu & quyền riêng tư (C52), Xuất dữ liệu (C53: ZIP JSON + ICS tạo trên máy, lưu qua hộp thoại hệ điều hành), Xóa tài khoản (C54: gõ từ
+  xác nhận, RPC `account_delete`) và Đã nhận yêu cầu xóa (C55).
+  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, onboarding (C30-C34),
+  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 09-14, 17-19, 25-26.
 - Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-08, chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
   App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →
@@ -71,7 +78,9 @@
   Tài khoản (Figma C35-C37, UX §3.7): đăng nhập email + mã OTP (gắn vào user ẩn danh, giữ dữ liệu; email đã có tài khoản thì hỏi rồi thay dữ liệu
   trên máy, nêu máy bị đăng xuất), Tài khoản & thiết bị (email, gói, lịch sử đăng nhập, Đăng xuất), màn "Bạn đã được đăng xuất" khi phiên bị
   máy khác thay (hủy mọi thông báo, số thay đổi chưa đồng bộ, Đăng nhập lại). `SyncEngine.resetLocalData`. Chờ chủ dự án thêm `{{ .Token }}`
-  vào email template để mã gửi tới email (guides/backend-setup.md §3).
+  vào email template để mã gửi tới email (guides/backend-setup.md §3). Sau mỗi lần đồng bộ, RemoteSync ghi ngôn ngữ, quốc gia ngày lễ,
+  hệ lịch phụ vào `profiles` (không đổi `home_tz`). Migration 09 `account_delete` (pgTAP 116 pass ở Postgres cục bộ) **chưa áp lên dev**:
+  Supabase MCP của phiên mất quyền giữa chừng.
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, đăng nhập Google/Apple, flavors staging/prod.
@@ -84,7 +93,8 @@
 4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
 5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
    Bộ câu NLU thật ≥ 300 câu/gói (vi chia đều Bắc/Trung/Nam) thay bộ tổng hợp trong `packages/parsers/fixtures/nlu/`.
-6. Sprint S1 phần còn lại: chủ dự án sửa email template (thêm `{{ .Token }}`) rồi thử đăng nhập email trên máy thật; Google/Apple
+6. Áp migration 09 (`account_delete`) lên Supabase dev khi MCP có quyền lại (hoặc chủ dự án chạy tệp trong SQL Editor).
+7. Sprint S1 phần còn lại: chủ dự án sửa email template (thêm `{{ .Token }}`) rồi thử đăng nhập email trên máy thật; Google/Apple
    (`linkIdentity`, cần OAuth client); SMTP riêng trước khi ra mắt; Firebase (FCM); flavors staging/prod; golden test.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
@@ -98,7 +108,7 @@
 - S3 còn thiếu (cần máy thật hoặc hạ tầng): chạy thử trên Android/iOS thật (chưa có SDK trong container; CI build APK sẽ kiểm biên dịch),
   method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
   onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
-  , cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
+  giờ yên lặng (C51 có trong Figma, planner chưa hỗ trợ).
 - T2: chưa có tên thành phố → sân bay, ga → múi giờ, tàu/xe nhiều chặng, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
   nên không tính `smart_imports_per_month` (cần chủ dự án chốt: văn bản dán vào có tính là nhập thông minh không).
 - Chuyến đi: chưa có UI báo/paywall từ `SyncReport.rejectedTrips` (chờ luồng sync thật); dòng hạn mức ở màn Xem lại chưa có nút nâng cấp (chưa có paywall).
@@ -106,9 +116,9 @@
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
 - Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
-- Tôi → Ngôn ngữ & vùng (quốc gia ngày lễ, hệ lịch phụ; mặc định theo máy/ngôn ngữ) lưu ở `LocalPrefs` trên máy: chuyển sang
-  `profiles.region`/`calendar_systems` (đã có `SupabaseSyncApi`, chưa làm). Ngôn ngữ giao diện + sáng/tối chọn ở Tôi cũng chỉ trên máy
-  (chưa gọi per-app language của OS); chưa có chọn định dạng, giọng nói.
+- Tôi → Ngôn ngữ & vùng lưu ở `LocalPrefs` và được ghi lên `profiles` sau khi đồng bộ; đổi sang tài khoản đã có thì cài đặt của máy
+  ghi đè lên profile tài khoản đó (chưa đọc ngược từ server). Ngôn ngữ giao diện chưa gọi per-app language của OS; chưa có chọn định dạng, giọng nói.
+- Xóa tài khoản: worker dọn Storage + thu hồi token tích hợp theo `app.account_deletions` chưa có (hiện chưa có file Storage hay tích hợp nào).
 - Ngày lễ còn thiếu: server `app.rrule_fires_on` chưa trừ ngày lễ khi đếm quota (đếm dư, an toàn), gói ngày lễ
   cho các nước khác (AU, CA, IN, đợt locale cấp B), màu loại item trên chấm lịch.
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.

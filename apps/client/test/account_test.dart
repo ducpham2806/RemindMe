@@ -61,6 +61,12 @@ class FakeAccount implements AccountApi {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    calls.add('delete');
+    _set(const AccountInfo(userId: 'anon3', isAnonymous: true));
+  }
+
+  @override
   Future<List<SessionInfo>> sessions() async => [
         SessionInfo(id: 's0', platform: 'android', deviceModel: 'Pixel 8', active: true, current: true, createdAt: DateTime.utc(2026, 11, 25, 2), country: 'VN'),
       ];

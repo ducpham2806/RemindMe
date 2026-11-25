@@ -23,7 +23,7 @@ void main() {
     const device = 'live-test-1';
     final engine = SyncEngine(db: db, api: SupabaseSyncApi(client), clock: HlcClock(device), deviceId: device);
     Future<DeviceProfile> profile() async =>
-        (uiLocale: 'vi-VN', region: 'VN', homeTz: 'Asia/Ho_Chi_Minh', platform: 'android', deviceClass: 'phone', appVersion: null);
+        (uiLocale: 'vi-VN', region: 'VN', homeTz: 'Asia/Ho_Chi_Minh', platform: 'android', deviceClass: 'phone', appVersion: null, calendarSystems: const ['lunar_vi']);
     final sync = RemoteSync(client: client, engine: engine, deviceId: device, profile: profile);
 
     final itemId = await ItemsRepository(engine).create(title: 'Live sync test');

@@ -78,6 +78,10 @@ abstract interface class AccountApi {
   Future<void> finishSwitch();
   Future<void> cancelSwitch();
   Future<void> signOut();
+
+  /// Xóa tài khoản và dữ liệu đồng bộ (RPC `account_delete`, security-privacy.md §6), rồi xóa dữ liệu trên máy;
+  /// app quay về dùng ẩn danh với tài khoản mới.
+  Future<void> deleteAccount();
   Future<List<SessionInfo>> sessions();
 
   /// Máy đã đăng nhập thay phiên này (`session_status.replaced_by`), cho màn "Bạn đã được đăng xuất".
@@ -162,6 +166,21 @@ class SupabaseAccount implements AccountApi {
           // Phiên đã bị kết thúc ở server: vẫn đăng xuất trên máy.
         }
         await client.auth.signOut();
+        await engine.resetLocalData();
+        await sync.resume(reset: true);
+      });
+
+  @override
+  Future<void> deleteAccount() => _guard(() async {
+        await sync.pause();
+        try {
+          await client.rpc<Object?>('account_delete');
+        } on Object {
+          await sync.resume();
+          rethrow;
+        }
+        // User đã bị xóa ở server: chỉ bỏ phiên trên máy, không gọi /logout.
+        await client.auth.signOut(scope: SignOutScope.local);
         await engine.resetLocalData();
         await sync.resume(reset: true);
       });

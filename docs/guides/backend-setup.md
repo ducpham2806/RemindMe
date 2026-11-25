@@ -7,7 +7,7 @@
 
 | Môi trường | Project ref | Region | Ghi chú |
 |---|---|---|---|
-| dev | `msgamxrlohgszgpvvyfd` (tên RemindMe) | `ap-southeast-1` | Tạo 2026-11-25, đã áp migrations 01-08 |
+| dev | `msgamxrlohgszgpvvyfd` (tên RemindMe) | `ap-southeast-1` | Tạo 2026-11-25, đã áp migrations 01-08; **chưa áp 09** (`account_delete`) |
 
 Region chọn lúc tạo, không đổi được. Đề xuất region cho bản chính thức vẫn chờ chủ dự án duyệt (STATE "Tiếp theo" mục 1).
 

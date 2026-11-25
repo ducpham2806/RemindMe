@@ -14,6 +14,8 @@ abstract final class Tokens {
   /// Rãnh thanh tiến độ trên nền primaryContainer.
   static const primaryTrack = (Color(0xFFD4E0FF), Color(0xFF26385E));
   static const danger = (Color(0xFFBF3035), Color(0xFFFF7A7A));
+  /// Nền thẻ cảnh báo xóa (Figma C54).
+  static const dangerContainer = (Color(0xFFFDEDEE), Color(0xFF3A1A1C));
   /// Vòng "đánh dấu xong" (thường / quá hạn).
   static const checkOutline = (Color(0xFFBDC5D1), Color(0xFF596575));
   static const checkOverdue = (Color(0xFFDA8B8F), Color(0xFFA45259));

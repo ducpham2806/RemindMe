@@ -84,6 +84,8 @@ ThemeData buildTheme(Brightness b) {
     onSecondary: pick(Tokens.onPrimary),
     error: pick(Tokens.danger),
     onError: pick(Tokens.onPrimary),
+    errorContainer: pick(Tokens.dangerContainer),
+    onErrorContainer: pick(Tokens.danger),
     surface: pick(Tokens.surface),
     surfaceContainerLowest: pick(Tokens.background),
     onSurface: pick(Tokens.textPrimary),

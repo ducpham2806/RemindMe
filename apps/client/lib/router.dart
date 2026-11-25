@@ -10,6 +10,7 @@ import 'features/me/language_region_screen.dart';
 import 'features/me/me_screen.dart';
 import 'features/me/notifications_screen.dart';
 import 'features/me/plan_screen.dart';
+import 'features/me/privacy_screens.dart';
 import 'features/search/search_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/trips/trips_screen.dart';
@@ -36,6 +37,10 @@ GoRouter buildRouter() => GoRouter(
                 GoRoute(path: 'account', builder: (_, _) => const AccountScreen()),
                 GoRoute(path: 'plan', builder: (_, _) => const PlanScreen()),
                 GoRoute(path: 'notifications', builder: (_, _) => const NotificationsScreen()),
+                GoRoute(path: 'privacy', builder: (_, _) => const PrivacyScreen(), routes: [
+                  GoRoute(path: 'export', builder: (_, _) => const ExportScreen()),
+                  GoRoute(path: 'delete', builder: (_, _) => const DeleteAccountScreen()),
+                ]),
                 GoRoute(path: 'lists', builder: (_, _) => const ListsScreen(), routes: [
                   GoRoute(path: ':id', builder: (_, state) => ListDetailScreen(id: state.pathParameters['id']!)),
                 ]),
@@ -66,5 +71,6 @@ GoRouter buildRouter() => GoRouter(
           ),
         ]),
         GoRoute(path: '/revoked', builder: (_, _) => const RevokedScreen()),
+        GoRoute(path: '/account-deleted', builder: (_, _) => const AccountDeletedScreen()),
       ],
     );
