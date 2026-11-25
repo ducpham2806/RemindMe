@@ -164,6 +164,18 @@ void main() {
       expect((await repo.watchToday(day, deviceTz: 'Asia/Ho_Chi_Minh').first).isEmpty, isTrue);
     });
 
+    test('checklist: tạo kèm checklist, ghi lại cả mảng, bỏ dòng rỗng, rỗng hết thì null; JSON hỏng thì coi như trống', () async {
+      final id = await repo.create(title: 'Họp', checklist: const [{'text': 'Tổng hợp phản hồi', 'done': false}]);
+      expect((await repo.watchItem(id).first)!.checklist, [const ChecklistItem('Tổng hợp phản hồi')]);
+      await repo.setChecklist(id, const [ChecklistItem(' Tổng hợp phản hồi ', done: true), ChecklistItem('  '), ChecklistItem('Slide')]);
+      expect((await repo.watchItem(id).first)!.checklist, [const ChecklistItem('Tổng hợp phản hồi', done: true), const ChecklistItem('Slide')]);
+      await repo.setChecklist(id, const []);
+      expect((await repo.watchItem(id).first)!.checklist, isEmpty);
+      expect((await (db.select(db.items)..where((t) => t.id.equals(id))).getSingle()).checklist, isNull);
+      expect(ChecklistItem.decode('{bad'), isEmpty);
+      expect(ChecklistItem.decode('[{"text":1},{"text":"a","done":true}]'), [const ChecklistItem('a', done: true)]);
+    });
+
     test('kiểm tra đầu vào: tiêu đề rỗng, có giờ mà thiếu tz, ưu tiên ngoài 0-3', () async {
       expect(() => repo.create(title: '   '), throwsArgumentError);
       expect(() => repo.create(title: 'x', startsAt: DateTime.utc(2026)), throwsArgumentError);

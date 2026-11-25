@@ -698,5 +698,11 @@
   "importTableDone": "Đã nhập {count} việc",
   "importTableDoneBody": "{count} việc đã được nhập từ bảng tính. Ngày và giờ giữ nguyên như bản xem trước.",
   "importTableValidRows": "{count} dòng hợp lệ",
-  "importAnother": "Nhập tệp khác"
+  "importAnother": "Nhập tệp khác",
+  "checklistTitle": "Việc chuẩn bị",
+  "checklistCountLabel": "Xong {done}/{total}",
+  "checklistAddHint": "Thêm việc chuẩn bị",
+  "checklistEditTitle": "Sửa việc chuẩn bị",
+  "checklistSave": "Lưu",
+  "checklistRemove": "Xóa dòng này"
 }

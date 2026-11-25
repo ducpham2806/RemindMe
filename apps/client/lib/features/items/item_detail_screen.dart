@@ -12,10 +12,11 @@ import '../../data/reminders.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 import '../schedule/snooze_sheet.dart';
+import 'checklist_section.dart';
 import 'schedule_editor.dart';
 
 /// Chi tiết item (UX §2.3, Figma 04): list + trạng thái (chạm để xong/mở lại), tên, ghi chú, thẻ Ngày & giờ / Nhắc / Lặp / Danh sách / Ưu tiên.
-/// Tự lưu khi rời trường (không có nút Lưu). Checklist, tag chưa có.
+/// Tự lưu khi rời trường (không có nút Lưu). Tag chưa có.
 class ItemDetailScreen extends ConsumerWidget {
   const ItemDetailScreen({super.key, required this.id, this.reminderId, this.occurrence});
   final String id;
@@ -276,6 +277,7 @@ class _EditorState extends ConsumerState<_Editor> {
               ],
             ),
           ),
+          ChecklistSection(item: item),
         ],
       ),
     );

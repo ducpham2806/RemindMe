@@ -123,6 +123,44 @@ void main() {
     expect(await tester.runAsync(() => c.read(syncEngineProvider).pendingCount()), greaterThanOrEqualTo(7));
   });
 
+  testWidgets('chi tiết: Việc chuẩn bị (Figma 04): thêm, đánh dấu, sửa, xóa + Hoàn tác', (tester) async {
+    final c = await pumpApp(tester, size: const Size(390, 1200), locale: const Locale('vi'), region: 'VN', seed: seedDay);
+    await tester.tap(find.text('Buy a gift'));
+    await tester.pumpAndSettle();
+    expect(find.text('Việc chuẩn bị'), findsOneWidget);
+    expect(find.byKey(const Key('checklistCount')), findsNothing);
+    for (final t in ['Tổng hợp phản hồi', 'Chuẩn bị bản trình bày']) {
+      await tester.enterText(find.byKey(const Key('checklistAdd')), t);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+    }
+    expect(tester.widget<Text>(find.byKey(const Key('checklistCount'))).data, '0/2');
+    await tester.tap(find.text('Tổng hợp phản hồi'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('checklistCount'))).data, '1/2');
+
+    await tester.longPress(find.text('Chuẩn bị bản trình bày'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('checklistText')), 'Chuẩn bị slide');
+    await tester.tap(find.byKey(const Key('checklistSave')));
+    await tester.pumpAndSettle();
+    expect(find.text('Chuẩn bị slide'), findsOneWidget);
+
+    await tester.longPress(find.text('Tổng hợp phản hồi'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('checklistRemove')));
+    await tester.pumpAndSettle();
+    expect(find.text('Tổng hợp phản hồi'), findsNothing);
+    expect(tester.widget<Text>(find.byKey(const Key('checklistCount'))).data, '0/1');
+    await tester.tap(find.byKey(const Key('checklistUndo')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('checklistCount'))).data, '1/2');
+
+    final db = c.read(appDatabaseProvider);
+    final row = (await tester.runAsync(() async => (await db.select(db.items).get()).firstWhere((i) => i.title == 'Buy a gift')))!;
+    expect(row.checklist, '[{"text":"Tổng hợp phản hồi","done":true},{"text":"Chuẩn bị slide","done":false}]');
+  });
+
   testWidgets('tiếng Việt: nhóm, nút và giờ theo locale', (tester) async {
     await pumpApp(tester, size: phone, locale: const Locale('vi'), seed: seedDay);
     for (final t in ['Quá hạn', 'Chưa đặt giờ', 'Cả ngày', '14:30']) {

@@ -48,6 +48,7 @@ class ItemView {
     this.tags = const [],
     this.completedAt,
     this.occurrenceAt,
+    this.checklist = const [],
   });
 
   factory ItemView.fromRow(Item r) => ItemView(
@@ -65,6 +66,7 @@ class ItemView {
         tz: r.tz,
         tags: r.tags == null ? const [] : (jsonDecode(r.tags!) as List<Object?>).cast<String>(),
         completedAt: r.completedAt == null ? null : DateTime.fromMillisecondsSinceEpoch(r.completedAt!, isUtc: true),
+        checklist: ChecklistItem.decode(r.checklist),
       );
 
   final String id;
@@ -84,6 +86,9 @@ class ItemView {
   /// Khác null: dòng này là 1 lần của chuỗi lặp (khóa `occurrence_log`); Xong chỉ đóng lần này.
   final DateTime? occurrenceAt;
 
+  /// Việc chuẩn bị (`items.checklist`, [{text, done}]); dùng chung cho mọi lần của chuỗi lặp.
+  final List<ChecklistItem> checklist;
+
   bool get isOccurrence => occurrenceAt != null;
   /// Khóa duy nhất trên danh sách (1 item lặp có thể có nhiều lần trong ngày).
   String get rowKey => occurrenceAt == null ? id : '$id@${occurrenceAt!.millisecondsSinceEpoch}';
@@ -91,6 +96,36 @@ class ItemView {
   bool get isDone => status == 'done';
   bool get hasTime => startsAt != null && !allDay;
   bool get isScheduled => startsAt != null || startDate != null;
+}
+
+/// 1 dòng checklist của item (data-model: `items.checklist jsonb [{text, done}]`).
+class ChecklistItem {
+  const ChecklistItem(this.text, {this.done = false});
+  final String text;
+  final bool done;
+
+  ChecklistItem copyWith({String? text, bool? done}) => ChecklistItem(text ?? this.text, done: done ?? this.done);
+  Map<String, Object?> toJson() => {'text': text, 'done': done};
+
+  @override
+  bool operator ==(Object other) => other is ChecklistItem && other.text == text && other.done == done;
+  @override
+  int get hashCode => Object.hash(text, done);
+
+  /// Đọc cột (chuỗi JSON ở máy); hỏng hoặc sai dạng thì bỏ qua dòng đó.
+  static List<ChecklistItem> decode(String? raw) {
+    if (raw == null) return const [];
+    try {
+      final v = jsonDecode(raw);
+      if (v is! List) return const [];
+      return [
+        for (final e in v)
+          if (e is Map && e['text'] is String) ChecklistItem(e['text'] as String, done: e['done'] == true),
+      ];
+    } on FormatException {
+      return const [];
+    }
+  }
 }
 
 /// Các nhóm của màn Hôm nay (UX §2.1).
@@ -225,6 +260,7 @@ class ItemsRepository {
             tags: base.tags,
             completedAt: status == 'done' ? (o.at.isBefore(day.startUtc) ? day.startUtc : o.at) : null,
             occurrenceAt: o.at,
+            checklist: base.checklist,
           ));
         }
       }
@@ -558,6 +594,12 @@ class ItemsRepository {
 
   /// Chuyển item sang list [listId] (null = Inbox).
   Future<void> setList(String id, String? listId) => engine.edit(SyncTable.items, id, {'list_id': listId});
+
+  /// Ghi cả checklist (LWW cả mảng khi đồng bộ); bỏ dòng rỗng, rỗng hết thì ghi null.
+  Future<void> setChecklist(String id, List<ChecklistItem> items) {
+    final clean = [for (final i in items) if (i.text.trim().isNotEmpty) i.copyWith(text: i.text.trim()).toJson()];
+    return engine.edit(SyncTable.items, id, {'checklist': clean.isEmpty ? null : clean});
+  }
 
   Future<void> setPriority(String id, int priority) {
     if (priority < 0 || priority > 3) throw RangeError.range(priority, 0, 3, 'priority');

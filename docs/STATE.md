@@ -57,7 +57,7 @@
   Thêm nhanh (02): tiêu đề + đóng, ô nhập lớn, chip thời điểm/list/nhắc/lặp (chạm chip thời điểm → chọn ngày giờ, chip nhắc → chọn độ lệch
   hoặc Không nhắc), dòng "Đã hiểu thời gian", nút Nói/Chụp/Ảnh (mờ, sắp có) và Tệp (mở Nhập từ tệp).
   Chi tiết (04): chip list + trạng thái (chạm để xong/mở lại), tên lớn, thẻ ghi chú, thẻ Ngày & giờ / Nhắc / Lặp / Danh sách / Ưu tiên
-  (`SettingRow` dùng chung, ưu tiên chọn ở bottom sheet); tự lưu, không có nút Lưu; checklist chưa có.
+  (`SettingRow` dùng chung, ưu tiên chọn ở bottom sheet), Việc chuẩn bị (checklist: thêm, đánh dấu, chạm giữ sửa/xóa); tự lưu, không có nút Lưu.
   Ngôn ngữ & vùng (C50): ngôn ngữ giao diện, định dạng + múi giờ (theo máy, chỉ xem), quốc gia ngày lễ kèm ngày nghỉ cuối tuần, hệ lịch phụ, xem trước.
   Sheet Ngày & giờ (05: chọn nhanh, lịch tháng theo CLDR, bỏ giờ), Lặp lại (06: kiểu thường dùng, Tùy chỉnh mỗi N ngày/tuần/tháng/năm + thứ,
   Kết thúc vào ngày/sau N lần), Lặp âm lịch (07: mùng 1/rằm/ngày riêng, tháng nhuận, lần tới; item dời về lần tới), Hoãn nhắc (08: nút ở chi tiết

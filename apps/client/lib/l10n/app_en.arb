@@ -3695,5 +3695,37 @@
   "importAnother": "Import another file",
   "@importAnother": {
     "description": "Spreadsheet done screen primary button: start a new import."
+  },
+  "checklistTitle": "Checklist",
+  "@checklistTitle": {
+    "description": "Item detail: header of the item's checklist (Figma 04)."
+  },
+  "checklistCountLabel": "{done} of {total} done",
+  "@checklistCountLabel": {
+    "description": "Screen reader label of the checklist progress.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "checklistAddHint": "Add a step",
+  "@checklistAddHint": {
+    "description": "Item detail: field that adds a checklist line."
+  },
+  "checklistEditTitle": "Edit step",
+  "@checklistEditTitle": {
+    "description": "Title of the sheet that edits a checklist line."
+  },
+  "checklistSave": "Save",
+  "@checklistSave": {
+    "description": "Primary button of the checklist line sheet."
+  },
+  "checklistRemove": "Remove",
+  "@checklistRemove": {
+    "description": "Checklist line sheet: remove the line."
   }
 }
