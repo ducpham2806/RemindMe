@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:remindme_core/remindme_core.dart';
@@ -76,6 +78,74 @@ void main() {
       expect(s.today.single.isDone, isFalse);
       expect(s.today.single.completedAt, isNull);
       expect(await repo.engine.pendingCount(), 3);
+    });
+
+    test('countsByDay: item có giờ theo ngày ở múi giờ máy, cả ngày theo ngày, chuỗi lặp trải từng lần, bỏ đã xóa và lần bỏ qua', () async {
+      const tz = 'Asia/Ho_Chi_Minh';
+      await repo.create(title: 'late night', startsAt: DateTime.utc(2026, 12, 1, 18), tz: tz); // 01:00 ngày 2/12 giờ VN
+      await repo.create(title: 'all day', startDate: '2026-12-02');
+      await repo.create(title: 'outside', startDate: '2026-12-09');
+      final gone = await repo.create(title: 'gone', startDate: '2026-12-03');
+      await repo.delete(gone);
+      final daily = await repo.create(title: 'pills', startsAt: DateTime.utc(2026, 12, 1, 1), tz: tz,
+          recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY'}, recurrenceStart: DateTime.utc(2026, 12, 1, 1));
+      await repo.skipOccurrence(daily, DateTime.utc(2026, 12, 3, 1));
+      final counts = await repo.countsByDay(CivilDate(2026, 12, 1), CivilDate(2026, 12, 4), deviceTz: tz);
+      expect(counts, {'2026-12-01': 1, '2026-12-02': 3, '2026-12-04': 1});
+    });
+
+    test('lặp ngày làm việc của VN: Hôm nay không có lần vào ngày nghỉ lễ 30/4, có lại 4/5', () async {
+      HolidayCalendars.register(HolidayCalendar.parse(File('../core/data/holidays/VN.json').readAsStringSync()));
+      addTearDown(HolidayCalendars.clear);
+      const tz = 'Asia/Ho_Chi_Minh';
+      final id = await repo.create(title: 'Chấm công', startsAt: DateTime.utc(2026, 4, 1, 1), tz: tz,
+          recurrence: {'kind': 'rrule', 'rrule': 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR', 'workdays_region': 'VN'},
+          recurrenceStart: DateTime.utc(2026, 4, 1, 1));
+      DayWindow vnDay(int m, int d) => DayWindow(
+          startUtc: DateTime.utc(2026, m, d).subtract(const Duration(hours: 7)), endUtc: DateTime.utc(2026, m, d + 1).subtract(const Duration(hours: 7)),
+          localDate: DayWindow.isoDate(DateTime.utc(2026, m, d)));
+      expect((await repo.watchToday(vnDay(4, 29), deviceTz: tz).first).today.map((i) => i.id), [id]);
+      expect((await repo.watchToday(vnDay(4, 30), deviceTz: tz).first).today, isEmpty);
+      expect((await repo.watchToday(vnDay(5, 4), deviceTz: tz).first).today.map((i) => i.id), [id]);
+      expect((await repo.recurrenceOf(id))!['workdays_region'], 'VN');
+    });
+
+    test('openTasksOn + moveToDate: chỉ việc 1 lần đang mở; dời giữ giờ tường, việc cả ngày đổi ngày', () async {
+      const tz = 'Asia/Ho_Chi_Minh';
+      final timed = await repo.create(title: 'Báo cáo', startsAt: DateTime.utc(2026, 4, 30, 2), tz: tz); // 9:00 30/4
+      final allDay = await repo.create(title: 'Nộp thuế', startDate: '2026-04-30');
+      await repo.create(title: 'Họp', kind: 'event', startsAt: DateTime.utc(2026, 4, 30, 3), tz: tz);
+      await repo.create(title: 'Uống thuốc', startsAt: DateTime.utc(2026, 4, 30, 1), tz: tz,
+          recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY'}, recurrenceStart: DateTime.utc(2026, 4, 30, 1));
+      await repo.create(title: 'Late', startsAt: DateTime.utc(2026, 4, 30, 18), tz: tz); // 1:00 ngày 1/5 giờ VN
+      final hits = await repo.openTasksOn({'2026-04-30'}, deviceTz: tz);
+      expect(hits.map((i) => i.title).toSet(), {'Báo cáo', 'Nộp thuế'});
+      for (final i in hits) {
+        await repo.moveToDate(i, CivilDate(2026, 5, 4), deviceTz: tz);
+      }
+      expect((await repo.getItem(timed))!.startsAt, DateTime.utc(2026, 5, 4, 2));
+      expect((await repo.getItem(allDay))!.startDate, '2026-05-04');
+      expect(await repo.openTasksOn({'2026-04-30'}, deviceTz: tz), isEmpty);
+    });
+
+    test('LocalPrefs: tập giá trị chỉ ở máy này', () async {
+      final prefs = LocalPrefs(db);
+      expect(await prefs.getSet('x'), isEmpty);
+      await prefs.addToSet('x', 'b');
+      await prefs.addToSet('x', 'a');
+      await prefs.addToSet('x', 'a');
+      expect(await prefs.getSet('x'), {'a', 'b'});
+      expect(await repo.engine.pendingCount(), 0, reason: 'không vào outbox');
+    });
+
+    test('updateBooking chỉ gắn chuyến thì giữ nguyên ngày/giờ; có giờ mới thì thay cả bộ', () async {
+      final id = await repo.create(title: 'Hotel', kind: 'booking', startDate: '2099-01-02');
+      await repo.updateBooking(id, tripId: 't1');
+      var i = (await repo.getItem(id))!;
+      expect((i.startDate, i.allDay), ('2099-01-02', true));
+      await repo.updateBooking(id, startsAt: DateTime.utc(2099, 1, 2, 7), tz: 'Asia/Ho_Chi_Minh');
+      i = (await repo.getItem(id))!;
+      expect((i.startDate, i.startsAt, i.allDay), (null, DateTime.utc(2099, 1, 2, 7), false));
     });
 
     test('đổi tên, ghi chú, ưu tiên, xóa', () async {

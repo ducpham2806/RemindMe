@@ -20,7 +20,8 @@ class AppNotificationTexts implements NotificationTexts {
   ({String title, String body}) forOccurrence(PlannerItem item, DateTime occurrenceAt, int offsetMinutes) {
     final allDay = item.allDay || item.startsAt == null;
     final when = allDay ? l.itemAllDay : _time(occurrenceAt);
-    final body = switch (offsetMinutes) {
+    // `offset_minutes` âm = trước giờ của item (data-model.md).
+    final body = switch (-offsetMinutes) {
       <= 0 => when,
       final m when m % 1440 == 0 => l.notifInDays(m ~/ 1440, when),
       final m when m % 60 == 0 => l.notifInHours(m ~/ 60, when),
@@ -44,16 +45,16 @@ class AppNotificationTexts implements NotificationTexts {
       );
 }
 
-/// Mô tả 1 mốc nhắc ("Đúng giờ", "Trước 15 phút"...).
-String describeReminderOffset(AppLocalizations l, int minutes) => switch (minutes) {
+/// Mô tả 1 mốc nhắc ("Đúng giờ", "Trước 15 phút"...). [minutes] theo `offset_minutes`: âm = trước giờ của item.
+String describeReminderOffset(AppLocalizations l, int minutes) => switch (-minutes) {
       <= 0 => l.reminderAtTime,
       final m when m % 1440 == 0 => l.reminderDaysBefore(m ~/ 1440),
       final m when m % 60 == 0 => l.reminderHoursBefore(m ~/ 60),
       final m => l.reminderMinutesBefore(m),
     };
 
-/// Các mốc có sẵn khi thêm nhắc (phút trước giờ của item).
-const reminderPresets = [0, 10, 30, 60, 1440];
+/// Các mốc có sẵn khi thêm nhắc (`offset_minutes`, âm = trước giờ của item).
+const reminderPresets = [0, -10, -30, -60, -1440];
 
 const _uiLocaleKey = 'ui_locale';
 

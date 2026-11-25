@@ -156,6 +156,48 @@ void main() {
     expect(kinds, containsAll(['quota_exceeded', 'notes_conflict']));
   });
 
+  test('chuyến mới bị từ chối vì hạn mức: bỏ chuyến ở máy, item + nhắc được gỡ khỏi chuyến và gửi lại', () async {
+    final a = Device('phone', server, now: now);
+    server
+      ..checkForeignKeys = true
+      ..rejectQuota = (m) => m.table == SyncTable.trips;
+    await a.engine.edit(SyncTable.trips, 't1', {'title': 'Huế', 'starts_on': '2027-03-01'});
+    await a.engine.edit(SyncTable.items, 'b1', {'kind': 'booking', 'title': 'Hotel', 'trip_id': 't1'});
+    await a.engine.edit(SyncTable.reminders, 'r1', {'item_id': 'b1', 'trigger_kind': 'offset', 'offset_minutes': 0});
+    await a.engine.edit(SyncTable.trips, 't1', {'ends_on': '2027-03-03'});
+    final r = await a.engine.sync();
+    expect(r.issues.map((i) => '${i.table.wire} ${i.error}'), ['trips quota_exceeded']);
+    expect(r.rejectedTrips, ['t1']);
+    expect(server.rows['items/b1']!['trip_id'], isNull);
+    expect(server.rows['items/b1']!['title'], 'Hotel');
+    expect(server.rows.containsKey('reminders/r1'), isTrue);
+    expect((await a.row('trips', 't1'))!['deleted_at'], isNotNull);
+    expect((await a.row('items', 'b1'))!['trip_id'], isNull);
+    expect(await a.engine.pendingCount(), 0);
+  });
+
+  test('quota_status được cache sau lần sync thành công; lỗi lấy hạn mức giữ cache cũ', () async {
+    final a = Device('phone', server, now: now);
+    expect(await a.engine.cachedQuota(), isNull);
+    server.quota = {'plan': 'free', 'limits': {'max_active_trips': 1}, 'usage': {'max_active_trips': 0}, 'features': {}};
+    await a.engine.sync();
+    final q = (await a.engine.cachedQuota())!;
+    expect(q.limit(EntitlementKey.maxActiveTrips), 1);
+    server.quota = null;
+    expect((await a.engine.sync()).error, isNull);
+    expect((await a.engine.cachedQuota())!.plan, 'free');
+  });
+
+  test('lỗi khóa ngoại không do chuyến bị từ chối vẫn được báo, không gửi lại', () async {
+    final a = Device('phone', server, now: now);
+    server.checkForeignKeys = true;
+    await a.engine.edit(SyncTable.items, 'x1', {'kind': 'task', 'title': 'x', 'list_id': 'missing'});
+    final r = await a.engine.sync();
+    expect(r.issues.map((i) => i.error), ['23503']);
+    expect(r.rejectedTrips, isEmpty);
+    expect(await a.engine.pendingCount(), 0);
+  });
+
   test('session_revoked: dừng sync, giữ outbox để đẩy lại khi đăng nhập lại', () async {
     final a = Device('phone', server, now: now);
     await a.engine.edit(SyncTable.items, 'i1', {'kind': 'task', 'title': 'x'});

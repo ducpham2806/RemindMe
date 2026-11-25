@@ -53,6 +53,9 @@ class PgSyncApi implements SyncApi {
     return PullPage.fromJson((r! as Map).cast<String, Object?>());
   }
 
+  @override
+  Future<Map<String, Object?>> quotaStatus() async => ((await _rpc('select public.quota_status()', {}))! as Map).cast<String, Object?>();
+
   Future<Object?> call(String sql, [Map<String, Object?> params = const {}]) => _rpc(sql, params);
 }
 
@@ -218,5 +221,115 @@ void main() {
     expect(rows.single.first, 2);
     final imp = await conn.execute(Sql.named('select kind, status from public.imports where id = @i::uuid'), parameters: {'i': r.importId});
     expect(imp.single.toList(), ['email', 'committed']);
+  }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
+
+  test('chuyến đi + booking_details + nhắc tuyệt đối; vé đổi giờ cập nhật item cũ qua RPC thật', () async {
+    final login = await newUser();
+    final (phone, _) = await login('phone-1', 'android', 'phone');
+    final repo = ImportsRepository(phone, ItemsRepository(phone), ListsRepository(phone));
+    ImportedItem flight(DateTime at, {String? update}) => ImportedItem(
+          title: 'ZZ 245',
+          kind: 'booking',
+          startsAt: at,
+          tz: 'Asia/Ho_Chi_Minh',
+          endsAt: at.add(const Duration(hours: 2)),
+          endTz: 'Asia/Ho_Chi_Minh',
+          reminderOffsets: const [-1440, -180],
+          tripIndex: 0,
+          updateItemId: update,
+          booking: const {
+            'booking_type': 'flight',
+            'confirmation_code': 'XQ7K2M',
+            'carrier_code': 'ZZ',
+            'number': '245',
+            'origin': {'code': 'SGN', 'tz': 'Asia/Ho_Chi_Minh', 'terminal': '1'},
+            'destination': {'code': 'HAN', 'tz': 'Asia/Ho_Chi_Minh'},
+            'seat': '14C',
+            'class': 'Economy',
+            'price': {'amount': '1890000', 'currency': 'VND'},
+            'extraction_meta': {'tier': 't2', 'field_confidence': {'starts_at': 0.6}},
+          },
+        );
+    final first = await repo.commit(
+      const ImportRecord(kind: 'text', docType: 'flight', tierUsed: 't1t2'),
+      [
+        flight(DateTime.utc(2027, 1, 21, 3, 30)),
+        ImportedItem(
+          title: 'Hoa Sen',
+          kind: 'booking',
+          startsAt: DateTime.utc(2027, 1, 21, 7),
+          tz: 'Asia/Ho_Chi_Minh',
+          absoluteReminders: [DateTime.utc(2027, 1, 20, 11)],
+          tripIndex: 0,
+          booking: const {'booking_type': 'hotel', 'confirmation_code': 'HS-1', 'check_in_at': '2027-01-21T07:00:00.000Z'},
+        ),
+      ],
+      deviceTz: 'Asia/Ho_Chi_Minh',
+      trips: const [TripDraft(title: 'Hà Nội', destination: 'Hanoi', startsOn: '2027-01-21', endsOn: '2027-01-23')],
+    );
+    var s = await phone.sync();
+    expect(s.issues, isEmpty, reason: '${s.issues.map((i) => '${i.table} ${i.error} ${i.id}')}');
+    final trip = await conn.execute(Sql.named('select title, starts_on::text, ends_on::text from public.trips where id = @t::uuid'),
+        parameters: {'t': first.tripIds.single});
+    expect(trip.single.toList(), ['Hà Nội', '2027-01-21', '2027-01-23']);
+    final b = await conn.execute(
+        Sql.named("select b.booking_type, b.origin->>'terminal', b.price->>'currency', b.passengers is null, i.kind, i.trip_id = @t::uuid "
+            'from public.booking_details b join public.items i on i.id = b.item_id where b.item_id = @i::uuid'),
+        parameters: {'i': first.itemIds.first, 't': first.tripIds.single});
+    expect(b.single.toList(), ['flight', '1', 'VND', true, 'booking', true]);
+    final abs = await conn.execute(Sql.named("select count(*) from public.reminders where item_id = @i::uuid and trigger_kind = 'absolute' and at is not null"),
+        parameters: {'i': first.itemIds.last});
+    expect(abs.single.first, 1);
+
+    final second = await repo.commit(const ImportRecord(kind: 'text', docType: 'flight', tierUsed: 't1t2'),
+        [flight(DateTime.utc(2027, 1, 21, 5), update: first.itemIds.first)],
+        deviceTz: 'Asia/Ho_Chi_Minh', trips: [TripDraft(existingTripId: first.tripIds.single, startsOn: '2027-01-21', endsOn: '2027-01-23')]);
+    expect(second.updatedItemIds, [first.itemIds.first]);
+    s = await phone.sync();
+    expect(s.issues, isEmpty, reason: '${s.issues.map((i) => '${i.table} ${i.error} ${i.id}')}');
+    final moved = await conn.execute(Sql.named("select to_char(starts_at at time zone 'UTC', 'HH24:MI') from public.items where id = @i::uuid"),
+        parameters: {'i': first.itemIds.first});
+    expect(moved.single.first, '05:00');
+  }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
+
+  test('Free: chuyến thứ 2 vượt max_active_trips thì bị bỏ, đặt chỗ + nhắc + booking_details vẫn lên server', () async {
+    final login = await newUser();
+    final (phone, db) = await login('phone-1', 'android', 'phone');
+    final repo = ImportsRepository(phone, ItemsRepository(phone), ListsRepository(phone), trips: TripsRepository(phone));
+    ImportedItem hotel(String code, DateTime at) => ImportedItem(
+          title: 'Hotel $code',
+          kind: 'booking',
+          startsAt: at,
+          tz: 'Asia/Ho_Chi_Minh',
+          absoluteReminders: [at.subtract(const Duration(hours: 13))],
+          tripIndex: 0,
+          booking: {'booking_type': 'hotel', 'confirmation_code': code},
+        );
+    await repo.commit(const ImportRecord(kind: 'text', docType: 'hotel', tierUsed: 't1t2'), [hotel('H-1', DateTime.utc(2027, 2, 1, 7))],
+        deviceTz: 'Asia/Ho_Chi_Minh', trips: const [TripDraft(title: 'Đà Nẵng', startsOn: '2027-02-01', endsOn: '2027-02-03')]);
+    expect((await phone.sync()).issues, isEmpty);
+    final quota = (await phone.cachedQuota())!;
+    expect(quota.plan, 'free');
+    expect(quota.limit(EntitlementKey.maxActiveTrips), 1);
+    expect(quota.used(EntitlementKey.maxActiveTrips), 1);
+
+    final second = await repo.commit(const ImportRecord(kind: 'text', docType: 'hotel', tierUsed: 't1t2'),
+        [hotel('H-2', DateTime.utc(2027, 3, 1, 7)), hotel('H-3', DateTime.utc(2027, 3, 2, 7))],
+        deviceTz: 'Asia/Ho_Chi_Minh', trips: const [TripDraft(title: 'Huế', startsOn: '2027-03-01', endsOn: '2027-03-03')]);
+    final r = await phone.sync();
+    expect(r.issues.map((i) => '${i.table.wire} ${i.error}'), ['trips quota_exceeded'], reason: '${r.issues.map((i) => i.details)}');
+    expect(r.issues.single.details!['key'], 'max_active_trips');
+    expect(r.rejectedTrips, second.tripIds);
+    final server = await conn.execute(
+        Sql.named('select count(*) filter (where i.trip_id is null), count(b.item_id), '
+            "(select count(*) from public.reminders m where m.item_id = any(@ids::uuid[]) and m.trigger_kind = 'absolute') "
+            'from public.items i left join public.booking_details b on b.item_id = i.id where i.id = any(@ids::uuid[])'),
+        parameters: {'ids': second.itemIds});
+    expect(server.single.toList(), [2, 2, 2]);
+    final local = await TripsRepository(phone).trips();
+    expect(local.map((t) => t.title), ['Đà Nẵng']);
+    expect((await row(db, second.itemIds.first))['trip_id'], isNull);
+    expect(await phone.pendingCount(), 0);
+    expect((await phone.sync()).issues, isEmpty);
   }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
 }

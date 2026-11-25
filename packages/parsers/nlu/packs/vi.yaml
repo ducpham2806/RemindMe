@@ -151,3 +151,53 @@ table:
     list: [nhóm, danh mục, phân loại, loại, dự án, hạng mục lớn]
   priority: {cao: 3, rất cao: 3, khẩn: 3, khẩn cấp: 3, gấp: 3, quan trọng: 3, trung bình: 2, vừa: 2, bình thường: 2, thấp: 1}
   done: [xong, đã xong, hoàn thành, đã hoàn thành, rồi, đã làm, có, đóng]
+
+# Đọc tài liệu bằng luật T2 (on-device-extraction.md §4): từ khóa phân loại (trọng số 1-3), nhãn in trên tài liệu theo trường.
+# So không dấu, không phân biệt hoa thường, chịu lỗi OCR nhỏ.
+document:
+  classify:
+    flight: {chuyến bay: 3, số hiệu chuyến bay: 3, thẻ lên tàu bay: 3, thẻ lên máy bay: 3, hãng hàng không: 2, sân bay: 2, nhà ga: 1, hành lý: 2, cất cánh: 2, hạ cánh: 2, giờ lên máy bay: 3, cửa ra máy bay: 3, mã đặt chỗ: 1, hành khách: 1}
+    train: {đường sắt: 3, vé tàu: 3, tàu hỏa: 3, toa: 2, khoang: 2, ga đi: 3, ga đến: 3, giường nằm: 1, ghế ngồi mềm: 2}
+    bus: {xe khách: 3, nhà xe: 3, bến xe: 3, điểm đón: 2, điểm trả: 2, limousine: 2, xe giường nằm: 3, biển số xe: 2}
+    hotel: {nhận phòng: 3, trả phòng: 3, khách sạn: 2, resort: 2, homestay: 2, loại phòng: 3, số đêm: 3, đặt phòng: 2, số phòng: 2}
+    medical: {bệnh viện: 3, phòng khám: 3, phiếu hẹn: 3, lịch khám: 3, tái khám: 3, số thứ tự: 2, bác sĩ: 2, chuyên khoa: 2, nhịn ăn: 2, bệnh nhân: 2}
+    event: {suất chiếu: 3, sự kiện: 2, khu vực: 1, cổng vào: 2, buổi biểu diễn: 3, rạp: 2, vé xem: 3}
+  anchors:
+    confirmation_code: [mã đặt chỗ, mã đặt vé, mã đặt phòng, mã xác nhận, số xác nhận, mã booking, mã vé]
+    passengers: [hành khách, tên hành khách]
+    terminal: [nhà ga]
+    gate: [cửa ra máy bay, cửa lên máy bay, cửa khởi hành]
+    seat: [số ghế, ghế, chỗ ngồi, số chỗ, chỗ, số giường, giường]
+    class: [hạng vé, hạng ghế, hạng]
+    total: [tổng tiền, tổng cộng, tổng thanh toán, thành tiền, tổng giá, giá vé]
+    check_in: [ngày nhận phòng, nhận phòng]
+    check_out: [ngày trả phòng, trả phòng]
+    property: [tên khách sạn, khách sạn, cơ sở lưu trú, chỗ nghỉ]
+    address: [địa chỉ]
+    # Tàu, xe khách
+    train_number: [số hiệu tàu, mác tàu, tàu]
+    carriage: [số toa, toa]
+    origin: [ga đi, ga khởi hành, nơi đi, điểm đi, điểm đón, bến đi]
+    destination: [ga đến, nơi đến, điểm đến, điểm trả, bến đến]
+    departure_date: [ngày đi, ngày khởi hành, ngày xuất phát]
+    departure_time: [giờ đi, giờ khởi hành, giờ xuất phát, giờ đón]
+    arrival_time: [giờ đến, giờ dự kiến đến]
+    operator: [nhà xe, hãng xe, nhà vận chuyển]
+    # Lịch khám
+    facility: [nơi khám, cơ sở khám, bệnh viện, phòng khám]
+    department: [chuyên khoa, khoa]
+    queue_number: [số thứ tự, stt]
+    preparation: [lưu ý, dặn dò, chuẩn bị, hướng dẫn]
+    appointment_date: [ngày tái khám, ngày hẹn khám, ngày khám, ngày hẹn]
+    appointment_time: [giờ khám, giờ hẹn, giờ]
+    # Vé sự kiện
+    event_name: [tên sự kiện, tên phim, sự kiện, chương trình, phim]
+    venue: [nơi tổ chức, địa điểm, rạp]
+    event_date: [suất chiếu, ngày diễn, thời gian, ngày]
+    # Ngày không phải thời điểm của lịch (ngày sinh trên phiếu khám, ngày đặt vé): không bao giờ lấy làm giờ hẹn.
+    excluded_dates: [ngày sinh, năm sinh, ngày đặt vé, ngày đặt, ngày xuất vé, ngày in, ngày cấp, ngày thanh toán, ngày giao dịch]
+  segments: [chuyến đi, chuyến về, chiều đi, chiều về, chặng]
+  travel_classes: {phổ thông: economy, phổ thông đặc biệt: premium, thương gia: business, hạng nhất: first}
+  passenger_units: [người lớn, trẻ em, em bé, hành khách]
+  facility_words: [bệnh viện, phòng khám, trung tâm y tế, nha khoa, viện]
+  preparation_words: [nhịn ăn, không ăn, uống nhiều nước, mang theo]

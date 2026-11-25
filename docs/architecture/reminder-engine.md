@@ -56,7 +56,8 @@ Plugin: `flutter_local_notifications` + method channel riêng cho `setAlarmClock
 ## 4. Lặp lại (recurrence)
 - Thư viện: Dart `rrule` (pub.dev) trong app, bọc trong `packages/core/lib/src/recurrence.dart` (tính trên giờ tường `CivilDateTime`, đổi UTC theo tz ở tầng nhắc); TS `rrule` (npm) trong worker chỉ để xuất ICS/Google Calendar. Fixtures chung `packages/parsers/fixtures/recurrence/` (chưa tạo: làm khi có worker).
 - Mẫu UI: hằng ngày, các ngày trong tuần, mỗi N ngày/tuần/tháng, ngày X hằng tháng, thứ N cuối tháng, hằng năm,
-  **ngày làm việc** (cuối tuần + ngày lễ của `workdays_region`, `i18n-l10n.md` §5),
+  **ngày làm việc** (cuối tuần + ngày lễ của `workdays_region`, `i18n-l10n.md` §5; code: RRULE các thứ không phải cuối tuần của vùng +
+  `WorkdaysRecurrence` bỏ ngày nghỉ lễ của gói đã nạp, vùng chưa có gói thì chỉ bỏ cuối tuần),
   **sau khi hoàn thành N ngày** (`kind = 'after_completion'`, `interval_days = N`: không phải RRULE).
 - **Hệ lịch khác** (`kind = 'calendar'`, ADR-007): âm lịch VN/TQ/HQ (thuật toán âm dương, tham số UTC+7/+8/+9), Hijri (Phase 2).
   Code: `packages/core/lib/src/lunar.dart` (thuật toán Hồ Ngọc Đức). Tháng nhuận: `leap: 'skip'` (mặc định, không kêu trong tháng nhuận) | `'both'` (kêu cả tháng thường và tháng nhuận).
@@ -83,7 +84,7 @@ Plugin: `flutter_local_notifications` + method channel riêng cho `setAlarmClock
   `Pacific/Chatham` (+12:45), `Asia/Ho_Chi_Minh`, và một ngày chuyển DST của mỗi vùng có DST.
 
 **Chuyến bay**: `starts_at` theo giờ địa phương sân bay đi (`origin.tz`), `ends_at` theo `destination.tz`; hiển thị cả 2.
-Bảng IATA → tz: toàn bộ dữ liệu mở OurAirports, đóng gói vào app.
+Bảng IATA → tz: `packages/parsers/data/airports.tsv` (mwgg/Airports, MIT; múi giờ chỉnh theo tzdata), đóng gói vào app (ADR-016).
 
 **Nhắc mặc định khi tạo booking** (người dùng sửa được; mỗi cái tính vào quota nhắc/ngày; có thể khác nhau theo thị trường qua gói dữ liệu):
 | Loại | Nhắc mặc định |

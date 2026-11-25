@@ -5,16 +5,54 @@ import 'tokens.dart';
 /// Màu ngoài Material (design-system.md §10).
 @immutable
 class RemindColors extends ThemeExtension<RemindColors> {
-  const RemindColors({required this.travel, required this.health, required this.lunar, required this.warning, required this.success});
+  const RemindColors({
+    required this.travel,
+    required this.health,
+    required this.lunar,
+    required this.warning,
+    required this.success,
+    required this.primaryTrack,
+    required this.checkOutline,
+    required this.checkOverdue,
+    required this.travelContainer,
+    required this.textDisabled,
+    required this.warningContainer,
+    required this.onWarningContainer,
+  });
 
-  final Color travel, health, lunar, warning, success;
+  final Color travel, health, lunar, warning, success, primaryTrack, checkOutline, checkOverdue, travelContainer, textDisabled, warningContainer, onWarningContainer;
 
   static RemindColors of(BuildContext context) => Theme.of(context).extension<RemindColors>()!;
 
   @override
-  RemindColors copyWith({Color? travel, Color? health, Color? lunar, Color? warning, Color? success}) => RemindColors(
-        travel: travel ?? this.travel, health: health ?? this.health, lunar: lunar ?? this.lunar,
-        warning: warning ?? this.warning, success: success ?? this.success);
+  RemindColors copyWith({
+    Color? travel,
+    Color? health,
+    Color? lunar,
+    Color? warning,
+    Color? success,
+    Color? primaryTrack,
+    Color? checkOutline,
+    Color? checkOverdue,
+    Color? travelContainer,
+    Color? textDisabled,
+    Color? warningContainer,
+    Color? onWarningContainer,
+  }) =>
+      RemindColors(
+        travel: travel ?? this.travel,
+        health: health ?? this.health,
+        lunar: lunar ?? this.lunar,
+        warning: warning ?? this.warning,
+        success: success ?? this.success,
+        primaryTrack: primaryTrack ?? this.primaryTrack,
+        checkOutline: checkOutline ?? this.checkOutline,
+        checkOverdue: checkOverdue ?? this.checkOverdue,
+        travelContainer: travelContainer ?? this.travelContainer,
+        textDisabled: textDisabled ?? this.textDisabled,
+        warningContainer: warningContainer ?? this.warningContainer,
+        onWarningContainer: onWarningContainer ?? this.onWarningContainer,
+      );
 
   @override
   RemindColors lerp(RemindColors? other, double t) => other == null
@@ -22,7 +60,11 @@ class RemindColors extends ThemeExtension<RemindColors> {
       : RemindColors(
           travel: Color.lerp(travel, other.travel, t)!, health: Color.lerp(health, other.health, t)!,
           lunar: Color.lerp(lunar, other.lunar, t)!, warning: Color.lerp(warning, other.warning, t)!,
-          success: Color.lerp(success, other.success, t)!);
+          success: Color.lerp(success, other.success, t)!, primaryTrack: Color.lerp(primaryTrack, other.primaryTrack, t)!,
+          checkOutline: Color.lerp(checkOutline, other.checkOutline, t)!, checkOverdue: Color.lerp(checkOverdue, other.checkOverdue, t)!,
+          travelContainer: Color.lerp(travelContainer, other.travelContainer, t)!, textDisabled: Color.lerp(textDisabled, other.textDisabled, t)!,
+          warningContainer: Color.lerp(warningContainer, other.warningContainer, t)!,
+          onWarningContainer: Color.lerp(onWarningContainer, other.onWarningContainer, t)!);
 }
 
 ThemeData buildTheme(Brightness b) {
@@ -32,11 +74,14 @@ ThemeData buildTheme(Brightness b) {
     brightness: b,
     primary: pick(Tokens.primary),
     onPrimary: pick(Tokens.onPrimary),
+    primaryContainer: pick(Tokens.primaryContainer),
+    onPrimaryContainer: pick(Tokens.textPrimary),
     secondary: pick(Tokens.travel),
     onSecondary: pick(Tokens.onPrimary),
     error: pick(Tokens.danger),
     onError: pick(Tokens.onPrimary),
     surface: pick(Tokens.surface),
+    surfaceContainerLowest: pick(Tokens.background),
     onSurface: pick(Tokens.textPrimary),
     onSurfaceVariant: pick(Tokens.textSecondary),
     outlineVariant: pick(Tokens.divider),
@@ -51,15 +96,18 @@ ThemeData buildTheme(Brightness b) {
         color: scheme.onSurface,
       );
 
-  // design-system.md §3: display 32/40, title 22/28, headline 18/24, body 16/24, bodySmall 14/20, label 13/16, caption 12/16.
+  // design-system.md §3 (theo Figma): tiêu đề màn 30/44, thẻ 16/23, tên việc 14/20 medium, giờ 13/19, nhóm 12/17, phụ đề 11/16, nhãn tab 10/15.
   final text = TextTheme(
-    headlineLarge: style(32, 40, FontWeight.w600),
+    headlineLarge: style(30, 44, FontWeight.w600),
     titleLarge: style(22, 28, FontWeight.w600),
-    titleMedium: style(18, 24, FontWeight.w600),
+    titleMedium: style(16, 23, FontWeight.w600),
+    titleSmall: style(14, 20, FontWeight.w500),
     bodyLarge: style(16, 24, FontWeight.w400),
     bodyMedium: style(14, 20, FontWeight.w400),
-    labelLarge: style(13, 16, FontWeight.w500),
-    bodySmall: style(12, 16, FontWeight.w400),
+    bodySmall: style(12, 17, FontWeight.w400).copyWith(color: scheme.onSurfaceVariant),
+    labelLarge: style(12, 17, FontWeight.w600),
+    labelMedium: style(13, 19, FontWeight.w600),
+    labelSmall: style(11, 16, FontWeight.w500),
   );
 
   return ThemeData(
@@ -70,18 +118,22 @@ ThemeData buildTheme(Brightness b) {
     dividerColor: pick(Tokens.divider),
     cardTheme: CardThemeData(
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(Tokens.radiusMd),
-        side: BorderSide(color: pick(Tokens.divider)),
-      ),
+      color: pick(Tokens.surface),
+      surfaceTintColor: Colors.transparent,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.radiusMd)),
     ),
+    appBarTheme: AppBarTheme(backgroundColor: pick(Tokens.background), surfaceTintColor: Colors.transparent, scrolledUnderElevation: 0),
     bottomSheetTheme: const BottomSheetThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(Tokens.radiusLg))),
     ),
     extensions: [
       RemindColors(
         travel: pick(Tokens.travel), health: pick(Tokens.health), lunar: pick(Tokens.lunar),
-        warning: pick(Tokens.warning), success: pick(Tokens.success)),
+        warning: pick(Tokens.warning), success: pick(Tokens.success), primaryTrack: pick(Tokens.primaryTrack),
+        checkOutline: pick(Tokens.checkOutline), checkOverdue: pick(Tokens.checkOverdue),
+        travelContainer: pick(Tokens.travelContainer), textDisabled: pick(Tokens.textDisabled),
+        warningContainer: pick(Tokens.warningContainer), onWarningContainer: pick(Tokens.onWarningContainer)),
     ],
   );
 }

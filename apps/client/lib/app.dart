@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'core/l10n/locale_resolution.dart';
 import 'core/theme/app_theme.dart';
+import 'data/providers.dart';
 import 'data/reminder_binding.dart';
 import 'l10n/app_localizations.dart';
 import 'router.dart';
@@ -35,11 +36,17 @@ class _RemindMeAppState extends ConsumerState<RemindMeApp> {
   @override
   Widget build(BuildContext context) {
     final locales = appSupportedLocales();
+    final appearance = ref.watch(appearanceProvider);
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
-      locale: widget.locale,
+      themeMode: switch (appearance.theme) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      },
+      locale: widget.locale ?? (appearance.language == prefAuto ? null : Locale(appearance.language)),
       supportedLocales: locales,
       // Flutter 3.47+ tách Material/Cupertino thành package riêng: dùng delegate của material_ui/cupertino_ui,
       // không dùng danh sách sinh sẵn (vẫn trỏ tới bản cũ trong flutter_localizations).

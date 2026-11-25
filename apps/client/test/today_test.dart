@@ -107,6 +107,7 @@ void main() {
   // Pseudo-locale + chữ 1,3x ở màn hẹp nhất: Hôm nay có dữ liệu và màn chi tiết không tràn layout.
   testWidgets('pseudo-locale + chữ lớn: Hôm nay và chi tiết không vỡ ở 320dp', (tester) async {
     await pumpApp(tester, size: const Size(320, 640), locale: pseudoLocale, textScale: 1.3, seed: seedDay);
+    await tester.scrollUntilVisible(find.text('Buy a gift'), 100);
     await tester.tap(find.text('Buy a gift'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('itemPriority')), findsOneWidget);

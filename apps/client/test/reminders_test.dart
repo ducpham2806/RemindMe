@@ -88,7 +88,7 @@ void main() {
   testWidgets('đổi ngôn ngữ app → thông báo đã lập lịch dùng chuỗi mới', (tester) async {
     await pumpApp(tester, size: phone, locale: const Locale('vi'), seed: (repo) async {
       final id = await repo.create(title: 'Họp', startsAt: DateTime(2026, 12, 1, 15).toUtc(), tz: 'Asia/Ho_Chi_Minh');
-      await repo.addReminder(id, offsetMinutes: 60);
+      await repo.addReminder(id, offsetMinutes: -60);
     });
     await settleReminders(tester);
     expect(testOs.pending.values.single.body, '1 giờ nữa · 15:00');

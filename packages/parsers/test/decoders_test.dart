@@ -36,7 +36,7 @@ void main() {
       expect(meeting.fields.startsAt!.toJson(), {'local': '2026-12-05T10:30', 'tz': 'Asia/Ho_Chi_Minh'});
       expect(meeting.fields.endsAt!.local, '2026-12-05T11:30');
       expect(meeting.rrule, 'FREQ=WEEKLY;BYDAY=SA');
-      expect(meeting.reminderOffsetsMinutes, [15, 1440]);
+      expect(meeting.reminderOffsetsMinutes, [-1440, -15]);
       expect(c[1].fields.startsAt!.toJson(), {'local': '2026-12-08', 'tz': null});
       expect(c[2].fields.startsAt!.toJson(), {'local': '2026-12-05T03:30', 'tz': 'Etc/UTC'});
       expect(c[2].fields.endsAt!.local, '2026-12-05T05:00');

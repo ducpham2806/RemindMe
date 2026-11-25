@@ -1,0 +1,25 @@
+{
+  "doc_type": "medical",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "appointment",
+      "required": {
+        "title": "Riverside Dental Clinic",
+        "starts_at": {
+          "local": "2026-12-15T14:45"
+        },
+        "department": "Hygiene"
+      },
+      "optional": {
+        "location_text": "200 Example Ave, Suite 3, Springfield",
+        "preparation": "please bring your insurance card."
+      },
+      "must_not_fill": [
+        "confirmation_code",
+        "queue_number"
+      ]
+    }
+  ]
+}

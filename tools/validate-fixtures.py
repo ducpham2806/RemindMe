@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Kiểm tra bộ mẫu tài liệu (E0.4): cấu trúc thư mục, meta.json/expected.json đúng schema, dấu hiệu chưa ẩn danh.
+"""Kiểm tra bộ mẫu tài liệu (E0.4): cấu trúc thư mục, meta.json/expected.json đúng schema, dấu hiệu chưa ẩn danh;
+mẫu nhà cung cấp T2 (packages/parsers/templates/*.json, test/templates/*.json) đúng templates/template.schema.json.
 Cần: pip install jsonschema. Chạy: python3 tools/validate-fixtures.py"""
 import json, pathlib, re, sys
 from jsonschema import Draft202012Validator
@@ -38,7 +39,23 @@ for d in sorted(p for p in (ROOT / "docs").iterdir() if p.is_dir()):
             for label, rx in PII:
                 for m in rx.finditer(text):
                     errors.append(f"{d.name}/{n}: nghi chưa ẩn danh ({label}): '{m.group(0)[:24]}'")
+PARSERS = ROOT.parent
+TEMPLATE = Draft202012Validator(json.loads((PARSERS / "templates/template.schema.json").read_text()))
+templates = sorted(p for d in ("templates", "test/templates") for p in (PARSERS / d).glob("*.json") if p.name != "template.schema.json")
+for f in templates:
+    data = json.loads(f.read_text(encoding="utf-8"))
+    for e in TEMPLATE.iter_errors(data):
+        errors.append(f"{f.relative_to(PARSERS)}: {'/'.join(map(str, e.path))}: {e.message}")
+    if data.get("id") and f.stem != data["id"]:
+        errors.append(f"{f.relative_to(PARSERS)}: tên file phải là <id>.json")
+    for path, rx in [("match/any_text", r) for r in data.get("match", {}).get("any_text", [])] + \
+            [(f"fields/{k}/pattern", v["pattern"]) for k, v in data.get("fields", {}).items() if "pattern" in v]:
+        try:
+            re.compile(rx)
+        except re.error as ex:
+            errors.append(f"{f.relative_to(PARSERS)}: {path}: regex hỏng: {ex}")
+
 for e in errors:
     print(e)
-print(f"validate-fixtures: {count} mẫu, {len(errors)} lỗi")
+print(f"validate-fixtures: {count} mẫu tài liệu, {len(templates)} mẫu nhà cung cấp, {len(errors)} lỗi")
 sys.exit(1 if errors else 0)

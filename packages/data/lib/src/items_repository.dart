@@ -232,6 +232,102 @@ class ItemsRepository {
     return TodaySections.partition(views, day);
   }
 
+  /// Số item (mở hoặc đã xong) theo ngày địa phương 'YYYY-MM-DD' trong [from, to] (gồm 2 đầu), cho chấm trên lịch tháng (UX §2.6).
+  /// Item có giờ tính theo ngày ở [deviceTz]; chuỗi lặp trải từng lần (bỏ lần đã bỏ qua).
+  Future<Map<String, int>> countsByDay(CivilDate from, CivilDate to, {required String deviceTz}) async {
+    final out = <String, int>{};
+    void add(CivilDate d) {
+      if (d.isBefore(from) || d.isAfter(to)) return;
+      out.update(d.toIso(), (n) => n + 1, ifAbsent: () => 1);
+    }
+
+    final rows = await (_db.select(_db.items)
+          ..where((t) => t.deletedAt.isNull() & t.status.isIn(const ['open', 'pending_quota', 'done'])))
+        .get();
+    final recs = {for (final r in await (_db.select(_db.recurrences)..where((t) => t.deletedAt.isNull())).get()) r.itemId: r};
+    final fromUtc = TimeZones.toUtc(CivilDateTime(from.addDays(-1), CivilTime(0)), deviceTz).utc;
+    final toUtc = TimeZones.toUtc(CivilDateTime(to.addDays(2), CivilTime(0)), deviceTz).utc;
+    final recurring = rows.where((r) => recs.containsKey(r.id) && r.status != 'done').toList();
+    final skipped = recurring.isEmpty
+        ? const <(String, int)>{}
+        : {
+            for (final o in await (_db.select(_db.occurrenceLog)
+                  ..where((t) =>
+                      t.deletedAt.isNull() &
+                      t.status.equals('skipped') &
+                      t.itemId.isIn(recurring.map((r) => r.id)) &
+                      t.occurrenceAt.isBetweenValues(fromUtc.millisecondsSinceEpoch, toUtc.millisecondsSinceEpoch)))
+                .get())
+              (o.itemId, o.occurrenceAt),
+          };
+    for (final r in rows) {
+      if (recs.containsKey(r.id)) {
+        if (r.status == 'done') continue;
+        final pi = plannerItemOf(r, recs[r.id], deviceTz: deviceTz);
+        for (final o in expandOccurrences(pi, fromUtc, toUtc, deviceTz: deviceTz, allDayTime: CivilTime(0))) {
+          if (skipped.contains((r.id, o.at.millisecondsSinceEpoch))) continue;
+          add(o.allDay ? o.date : TimeZones.toWall(o.at, deviceTz).date);
+        }
+      } else if (r.startDate != null && ((r.allDay ?? false) || r.startsAt == null)) {
+        add(CivilDate.parse(r.startDate!));
+      } else if (r.startsAt != null) {
+        add(TimeZones.toWall(DateTime.fromMillisecondsSinceEpoch(r.startsAt!, isUtc: true), deviceTz).date);
+      }
+    }
+    return out;
+  }
+
+  Stream<Map<String, int>> watchCountsByDay(CivilDate from, CivilDate to, {required String deviceTz}) async* {
+    yield await countsByDay(from, to, deviceTz: deviceTz);
+    await for (final _ in _db.tableUpdates(TableUpdateQuery.onAllTables([_db.items, _db.recurrences, _db.occurrenceLog]))) {
+      yield await countsByDay(from, to, deviceTz: deviceTz);
+    }
+  }
+
+  /// Việc 1 lần đang mở (kind `task`, không lặp) có ngày địa phương (theo [deviceTz], như màn Hôm nay) thuộc [dates] 'YYYY-MM-DD'.
+  /// Dùng cho gợi ý dời việc khỏi ngày nghỉ lễ (US-12b); sự kiện, lịch hẹn, đặt chỗ có giờ do người khác đặt nên không gợi ý dời.
+  Future<List<ItemView>> openTasksOn(Set<String> dates, {required String deviceTz}) async {
+    if (dates.isEmpty) return const [];
+    final recurring = {for (final r in await (_db.select(_db.recurrences)..where((t) => t.deletedAt.isNull())).get()) r.itemId};
+    final rows = await (_db.select(_db.items)
+          ..where((t) => t.deletedAt.isNull() & t.status.isIn(const ['open', 'pending_quota']) & t.kind.equals('task')))
+        .get();
+    final out = <ItemView>[];
+    for (final r in rows) {
+      if (recurring.contains(r.id)) continue;
+      final v = ItemView.fromRow(r);
+      if (dates.contains(_localDate(v, deviceTz))) out.add(v);
+    }
+    return out;
+  }
+
+  Stream<List<ItemView>> watchOpenTasksOn(Set<String> dates, {required String deviceTz}) async* {
+    yield await openTasksOn(dates, deviceTz: deviceTz);
+    await for (final _ in _db.tableUpdates(TableUpdateQuery.onAllTables([_db.items, _db.recurrences]))) {
+      yield await openTasksOn(dates, deviceTz: deviceTz);
+    }
+  }
+
+  static String? _localDate(ItemView i, String deviceTz) {
+    if (i.startDate != null && (i.allDay || i.startsAt == null)) return i.startDate;
+    if (i.startsAt != null) return TimeZones.toWall(i.startsAt!, deviceTz).date.toIso();
+    return null;
+  }
+
+  /// Dời item sang ngày [to] (ngày địa phương như [openTasksOn]), giữ giờ tường trong múi giờ của item.
+  Future<void> moveToDate(ItemView i, CivilDate to, {required String deviceTz}) async {
+    final from = _localDate(i, deviceTz);
+    if (from == null) return;
+    if (i.startDate != null && (i.allDay || i.startsAt == null)) {
+      await setSchedule(i.id, startDate: to.toIso());
+      return;
+    }
+    final shift = to.daysSince(CivilDate.parse(from));
+    final zone = i.tz ?? deviceTz;
+    final wall = TimeZones.toWall(i.startsAt!, zone);
+    await setSchedule(i.id, startsAt: TimeZones.toUtc(CivilDateTime(wall.date.addDays(shift), wall.time), zone).utc, tz: zone);
+  }
+
   /// id các item có lặp (để hiện biểu tượng 🔁).
   Stream<Set<String>> watchRecurringIds() {
     final q = _db.select(_db.recurrences)..where((t) => t.deletedAt.isNull());
@@ -250,6 +346,7 @@ class ItemsRepository {
               'rrule': r.rrule,
               'calendar': r.calendar == null ? null : jsonDecode(r.calendar!),
               'interval_days': r.intervalDays,
+              'workdays_region': r.workdaysRegion,
             });
 
   Future<Map<String, Object?>?> recurrenceOf(String itemId) async {
@@ -260,6 +357,7 @@ class ItemsRepository {
       'rrule': r.rrule,
       'calendar': r.calendar == null ? null : jsonDecode(r.calendar!),
       'interval_days': r.intervalDays,
+      'workdays_region': r.workdaysRegion,
     };
   }
 
@@ -313,6 +411,9 @@ class ItemsRepository {
     List<Map<String, Object?>> checklist = const [],
     String status = 'open',
     String? importId,
+    String? tripId,
+    List<DateTime> absoluteReminders = const [],
+    Map<String, Object?>? booking,
   }) async {
     final trimmed = title.trim();
     if (trimmed.isEmpty) throw ArgumentError.value(title, 'title', 'không được rỗng');
@@ -339,6 +440,7 @@ class ItemsRepository {
       'location': ?location,
       if (checklist.isNotEmpty) 'checklist': checklist,
       'import_id': ?importId,
+      'trip_id': ?tripId,
       // Việc lặp "8h sáng mỗi ngày" kêu theo giờ nơi đang đứng (reminder-engine.md §5).
       if (recurrence != null) 'time_mode': kind == 'task' || kind == 'habit' ? 'floating' : 'fixed',
     });
@@ -348,10 +450,58 @@ class ItemsRepository {
         'dtstart': recurrenceStart!.toUtc().toIso8601String(),
       });
     }
+    if (booking != null) await engine.edit(SyncTable.bookingDetails, id, booking);
     for (final off in reminderOffsets) {
       await addReminder(id, offsetMinutes: off);
     }
+    for (final at in absoluteReminders) {
+      await addReminderAt(id, at);
+    }
     return id;
+  }
+
+  /// Vé nhập lại có giờ mới (đổi giờ bay): cập nhật thời điểm + chi tiết đặt chỗ của item đã có, giữ nhắc theo offset
+  /// (lập lại theo giờ mới). Nhắc tuyệt đối cũ bị thay bằng [absoluteReminders].
+  Future<void> updateBooking(
+    String id, {
+    DateTime? startsAt,
+    String? tz,
+    String? startDate,
+    DateTime? endsAt,
+    String? endTz,
+    String? endDate,
+    Map<String, Object?>? booking,
+    List<DateTime>? absoluteReminders,
+    String? tripId,
+  }) async {
+    if (startsAt != null && tz == null) throw ArgumentError('startsAt cần tz IANA đi kèm');
+    // Chỉ thay cả bộ thời điểm khi có giờ/ngày mới (vé đổi giờ); chỉ gắn chuyến thì không xóa lịch đang có.
+    final reschedule = startsAt != null || startDate != null;
+    final changes = {
+      if (reschedule) ...{
+        'starts_at': startsAt?.toUtc().toIso8601String(),
+        'tz': tz,
+        'start_date': startDate,
+        'all_day': startDate != null && startsAt == null,
+        'ends_at': endsAt?.toUtc().toIso8601String(),
+        'end_tz': endTz,
+        'end_date': endDate,
+      },
+      'trip_id': ?tripId,
+    };
+    if (changes.isNotEmpty) await engine.edit(SyncTable.items, id, changes);
+    if (booking != null) await engine.edit(SyncTable.bookingDetails, id, booking);
+    if (absoluteReminders != null) {
+      final old = await (_db.select(_db.reminders)
+            ..where((t) => t.itemId.equals(id) & t.deletedAt.isNull() & t.triggerKind.equals('absolute')))
+          .get();
+      for (final r in old) {
+        await engine.delete(SyncTable.reminders, r.id);
+      }
+      for (final at in absoluteReminders) {
+        await addReminderAt(id, at);
+      }
+    }
   }
 
   Future<void> setDone(String id, {required bool done}) => engine.edit(SyncTable.items, id, {
@@ -385,7 +535,7 @@ class ItemsRepository {
     });
   }
 
-  /// Đặt quy tắc lặp ([rule] dạng hàng `recurrences`: kind + rrule/calendar) hoặc bỏ lặp (null).
+  /// Đặt quy tắc lặp ([rule] dạng hàng `recurrences`: kind + rrule/calendar, `workdays_region` cho "ngày làm việc") hoặc bỏ lặp (null).
   Future<void> setRecurrence(String itemId, Map<String, Object?>? rule, {DateTime? start}) async {
     if (rule == null) {
       if (await isRecurring(itemId)) await engine.delete(SyncTable.recurrences, itemId);
@@ -396,6 +546,7 @@ class ItemsRepository {
       'kind': rule['kind'],
       'rrule': rule['rrule'],
       'calendar': rule['calendar'],
+      'workdays_region': rule['workdays_region'],
       'dtstart': start.toUtc().toIso8601String(),
     });
     // Việc lặp kêu theo giờ nơi đang đứng (reminder-engine.md §5).
@@ -417,7 +568,7 @@ class ItemsRepository {
 
   // ------------------------------------------------------------------ nhắc (reminders)
 
-  /// Thêm nhắc [offsetMinutes] phút trước giờ của item (0 = đúng giờ).
+  /// Thêm nhắc lệch [offsetMinutes] phút so với giờ của item (âm = trước, 0 = đúng giờ; data-model.md).
   Future<String> addReminder(String itemId, {required int offsetMinutes, bool isAlarm = false}) async {
     final id = uuidV7(nowMillis: _now().millisecondsSinceEpoch);
     await engine.edit(SyncTable.reminders, id, {
@@ -426,6 +577,19 @@ class ItemsRepository {
       'offset_minutes': offsetMinutes,
       'channel': const ['push'],
       'is_alarm': isAlarm,
+    });
+    return id;
+  }
+
+  /// Nhắc vào 1 thời điểm cố định (khách sạn: 18:00 hôm trước nhận phòng, 1 giờ trước trả phòng).
+  Future<String> addReminderAt(String itemId, DateTime at) async {
+    final id = uuidV7(nowMillis: _now().millisecondsSinceEpoch);
+    await engine.edit(SyncTable.reminders, id, {
+      'item_id': itemId,
+      'trigger_kind': 'absolute',
+      'at': at.toUtc().toIso8601String(),
+      'channel': const ['push'],
+      'is_alarm': false,
     });
     return id;
   }

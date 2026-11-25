@@ -28,6 +28,14 @@ thêm ngôn ngữ = thêm 1 file gói + bộ câu `fixtures/nlu/<lang>.json`, kh
 | `table.columns` | trường → danh sách tên cột | Nhập xlsx/csv: `title`, `date`, `time`, `notes`, `priority`, `status`, `location`, `assignee`, `list` (so không dấu) |
 | `table.priority` | từ → 1..3 | Giá trị cột Ưu tiên ("cao" = 3) |
 | `table.done` | danh sách | Giá trị cột Trạng thái nghĩa là đã xong (`x`, `✓`, `TRUE` có sẵn trong code) |
+| `document.classify` | loại → (từ → 1..3) | Phân loại tài liệu (T2): `flight`, `train`, `bus`, `hotel`, `medical`, `event`, `todo_list`; mỗi từ tính tối đa 2 lần |
+| `document.anchors` | trường → danh sách nhãn | Nhãn in trên tài liệu: `confirmation_code`, `passengers`, `terminal`, `gate`, `seat`, `class`, `total`, `check_in`, `check_out`, `property`, `address`; tàu/xe `train_number`, `carriage`, `origin`, `destination`, `departure_date`, `departure_time`, `arrival_time`, `operator`; lịch khám `facility`, `department`, `queue_number`, `preparation`, `appointment_date`, `appointment_time`; sự kiện `event_name`, `venue`, `event_date`; `excluded_dates` (ngày sinh, ngày đặt vé: không bao giờ là thời điểm của lịch) |
+| `document.segments` | danh sách | Nhãn mở đầu 1 chặng ("Chuyến về", "Return") |
+| `document.travel_classes` | từ → `economy` \| `premium` \| `business` \| `first` | Hạng ghế in trên vé |
+| `document.passenger_units` | danh sách | Đơn vị đứng sau số khách ("2 người lớn", "2 adults") |
+| `document.facility_words` | danh sách | Từ trong tên nơi khám ("bệnh viện", "clinic") khi tên không có nhãn |
+| `document.preparation_words` | danh sách | Từ của dặn dò trước khi khám ("nhịn ăn", "fasting") |
+| `document.code_stopwords` | danh sách | Từ in hoa dễ nhầm là mã đặt chỗ ("NUMBER", "TICKET") |
 
 ## Mẫu
 4 phần, chạy theo thứ tự `recurrence` → `times` → `dates` → `parts`; trong mỗi phần, mẫu đầu tiên khớp được giữ (đặt mẫu dài trước).

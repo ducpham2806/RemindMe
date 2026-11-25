@@ -92,6 +92,10 @@ Bước 1 Chọn/chụp    Bước 2 Đọc trên máy          Bước 3 Xem l�
   để điền vào trường đang chọn. Đây là đường cứu cho tài liệu chưa có mẫu, nên phải nhanh hơn gõ tay.
 - Có thêm nút nhỏ "Gửi mẫu để cải thiện (đã che thông tin cá nhân)" sau khi người dùng phải sửa ≥ 2 trường.
 - Trường do LLM của máy điền có nhãn nhỏ "✨ AI trên máy" và luôn tô vàng.
+- Trường tô vàng phải được xác nhận trước khi lưu (Figma 15/15b/16): còn mục đang chọn có trường vàng thì nút chính là
+  "Kiểm tra để tiếp tục" và mở form của mục đó; form có thẻ "Bạn kiểm tra giúp mình" liệt kê các trường vàng, nút "Đúng, giữ nguyên"
+  xác nhận cả nhóm, sửa 1 trường thì trường đó hết vàng. Bỏ chọn mục cũng mở khóa nút lưu. Sau khi xác nhận: thẻ xanh "Đã kiểm tra".
+- "Gộp vào" là thẻ chạm để mở danh sách chọn (chuyến mới / chuyến đang có / không gộp); dòng hạn mức lịch hẹn lấy từ cache `quota_status`.
 - PDF scan nhiều trang: hiện tiến trình theo trang, cho phép hủy.
 - Không phải booking (ví dụ ảnh bảng công việc): hiện danh sách task trích được, cho chọn.
 

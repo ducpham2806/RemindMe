@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-medical-text-0001",
+  "source_kind": "photo",
+  "market": "VN",
+  "doc_language": "vi",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Phiếu hẹn tái khám tổng hợp (text kiểu OCR): tên bệnh viện không có nhãn, ngày sinh bệnh nhân phải bỏ qua, tên bệnh nhân không được trả ra. Bệnh viện và địa chỉ giả."
+}

@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-email-flight-text-0001",
+  "source_kind": "email",
+  "market": "US",
+  "doc_language": "en",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Email text/plain tổng hợp, không JSON-LD/.ics: khứ hồi 2 chặng, giờ 12 tiếng AM/PM, đến hôm sau '+1', tổng tiền cả đặt chỗ (không gắn vào từng chặng). Hãng 'ZY' giả."
+}

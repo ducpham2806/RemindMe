@@ -4,13 +4,14 @@ import 'features/calendar/calendar_screen.dart';
 import 'features/import/import_screen.dart';
 import 'features/items/item_detail_screen.dart';
 import 'features/lists/lists_screen.dart';
+import 'features/me/language_region_screen.dart';
 import 'features/me/me_screen.dart';
 import 'features/search/search_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/trips/trips_screen.dart';
 import 'shell/adaptive_shell.dart';
 
-/// Deep link theo UX §1: `remindme://item/<id>` (= `/item/<id>`), `trip/<id>`, `import/<id>` (thêm ở các sprint sau).
+/// Deep link theo UX §1: `remindme://item/<id>` (= `/item/<id>`), `trip/<id>` (= `/trips/<id>`), `import/<id>` (thêm ở các sprint sau).
 /// Chi tiết item, tìm kiếm và nhập từ tệp nằm ngoài shell để mở được từ mọi tab mà không đổi tab.
 GoRouter buildRouter() => GoRouter(
       initialLocation: '/today',
@@ -20,9 +21,14 @@ GoRouter buildRouter() => GoRouter(
           branches: [
             StatefulShellBranch(routes: [GoRoute(path: '/today', builder: (_, _) => const TodayScreen())]),
             StatefulShellBranch(routes: [GoRoute(path: '/calendar', builder: (_, _) => const CalendarScreen())]),
-            StatefulShellBranch(routes: [GoRoute(path: '/trips', builder: (_, _) => const TripsScreen())]),
+            StatefulShellBranch(routes: [
+              GoRoute(path: '/trips', builder: (_, _) => const TripsScreen(), routes: [
+                GoRoute(path: ':id', builder: (_, state) => TripDetailScreen(id: state.pathParameters['id']!)),
+              ]),
+            ]),
             StatefulShellBranch(routes: [
               GoRoute(path: '/me', builder: (_, _) => const MeScreen(), routes: [
+                GoRoute(path: 'language', builder: (_, _) => const LanguageRegionScreen()),
                 GoRoute(path: 'lists', builder: (_, _) => const ListsScreen(), routes: [
                   GoRoute(path: ':id', builder: (_, state) => ListDetailScreen(id: state.pathParameters['id']!)),
                 ]),

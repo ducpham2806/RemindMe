@@ -1,0 +1,30 @@
+{
+  "doc_type": "event_ticket",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "event",
+      "booking_type": "event_ticket",
+      "required": {
+        "title": "The Example Voyage",
+        "starts_at": {
+          "local": "2026-12-19T19:15"
+        },
+        "confirmation_code": "7HXQ2K"
+      },
+      "optional": {
+        "location_text": "Example Cinemas Central, Screen 4",
+        "seat": "G12",
+        "price": {
+          "amount": "24.50",
+          "currency": "EUR"
+        }
+      },
+      "must_not_fill": [
+        "origin",
+        "number"
+      ]
+    }
+  ]
+}

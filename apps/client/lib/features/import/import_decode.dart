@@ -14,6 +14,7 @@ class ImportRequest {
     required this.bytes,
     required this.packSources,
     required this.now,
+    this.airportsTsv,
     this.region,
     this.dateOrder,
     this.sheetIndex = 0,
@@ -23,6 +24,8 @@ class ImportRequest {
   final Uint8List bytes;
   /// Ngôn ngữ → YAML; gói đầu là gói chính (ngôn ngữ giao diện).
   final Map<String, String> packSources;
+  /// `packages/parsers/data/airports.tsv`: mã sân bay → múi giờ cho tầng luật T2. null = T2 chạy không có từ điển.
+  final String? airportsTsv;
   /// Giờ máy (local) lúc nhập: suy năm cho ngày không có năm, ngày tương đối trong câu.
   final DateTime now;
   final String? region;
@@ -35,6 +38,7 @@ class ImportRequest {
         bytes: bytes,
         packSources: packSources,
         now: now,
+        airportsTsv: airportsTsv,
         region: region,
         dateOrder: dateOrder ?? this.dateOrder,
         sheetIndex: sheetIndex ?? this.sheetIndex,
@@ -52,6 +56,10 @@ class ImportPreview {
     this.docLanguage,
     this.subject,
     this.pendingAttachments = const [],
+    this.docType,
+    this.templateId,
+    this.reminderDefaults = const [],
+    this.trips = const [],
   });
 
   final ImportFormat format;
@@ -65,6 +73,37 @@ class ImportPreview {
   final String? subject;
   /// Tên tệp đính kèm chưa đọc được (PDF, ảnh...).
   final List<String> pendingAttachments;
+  /// Loại tài liệu khi đã qua tầng luật T2 (email/text không có dữ liệu có cấu trúc).
+  final DocType? docType;
+  /// Mẫu nhà cung cấp đã khớp (`id@version`).
+  final String? templateId;
+  /// Nhắc mặc định theo loại cho từng đề xuất (cùng thứ tự `candidates`; null = như Quick Add).
+  final List<DefaultReminders?> reminderDefaults;
+  /// Gợi ý gom đặt chỗ đi lại thành chuyến đi (US-21).
+  final List<TripSuggestion> trips;
+
+  /// Múi giờ sân bay cho vé chỉ có offset, nhắc mặc định, gợi ý chuyến đi: cần từ điển sân bay nên làm trong isolate.
+  ImportPreview _withTravel(AirportIndex? airports) {
+    final cs = airports == null ? candidates : [for (final c in candidates) withAirportTimeZones(c, airports)];
+    return ImportPreview(
+      format: format,
+      candidates: cs,
+      sheetNames: sheetNames,
+      sheetIndex: sheetIndex,
+      dateOrder: dateOrder,
+      dateOrderAmbiguous: dateOrderAmbiguous,
+      docLanguage: docLanguage,
+      subject: subject,
+      pendingAttachments: pendingAttachments,
+      docType: docType,
+      templateId: templateId,
+      reminderDefaults: [for (final c in cs) defaultReminders(c, airports: airports)],
+      trips: suggestTrips(cs, airports: airports),
+    );
+  }
+
+  /// `imports.tier_used`: qua tầng luật thì `t1t2` (CHECK của server), decoder định dạng thì `t0`.
+  String get tierUsed => docType != null ? 't1t2' : 't0';
 
   /// Giá trị `imports.kind`.
   String get recordKind => switch (format) {
@@ -117,8 +156,13 @@ ImportFormat detectFormat(String name, List<int> bytes) {
   return ImportFormat.unsupported;
 }
 
-/// Giải mã tệp thành đề xuất. Thuần Dart, không đụng Flutter: chạy được trong `Isolate.run`.
+/// Giải mã tệp thành đề xuất, kèm nhắc mặc định và gợi ý chuyến đi. Thuần Dart, không đụng Flutter: chạy được trong `Isolate.run`.
 ImportPreview decodeImport(ImportRequest r) {
+  final airports = r.airportsTsv == null ? null : AirportIndex.parse(r.airportsTsv!);
+  return _decode(r, airports)._withTravel(airports);
+}
+
+ImportPreview _decode(ImportRequest r, AirportIndex? airports) {
   final packs = [for (final src in r.packSources.values) GrammarPack.fromYaml(src)];
   final nlu = NluEngine(packs);
   final format = detectFormat(r.name, r.bytes);
@@ -130,12 +174,19 @@ ImportPreview decodeImport(ImportRequest r) {
       return ImportPreview(format: format, candidates: const PkpassDecoder().decodeZip(r.bytes, reference: reference));
     case ImportFormat.email:
       final e = const EmailDecoder().decode(r.bytes, reference: reference);
-      return ImportPreview(
-        format: format,
-        candidates: e.candidates,
-        subject: e.subject,
-        pendingAttachments: [for (final p in e.pending) p.filename ?? p.mediaType],
-      );
+      final pending = [for (final p in e.pending) p.filename ?? p.mediaType];
+      if (e.candidates.isEmpty && e.text.trim().isNotEmpty) {
+        final t2 = _rules(packs, r, airports, TextDocument.fromText(e.text, senderDomain: _domain(e.from)), e.sentAt ?? reference);
+        return ImportPreview(
+          format: format,
+          candidates: t2.candidates,
+          subject: e.subject,
+          pendingAttachments: pending,
+          docType: t2.docType,
+          templateId: t2.templateId,
+        );
+      }
+      return ImportPreview(format: format, candidates: e.candidates, subject: e.subject, pendingAttachments: pending);
     case ImportFormat.csv || ImportFormat.xlsx:
       final sheets = format == ImportFormat.csv
           ? [const CsvReader().readBytes(r.bytes, name: r.name)]
@@ -166,11 +217,22 @@ ImportPreview decodeImport(ImportRequest r) {
       if (BcbpDecoder.looksLikeBcbp(first)) {
         return ImportPreview(format: format, candidates: const BcbpDecoder().decode(first, reference: reference) ?? const []);
       }
+      // Văn bản của vé/phiếu (dán từ app khác, OCR) thì đọc bằng luật T2; không thì mỗi dòng 1 việc.
+      final t2 = _rules(packs, r, airports, TextDocument.fromText(text), reference);
+      if (t2.candidates.isNotEmpty) {
+        return ImportPreview(format: format, candidates: t2.candidates, docType: t2.docType, templateId: t2.templateId);
+      }
       return ImportPreview(format: format, candidates: _textLines(text, nlu, r));
     case ImportFormat.unsupported:
       return const ImportPreview(format: ImportFormat.unsupported, candidates: []);
   }
 }
+
+RuleExtraction _rules(List<GrammarPack> packs, ImportRequest r, AirportIndex? airports, TextDocument doc, DateTime reference) =>
+    RuleEngine(packs: packs, airports: airports, region: r.region).extract(doc, reference: reference);
+
+/// `Hãng <no-reply@mail.example.com>` → `mail.example.com`.
+String? _domain(String? from) => from == null ? null : RegExp(r'@([\w.-]+)').firstMatch(from)?[1]?.toLowerCase();
 
 /// Tệp chữ thường: mỗi dòng 1 việc, đọc ngày giờ bằng NLU như Quick Add. Có gạch đầu dòng/checkbox thì đọc như Markdown.
 List<Candidate> _textLines(String text, NluEngine nlu, ImportRequest r) {

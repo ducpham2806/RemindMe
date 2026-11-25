@@ -56,9 +56,237 @@
   "@todayEmptyBody": {
     "description": "Empty state body on Today. Max 90 chars."
   },
-  "calendarEmptyTitle": "No events this month",
-  "@calendarEmptyTitle": {
-    "description": "Empty state on Calendar."
+  "todayLunarDate": "lunar {day}/{month}",
+  "@todayLunarDate": {
+    "description": "Today header, after the date when an additional (lunar) calendar is on. Day and month are already formatted numbers.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "16"
+      },
+      "month": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "todayProgressTitle": "One thing at a time.",
+  "@todayProgressTitle": {
+    "description": "Title of the progress card on Today."
+  },
+  "todayProgressCount": "{done} / {total} done",
+  "@todayProgressCount": {
+    "description": "Chip on the progress card: tasks done out of all tasks shown today.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "2"
+      },
+      "total": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "todayProgressBody": "{count, plural, =0{Nothing finished yet today.} =1{You finished 1 task today.} other{You finished {count} tasks today.}}",
+  "@todayProgressBody": {
+    "description": "Line under the progress card title.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "todaySectionCount": "{count, plural, =1{1 task} other{{count} tasks}}",
+  "@todaySectionCount": {
+    "description": "Count at the end of a section header on Today (Overdue, Today, No time set, Done).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "holidayHintTitle": "{date} is a public holiday: {holiday}",
+  "@holidayHintTitle": {
+    "description": "Today screen card (US-12b): an upcoming day off in the user's country has tasks planned. The holiday name comes from the holiday data pack.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Apr 30"
+      },
+      "holiday": {
+        "type": "String",
+        "example": "Reunification Day"
+      }
+    }
+  },
+  "holidayHintBody": "{count, plural, =1{You have 1 task planned for that day.} other{You have {count} tasks planned for that day.}}",
+  "@holidayHintBody": {
+    "description": "Second line of the holiday card on Today.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "holidayHintMove": "Move to {date}",
+  "@holidayHintMove": {
+    "description": "Button: move those tasks to the next working day, keeping their times.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "May 4"
+      }
+    }
+  },
+  "holidayHintKeep": "Keep",
+  "@holidayHintKeep": {
+    "description": "Button: leave the tasks on the holiday and stop suggesting for that date."
+  },
+  "holidayHintMoved": "{count, plural, =1{Moved 1 task} other{Moved {count} tasks}}",
+  "@holidayHintMoved": {
+    "description": "Snackbar after moving tasks off a holiday; has an Undo action.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "settingsHolidayCountry": "Holiday country",
+  "@settingsHolidayCountry": {
+    "description": "Section title on Language & region."
+  },
+  "settingsHolidayCountryHint": "Public holidays on the calendar, suggestions to move tasks, and “working days” repeats.",
+  "@settingsHolidayCountryHint": {
+    "description": "Hint under the holiday country section."
+  },
+  "settingsSameAsDevice": "Same as this device",
+  "@settingsSameAsDevice": {
+    "description": "Option: follow the device region (no holiday data for it yet)."
+  },
+  "settingsSameAsDeviceNamed": "Same as this device ({country})",
+  "@settingsSameAsDeviceNamed": {
+    "description": "Option: follow the device region.",
+    "placeholders": {
+      "country": {
+        "type": "String",
+        "example": "Vietnam"
+      }
+    }
+  },
+  "settingsNone": "None",
+  "@settingsNone": {
+    "description": "Option: turn this off."
+  },
+  "settingsCalendarSystem": "Additional calendar",
+  "@settingsCalendarSystem": {
+    "description": "Section title: lunar calendar shown on Calendar and offered for repeats."
+  },
+  "settingsCalendarSystemHint": "Lunar dates on the calendar and lunar repeats.",
+  "@settingsCalendarSystemHint": {
+    "description": "Hint under the additional calendar section."
+  },
+  "settingsSameAsLanguage": "Same as app language ({calendar})",
+  "@settingsSameAsLanguage": {
+    "description": "Option: choose the calendar from the app language.",
+    "placeholders": {
+      "calendar": {
+        "type": "String",
+        "example": "Vietnamese lunar calendar"
+      }
+    }
+  },
+  "settingsSameAsLanguageNone": "Same as app language (none)",
+  "@settingsSameAsLanguageNone": {
+    "description": "Option: choose the calendar from the app language; this language has none."
+  },
+  "lunarVi": "Vietnamese lunar calendar",
+  "@lunarVi": {
+    "description": "Calendar system name. Glossary lunar_calendar."
+  },
+  "lunarZh": "Chinese lunar calendar",
+  "@lunarZh": {
+    "description": "Calendar system name."
+  },
+  "lunarKo": "Korean lunar calendar",
+  "@lunarKo": {
+    "description": "Calendar system name."
+  },
+  "calendarPrevMonth": "Previous month",
+  "@calendarPrevMonth": {
+    "description": "Tooltip of the month navigation button on Calendar."
+  },
+  "calendarNextMonth": "Next month",
+  "@calendarNextMonth": {
+    "description": "Tooltip of the month navigation button on Calendar."
+  },
+  "calendarLunarShort": "{day}/{month}",
+  "@calendarLunarShort": {
+    "description": "Lunar date under the day number on the first day of a lunar month (UX 2.6). Shown only in languages with a lunar calendar; order day and month as your locale writes them.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "1"
+      },
+      "month": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "calendarLunarDate": "Lunar month {month}, day {day}",
+  "@calendarLunarDate": {
+    "description": "Screen reader label for the lunar date of a calendar day.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "15"
+      },
+      "month": {
+        "type": "String",
+        "example": "8"
+      }
+    }
+  },
+  "calendarItemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@calendarItemCount": {
+    "description": "Screen reader label: number of tasks and events on a calendar day.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "calendarLocalTimeNote": "Times are shown in each place’s local time.",
+  "@calendarLocalTimeNote": {
+    "description": "Calendar footnote under bookings: a flight shows departure in the departure city's time and arrival in the arrival city's time."
+  },
+  "calendarArrives": "Arrives {time}",
+  "@calendarArrives": {
+    "description": "Calendar booking card: arrival time in the destination's local time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "12:40"
+      }
+    }
+  },
+  "calendarDayOff": "Public holiday",
+  "@calendarDayOff": {
+    "description": "Calendar day details: under a holiday that is an official day off in the user's country."
+  },
+  "calendarSubstituteDay": "Substitute day off",
+  "@calendarSubstituteDay": {
+    "description": "Calendar day details: the holiday fell on a weekend, so this weekday is the day off instead."
+  },
+  "calendarDayEmpty": "Nothing planned for this day",
+  "@calendarDayEmpty": {
+    "description": "Calendar: the selected day has no holidays, tasks or events."
   },
   "tripsEmptyTitle": "No trips yet",
   "@tripsEmptyTitle": {
@@ -91,10 +319,6 @@
   "meLanguageRegion": "Language & region",
   "@meLanguageRegion": {
     "description": "Row in Me. Glossary set_language_region."
-  },
-  "meSettings": "Settings",
-  "@meSettings": {
-    "description": "Row in Me. Glossary set_settings."
   },
   "quotaUsed": "{used} of {limit} used",
   "@quotaUsed": {
@@ -532,6 +756,10 @@
   "@recurNone": {
     "description": "Repeat option: no recurrence."
   },
+  "recurWorkdays": "Every working day",
+  "@recurWorkdays": {
+    "description": "Repeat option: every day that is not a weekend day or a public holiday in the user's country."
+  },
   "recurWeekdays": "Every weekday",
   "@recurWeekdays": {
     "description": "Repeat option: Monday to Friday."
@@ -638,10 +866,6 @@
   "@importNoTitle": {
     "description": "Placeholder for a found item without a title."
   },
-  "importItemName": "Name",
-  "@importItemName": {
-    "description": "Title of the dialog that renames a found item."
-  },
   "importDateOrderQuestion": "How are dates written in this file?",
   "@importDateOrderQuestion": {
     "description": "Asked when dates like 03/04 could be read either way."
@@ -735,5 +959,665 @@
         "example": "Home"
       }
     }
+  },
+  "importIssuePastDate": "This date has already passed",
+  "@importIssuePastDate": {
+    "description": "Review screen warning: the booking or appointment date read from the document is before today. Not an error; the user may be importing an old ticket."
+  },
+  "importIssueNextDay": "Arrives the next day",
+  "@importIssueNextDay": {
+    "description": "Review screen warning: the ticket shows an arrival time earlier than departure without a date, so the app assumed arrival on the next day."
+  },
+  "importIssueDateOrder": "Check the date: day and month may be swapped",
+  "@importIssueDateOrder": {
+    "description": "Review screen warning: a date like 03/04 could be 3 April or March 4 and the document did not say which."
+  },
+  "importIssueCheckOut": "Check-out date not read, add it yourself",
+  "@importIssueCheckOut": {
+    "description": "Review screen warning: the hotel check-out date read was before check-in, so it was dropped. Glossary trip_checkout_hotel."
+  },
+  "importCheckFields": "Read from the text, check the details",
+  "@importCheckFields": {
+    "description": "Review screen hint: some fields were found by on-device text rules with lower confidence; the user should check them before saving."
+  },
+  "importSeat": "Seat: {seat}",
+  "@importSeat": {
+    "description": "Line added to the item notes for a ticket. Glossary trip_seat (seat or berth).",
+    "placeholders": {
+      "seat": {
+        "type": "String",
+        "example": "14C"
+      }
+    }
+  },
+  "importCarriage": "Coach: {carriage}",
+  "@importCarriage": {
+    "description": "Line added to the item notes for a train ticket. Glossary trip_carriage: en-GB 'Coach', en-US 'Car'.",
+    "placeholders": {
+      "carriage": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "importDepartment": "Department: {name}",
+  "@importDepartment": {
+    "description": "Line added to the notes of a medical appointment. Glossary med_department.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Cardiology"
+      }
+    }
+  },
+  "importQueueNumber": "Queue number: {number}",
+  "@importQueueNumber": {
+    "description": "Line added to the notes of a medical appointment: number printed on the slip. Glossary med_queue_number.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "015"
+      }
+    }
+  },
+  "importEditTitle": "Edit item",
+  "@importEditTitle": {
+    "description": "Title of the screen where the user fixes one found item before adding it."
+  },
+  "importFieldStart": "Starts",
+  "@importFieldStart": {
+    "description": "Review form label: start date and time (departure, check-in, appointment)."
+  },
+  "importFieldDue": "Due",
+  "@importFieldDue": {
+    "description": "Review form label: due date and time of a task."
+  },
+  "importFieldEnd": "Ends",
+  "@importFieldEnd": {
+    "description": "Review form label: end date and time (arrival, check-out)."
+  },
+  "importFieldLocation": "Location",
+  "@importFieldLocation": {
+    "description": "Review form label: place or address."
+  },
+  "importFieldCode": "Booking code",
+  "@importFieldCode": {
+    "description": "Review form label. Glossary trip_booking_code."
+  },
+  "importFieldSeat": "Seat",
+  "@importFieldSeat": {
+    "description": "Review form label. Glossary trip_seat."
+  },
+  "importFieldCarriage": "Coach",
+  "@importFieldCarriage": {
+    "description": "Review form label for a train ticket. Glossary trip_carriage."
+  },
+  "importFieldDepartment": "Department",
+  "@importFieldDepartment": {
+    "description": "Review form label for a medical appointment. Glossary med_department."
+  },
+  "importFieldQueue": "Queue number",
+  "@importFieldQueue": {
+    "description": "Review form label for a medical appointment. Glossary med_queue_number."
+  },
+  "importFieldPreparation": "Instructions",
+  "@importFieldPreparation": {
+    "description": "Review form label: preparation printed on the appointment slip, copied as is (never medical advice)."
+  },
+  "importFieldCheck": "Read automatically, please check",
+  "@importFieldCheck": {
+    "description": "Tooltip on a review field that on-device rules filled with low confidence."
+  },
+  "importFieldFlightNumber": "Flight number",
+  "@importFieldFlightNumber": {
+    "description": "Review form label: airline code and number, e.g. VN 245."
+  },
+  "importFieldTrainNumber": "Train number",
+  "@importFieldTrainNumber": {
+    "description": "Review form label: train number printed on the ticket, e.g. SE3."
+  },
+  "importTripLabel": "Add to trip",
+  "@importTripLabel": {
+    "description": "Review screen: dropdown to group the found bookings into a trip. Glossary trip_trip."
+  },
+  "importTripNew": "New trip: {title}",
+  "@importTripNew": {
+    "description": "Dropdown option that creates a new trip with this name.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "Trip to Hanoi"
+      }
+    }
+  },
+  "importTripNone": "Don’t add to a trip",
+  "@importTripNone": {
+    "description": "Dropdown option: keep the bookings outside any trip."
+  },
+  "importTripLimit": "Your plan includes {limit, plural, =1{1 active trip} other{{limit} active trips}}. Delete a trip or upgrade to add another.",
+  "@importTripLimit": {
+    "description": "Review screen, under the trip dropdown when the new-trip option is unavailable. The limit comes from the user's plan (pricing-entitlements §4, paywall for the 2nd trip).",
+    "placeholders": {
+      "limit": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "importDuplicate": "Already added, will be skipped",
+  "@importDuplicate": {
+    "description": "Review screen: the same booking (same code and time) is already in the app, so it is unselected."
+  },
+  "importWillUpdate": "Already added, the time will be updated",
+  "@importWillUpdate": {
+    "description": "Review screen: the same booking exists with a different time (flight rescheduled); saving updates it."
+  },
+  "tripTitleTo": "Trip to {destination}",
+  "@tripTitleTo": {
+    "description": "Default name of a new trip. destination is a city or station name from the ticket.",
+    "placeholders": {
+      "destination": {
+        "type": "String",
+        "example": "Hanoi"
+      }
+    }
+  },
+  "tripTitleOn": "Trip on {date}",
+  "@tripTitleOn": {
+    "description": "Default name of a new trip when the destination is unknown. date is a short date.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Dec 20"
+      }
+    }
+  },
+  "tripDates": "{start} – {end}",
+  "@tripDates": {
+    "description": "Date range of a trip. Both dates are already formatted for the locale.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "Dec 20"
+      },
+      "end": {
+        "type": "String",
+        "example": "Dec 24"
+      }
+    }
+  },
+  "tripRename": "Rename trip",
+  "@tripRename": {
+    "description": "Menu action on the trip screen; also the title of the rename dialog."
+  },
+  "tripNameHint": "Trip name",
+  "@tripNameHint": {
+    "description": "Hint of the trip name field."
+  },
+  "tripAddActivity": "Add activity",
+  "@tripAddActivity": {
+    "description": "Trip timeline: suggestion shown in a free gap of more than 3 hours between two bookings; also the dialog title."
+  },
+  "tripActivityHint": "What do you plan to do?",
+  "@tripActivityHint": {
+    "description": "Hint of the activity name field (it becomes a task in the trip)."
+  },
+  "tripsTagline": "Every leg, in one itinerary.",
+  "@tripsTagline": {
+    "description": "Subtitle under the Trips title."
+  },
+  "tripsUpcoming": "Upcoming · {count}",
+  "@tripsUpcoming": {
+    "description": "Filter chip on Trips: current and future trips, with their number.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "tripsPast": "Past",
+  "@tripsPast": {
+    "description": "Filter chip on Trips: trips that have ended."
+  },
+  "tripsPastEmpty": "No past trips yet",
+  "@tripsPastEmpty": {
+    "description": "Trips, Past filter with nothing in it."
+  },
+  "tripDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@tripDays": {
+    "description": "Trip card: length of the trip in days.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "tripNights": "{count, plural, =1{1 night} other{{count} nights}}",
+  "@tripNights": {
+    "description": "Hotel line on a trip card.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "tripCheckInAt": "Check-in {time}",
+  "@tripCheckInAt": {
+    "description": "Hotel line on a trip card: local check-in time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:00"
+      }
+    }
+  },
+  "tripViewItinerary": "View itinerary",
+  "@tripViewItinerary": {
+    "description": "Button on a trip card: open the trip timeline."
+  },
+  "tripsAddBookingTitle": "Add a ticket or booking",
+  "@tripsAddBookingTitle": {
+    "description": "Card on Trips that opens Import from file."
+  },
+  "tripsAddBookingBody": "Import a document to fill in your itinerary.",
+  "@tripsAddBookingBody": {
+    "description": "Second line of the add-booking card."
+  },
+  "planName": "{plan, select, free{Free} plus{Plus} other{{plan}}}",
+  "@planName": {
+    "description": "Plan name; Free and Plus stay in English in every language (product names).",
+    "placeholders": {
+      "plan": {
+        "type": "String",
+        "example": "free"
+      }
+    }
+  },
+  "tripsQuotaUsage": "{plan} · Using {used}/{limit} trips.",
+  "@tripsQuotaUsage": {
+    "description": "Footnote on Trips from the cached plan limits (max_active_trips).",
+    "placeholders": {
+      "plan": {
+        "type": "String",
+        "example": "Free"
+      },
+      "used": {
+        "type": "int",
+        "example": "1"
+      },
+      "limit": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "tripsQuotaFull": "You can still add bookings to your current trip.",
+  "@tripsQuotaFull": {
+    "description": "Second footnote line when the plan's trip limit is reached."
+  },
+  "tripDayN": "Day {n}",
+  "@tripDayN": {
+    "description": "Trip timeline: day number within the trip.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "tripLocalTime": "Local time · {offset}",
+  "@tripLocalTime": {
+    "description": "Trip details banner when every booking is in one time zone. The offset is like UTC+07.",
+    "placeholders": {
+      "offset": {
+        "type": "String",
+        "example": "UTC+07"
+      }
+    }
+  },
+  "tripDuration": "{hours} h {minutes} min",
+  "@tripDuration": {
+    "description": "Flight duration on a trip.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      },
+      "minutes": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "tripBookingCode": "Booking code",
+  "@tripBookingCode": {
+    "description": "Label next to a booking code on a trip."
+  },
+  "tripCopyCode": "Copy code",
+  "@tripCopyCode": {
+    "description": "Tooltip of the copy button next to a booking code."
+  },
+  "tripCodeCopied": "Code copied",
+  "@tripCodeCopied": {
+    "description": "Snackbar after copying a booking code."
+  },
+  "tripCheckIn": "Check-in",
+  "@tripCheckIn": {
+    "description": "Hotel card on a trip day."
+  },
+  "tripCheckOut": "Check-out",
+  "@tripCheckOut": {
+    "description": "Hotel card on the last day of the stay."
+  },
+  "tripOpenDetails": "View details",
+  "@tripOpenDetails": {
+    "description": "Button on a flight card: opens the booking."
+  },
+  "tripEmptyDay": "Nothing planned for {date} yet.",
+  "@tripEmptyDay": {
+    "description": "Trip details, a day of the trip with no bookings.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Dec 21"
+      }
+    }
+  },
+  "tripEmptyDayHint": "You can add an activity any time.",
+  "@tripEmptyDayHint": {
+    "description": "Second line under an empty trip day."
+  },
+  "tripAddToItinerary": "Add to itinerary",
+  "@tripAddToItinerary": {
+    "description": "Main button at the bottom of trip details: add an activity or import a booking."
+  },
+  "tripDelete": "Delete trip",
+  "@tripDelete": {
+    "description": "Menu action on the trip screen."
+  },
+  "tripDeleteBody": "The bookings stay in your calendar.",
+  "@tripDeleteBody": {
+    "description": "Confirm dialog body: deleting a trip keeps its bookings."
+  },
+  "importReviewHint": "Choose what to save",
+  "@importReviewHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importNeedsCheck": "{count, plural, =1{1 item needs checking} other{{count} items need checking}}",
+  "@importNeedsCheck": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importNeedsCheckHint": "Some fields were read from the document text and may not be right.",
+  "@importNeedsCheckHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importReady": "Everything's checked",
+  "@importReady": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importReadyHint": "{count, plural, =1{1 item ready to save} other{{count} items ready to save}}",
+  "@importReadyHint": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importCheckTile": "Check: {fields}",
+  "@importCheckTile": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "importCheckTileHint": "Tap to compare with the document",
+  "@importCheckTileHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importCheckedTile": "Checked: {fields}",
+  "@importCheckedTile": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "importCheckedTileHint": "Compared with the original document",
+  "@importCheckedTileHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importUnsavedNote": "Nothing is saved yet. You can still deselect any item.",
+  "@importUnsavedNote": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importCheckToContinue": "Check to continue",
+  "@importCheckToContinue": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importApptRoom": "{count, plural, =0{Your plan has no room for more appointments} =1{Your plan has room for 1 more appointment} other{Your plan has room for {count} more appointments}}",
+  "@importApptRoom": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importApptAfter": "{selected, plural, =1{1 selected} other{{selected} selected}} · {left} left after saving.",
+  "@importApptAfter": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "importApptOver": "{count, plural, =1{1 item is over your plan's limit and will be archived when syncing.} other{{count} items are over your plan's limit and will be archived when syncing.}}",
+  "@importApptOver": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importTripChoose": "Add to a trip",
+  "@importTripChoose": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importEdit": "Edit",
+  "@importEdit": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importEditHint": "Compare with your original document",
+  "@importEditHint": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importConfirmTitle": "Please check these for me",
+  "@importConfirmTitle": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importConfirmHint": "Fields outlined in yellow were read from the document text: {fields}. Fix anything wrong, or confirm if it's right.",
+  "@importConfirmHint": {
+    "description": "Import review (Figma 15/15b/16)",
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "importConfirmAll": "Yes, these are right",
+  "@importConfirmAll": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "importEditDone": "Confirm and go back",
+  "@importEditDone": {
+    "description": "Import review (Figma 15/15b/16)"
+  },
+  "meSubtitle": "Your space",
+  "@meSubtitle": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meListsHint": "Organize what matters",
+  "@meListsHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meSuggestionsHint": "Review appointments from documents and email",
+  "@meSuggestionsHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meImportHint": "Add tickets, bookings or to-do lists",
+  "@meImportHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meAccountSettings": "Account & settings",
+  "@meAccountSettings": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meAccountDevicesHint": "Sign-in, sync and session history",
+  "@meAccountDevicesHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meIntegrationsHint": "Email forwarding and moving from To Do",
+  "@meIntegrationsHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "mePlanUsageHint": "Limits, Plus and billing",
+  "@mePlanUsageHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meNotifications": "Notifications & reminders",
+  "@meNotifications": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meNotificationsHint": "Default reminders and reliability",
+  "@meNotificationsHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "mePrivacy": "Data & privacy",
+  "@mePrivacy": {
+    "description": "Me screen (Figma 27)"
+  },
+  "mePrivacyHint": "Export data, consent and account deletion",
+  "@mePrivacyHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meLanguageRegionHint": "Holiday country and lunar calendar",
+  "@meLanguageRegionHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meComingSoon": "Coming soon",
+  "@meComingSoon": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meAppearance": "Language & appearance",
+  "@meAppearance": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meLanguage": "Language",
+  "@meLanguage": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meTheme": "Appearance",
+  "@meTheme": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meFollowDevice": "Device",
+  "@meFollowDevice": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meThemeLight": "Light",
+  "@meThemeLight": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meThemeDark": "Dark",
+  "@meThemeDark": {
+    "description": "Me screen (Figma 27)"
+  },
+  "langNameVi": "Tiếng Việt",
+  "@langNameVi": {
+    "description": "Language name in its own language (endonym): same in every locale."
+  },
+  "langNameEn": "English",
+  "@langNameEn": {
+    "description": "Language name in its own language (endonym): same in every locale."
+  },
+  "langRegionHint": "Set each one the way you use it.",
+  "@langRegionHint": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionNote": "Changing the app language doesn't change your holiday country.",
+  "@langRegionNote": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionAppLanguage": "App language",
+  "@langRegionAppLanguage": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionFormats": "Formats & time zone",
+  "@langRegionFormats": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionFormat": "Regional format",
+  "@langRegionFormat": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionTimeZone": "Time zone",
+  "@langRegionTimeZone": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionFromDevice": "{value} · from this device",
+  "@langRegionFromDevice": {
+    "description": "Language & region (Figma C50)",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "langRegionHolidays": "Holidays & calendars",
+  "@langRegionHolidays": {
+    "description": "Language & region (Figma C50)"
+  },
+  "settingsWeekend": "Weekend: {days}",
+  "@settingsWeekend": {
+    "description": "Language & region (Figma C50)",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "langRegionPreview": "Preview: {value}",
+  "@langRegionPreview": {
+    "description": "Language & region (Figma C50)",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "langRegionPreviewHint": "Dates and times use the settings above.",
+  "@langRegionPreviewHint": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionDone": "Done",
+  "@langRegionDone": {
+    "description": "Language & region (Figma C50)"
   }
 }

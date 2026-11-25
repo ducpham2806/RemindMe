@@ -183,3 +183,54 @@ table:
     list: [category, list, group, project, type, area]
   priority: {high: 3, urgent: 3, critical: 3, highest: 3, medium: 2, normal: 2, med: 2, low: 1, lowest: 1}
   done: [done, completed, complete, finished, closed, yes, y, resolved]
+
+# Document reading by T2 rules (on-device-extraction.md §4): classifier keywords (weight 1-3) and printed labels per field.
+# Compared accent- and case-insensitively, tolerant to small OCR errors.
+document:
+  classify:
+    flight: {flight: 2, flight number: 3, boarding pass: 3, boarding time: 3, airline: 2, airport: 2, terminal: 1, gate: 1, baggage: 2, departure: 1, arrival: 1, pnr: 2, e-ticket: 1, passenger: 1, layover: 2, itinerary: 1}
+    train: {train: 2, railway: 3, rail: 2, coach: 1, carriage: 2, platform: 2, station: 1, departure station: 3, arrival station: 3}
+    bus: {bus: 2, bus station: 3, pickup point: 2, drop-off point: 2, boarding point: 2}
+    hotel: {hotel: 2, check-in: 1, check-out: 2, room type: 3, nights: 2, guests: 1, reservation: 1, property: 1, resort: 2, accommodation: 2}
+    medical: {appointment: 2, clinic: 3, hospital: 3, doctor: 2, patient: 2, physician: 3, dental: 2, date of birth: 1}
+    event: {ticket: 1, venue: 2, admission: 2, doors open: 3, section: 1, row: 1, showtime: 3, concert: 3, event: 1, movie: 2, cinema: 3, screen: 1}
+  anchors:
+    confirmation_code: [booking reference, booking code, booking number, booking ref, confirmation code, confirmation number, reservation code, reservation number, record locator, pnr]
+    passengers: [passenger, passengers, traveler, traveller]
+    terminal: [terminal]
+    gate: [gate, boarding gate]
+    seat: [seat]
+    class: [cabin class, travel class, fare class, cabin, class]
+    total: [total, total price, total paid, amount paid, grand total]
+    check_in: [check-in, check in, arrival date]
+    check_out: [check-out, check out, departure date]
+    property: [hotel, property, accommodation]
+    address: [address]
+    # Train, bus
+    train_number: [train number, train no, train]
+    carriage: [carriage, coach, car]
+    origin: [departure station, departs from, pickup point, pick-up point, boarding point, origin, from]
+    destination: [arrival station, drop-off point, drop off point, destination, arrives at, to]
+    departure_date: [departure date, travel date, date of travel, date]
+    departure_time: [departure time, departs, departure]
+    arrival_time: [arrival time, arrives, arrival]
+    operator: [operated by, operator, bus company]
+    # Medical appointment
+    facility: [clinic, hospital, practice, facility]
+    department: [department, dept, specialty]
+    queue_number: [queue number, queue no]
+    preparation: [before your visit, preparation, instructions, please note]
+    appointment_date: [appointment date, date of appointment, date]
+    appointment_time: [appointment time, time]
+    # Event ticket
+    event_name: [event, show, movie, film, performance]
+    venue: [venue, cinema, theatre, theater, location]
+    event_date: [showtime, show time, event date, date]
+    # Dates that are never the event time (date of birth on a clinic letter, booking date).
+    excluded_dates: [date of birth, birth date, dob, booking date, order date, date issued, issue date, issued, purchase date, payment date]
+  segments: [departure, return, outbound, inbound, leg]
+  travel_classes: {economy: economy, premium economy: premium, business: business, first: first, first class: first, business class: business}
+  passenger_units: [adult, adults, child, children, infant, infants, passenger, passengers, pax]
+  facility_words: [hospital, clinic, medical center, medical centre, health center, health centre, dental]
+  preparation_words: [fasting, fast for, do not eat, nothing to eat, bring your]
+  code_stopwords: [NUMBER, TICKET, STATUS, ONLINE, RETURN, DIRECT, CHANGE, BOOKING, FLIGHT, CLASS, ECONOMY, CONFIRMED, REFERENCE, AIRLINE, TRAVEL, DETAILS, BUSINESS]

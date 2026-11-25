@@ -71,6 +71,9 @@ class CandidateFields {
     this.locationText,
     this.price,
     this.due,
+    this.department,
+    this.queueNumber,
+    this.preparation,
   });
 
   final String? title;
@@ -91,6 +94,58 @@ class CandidateFields {
   final String? locationText;
   final Price? price;
   final LocalTime? due;
+  /// Lịch khám: khoa, số thứ tự, dặn dò in trên phiếu ("Nhịn ăn 8 tiếng"): chỉ chép lại, không diễn giải.
+  final String? department;
+  final String? queueNumber;
+  final String? preparation;
+
+  /// Bản sao đổi vài trường (màn Xem lại sửa tay). Truyền `null` để xóa trường; bỏ qua tham số thì giữ nguyên.
+  CandidateFields copyWith({
+    Object? title = _keep,
+    Object? provider = _keep,
+    Object? confirmationCode = _keep,
+    Object? carrierCode = _keep,
+    Object? number = _keep,
+    Object? origin = _keep,
+    Object? destination = _keep,
+    Object? startsAt = _keep,
+    Object? endsAt = _keep,
+    Object? checkIn = _keep,
+    Object? checkOut = _keep,
+    Object? seat = _keep,
+    Object? carriage = _keep,
+    Object? travelClass = _keep,
+    Object? passengerCount = _keep,
+    Object? locationText = _keep,
+    Object? price = _keep,
+    Object? due = _keep,
+    Object? department = _keep,
+    Object? queueNumber = _keep,
+    Object? preparation = _keep,
+  }) =>
+      CandidateFields(
+        title: title == _keep ? this.title : title as String?,
+        provider: provider == _keep ? this.provider : provider as String?,
+        confirmationCode: confirmationCode == _keep ? this.confirmationCode : confirmationCode as String?,
+        carrierCode: carrierCode == _keep ? this.carrierCode : carrierCode as String?,
+        number: number == _keep ? this.number : number as String?,
+        origin: origin == _keep ? this.origin : origin as Place?,
+        destination: destination == _keep ? this.destination : destination as Place?,
+        startsAt: startsAt == _keep ? this.startsAt : startsAt as LocalTime?,
+        endsAt: endsAt == _keep ? this.endsAt : endsAt as LocalTime?,
+        checkIn: checkIn == _keep ? this.checkIn : checkIn as LocalTime?,
+        checkOut: checkOut == _keep ? this.checkOut : checkOut as LocalTime?,
+        seat: seat == _keep ? this.seat : seat as String?,
+        carriage: carriage == _keep ? this.carriage : carriage as String?,
+        travelClass: travelClass == _keep ? this.travelClass : travelClass as String?,
+        passengerCount: passengerCount == _keep ? this.passengerCount : passengerCount as int?,
+        locationText: locationText == _keep ? this.locationText : locationText as String?,
+        price: price == _keep ? this.price : price as Price?,
+        due: due == _keep ? this.due : due as LocalTime?,
+        department: department == _keep ? this.department : department as String?,
+        queueNumber: queueNumber == _keep ? this.queueNumber : queueNumber as String?,
+        preparation: preparation == _keep ? this.preparation : preparation as String?,
+      );
 
   Map<String, Object?> toJson() => {
         'title': ?title,
@@ -111,8 +166,14 @@ class CandidateFields {
         'location_text': ?locationText,
         if (price != null) 'price': {'amount': price!.amount, 'currency': price!.currency},
         'due': ?due?.toJson(),
+        'department': ?department,
+        'queue_number': ?queueNumber,
+        'preparation': ?preparation,
       };
 }
+
+/// Giá trị mặc định của tham số `copyWith`: phân biệt "không đổi" với "xóa" (null).
+const Object _keep = Object();
 
 enum CandidateKind { booking, appointment, event, task }
 
@@ -154,6 +215,8 @@ class Candidate {
     this.tags = const [],
     this.listName,
     this.checklist = const [],
+    this.fieldConfidence = const {},
+    this.issues = const [],
   });
 
   final CandidateKind kind;
@@ -166,6 +229,7 @@ class Candidate {
   /// Lặp lại (từ .ics), dạng `FREQ=...` như bảng `recurrences.rrule`.
   final String? rrule;
   /// Nhắc có sẵn trong nguồn (VALARM của .ics), phút trước giờ bắt đầu.
+  /// Theo `offset_minutes`: âm = trước giờ bắt đầu.
   final List<int> reminderOffsetsMinutes;
   final String? notes;
   /// 0-3 như `items.priority` (danh sách việc: cột Ưu tiên, emoji Obsidian).
@@ -176,6 +240,30 @@ class Candidate {
   /// Tên list đề xuất (heading Markdown, tên sheet); màn Xem lại khớp với list có sẵn hoặc tạo mới.
   final String? listName;
   final List<ChecklistEntry> checklist;
+  /// Độ tin cậy theo trường (tên theo schema: `starts_at`, `confirmation_code`...) để màn Xem lại tô vàng trường dưới ngưỡng (E5.1).
+  /// Rỗng = mọi trường như [confidence] (decoder định dạng có cấu trúc).
+  final Map<String, double> fieldConfidence;
+  /// Cảnh báo của bước kiểm tra logic (không chặn): `past_date`, `date_order_ambiguous`, `arrival_next_day`, `check_out_before_check_in`.
+  final List<String> issues;
+
+  /// Bản sao sau khi người dùng sửa ở màn Xem lại.
+  Candidate copyWith({CandidateFields? fields, Map<String, double>? fieldConfidence, List<String>? issues}) => Candidate(
+        kind: kind,
+        fields: fields ?? this.fields,
+        source: source,
+        bookingType: bookingType,
+        confidence: confidence,
+        rrule: rrule,
+        reminderOffsetsMinutes: reminderOffsetsMinutes,
+        notes: notes,
+        priority: priority,
+        done: done,
+        tags: tags,
+        listName: listName,
+        checklist: checklist,
+        fieldConfidence: fieldConfidence ?? this.fieldConfidence,
+        issues: issues ?? this.issues,
+      );
 
   Map<String, Object?> toJson() => {
         'kind': kind.name,

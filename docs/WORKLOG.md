@@ -12,6 +12,113 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · UI theo Figma đợt 2: Xem lại khi nhập, form sửa, Tôi + chọn ngôn ngữ/giao diện · Claude Code
+- **Làm:** màn Xem lại (Figma 15/15b): thẻ tệp nguồn, thẻ từng mục (ô chọn, nút sửa, tuyến lớn SGN ✈ HAN, giờ đi/đến hoặc nhận/trả phòng,
+  ô "Cần kiểm tra: <trường>" / "Đã kiểm tra"), banner cần kiểm tra / đã xác nhận đủ, thẻ gộp chuyến chạm mở danh sách chọn (thay dropdown),
+  thẻ hạn mức lịch hẹn từ cache `quota_status`. Form sửa (16): ô dạng thẻ, trường vàng nền `warningContainer`, thẻ "Bạn kiểm tra giúp mình"
+  + "Đúng, giữ nguyên", nút "Xác nhận & quay lại". Tôi (27): lối tắt, Tài khoản & cài đặt (mục chưa làm ghi "Sắp có"), chọn ngôn ngữ giao diện
+  (Theo máy / Tiếng Việt / English) và giao diện (Theo máy / Sáng / Tối), lưu `LocalPrefs`, đọc trước `runApp`. Token `warningContainer`/`onWarningContainer`,
+  9 icon SVG mới, 42 key ARB.
+- **Quyết định:** trường độ tin cậy thấp phải được xác nhận trước khi lưu (theo Figma): còn mục đang chọn có trường vàng thì nút chính là
+  "Kiểm tra để tiếp tục" và mở form mục đó (ux-flows §2.4). Bỏ chọn mục cũng mở khóa nút lưu.
+- **Kiểm chứng:** client 74 (+3 màn Tôi; test nhập đổi theo UI mới + luồng xác nhận + thẻ hạn mức); analyze 0; ARB 267 key 0 lỗi; lint chuỗi 0;
+  unslop không đổi; ảnh chụp sáng/tối đối chiếu Figma 15/15b/16/27.
+- **Thêm:** Ngôn ngữ & vùng theo Figma C50 (ngôn ngữ giao diện, định dạng + múi giờ theo máy, quốc gia ngày lễ kèm ngày nghỉ cuối tuần CLDR,
+  hệ lịch phụ chọn ở bottom sheet, xem trước ngày giờ); `ChoiceButtons`, `utcOffsetLabel` dùng chung. Chủ dự án gửi URL project Supabase
+  `msgamxrlohgszgpvvyfd`: connector Supabase của phiên chỉ thấy project khác (không đụng tới), chưa áp migration.
+- **Tiếp theo:** quyền vào project Supabase mới → áp migrations + `SupabaseSyncApi`; Thêm nhanh (02), chi tiết nhắc (04); evidence khi chạm ⓘ.
+
+## 2026-11-25 · UI theo Figma đợt 1 (Hôm nay, Lịch, Chuyến đi, chi tiết chuyến) + 2 lỗi dữ liệu · Claude Code
+- **Làm:** đọc file Figma qua MCP (236 frame); token màu/chữ/bo góc theo Figma (design-system.md §2-5), font Be Vietnam Pro bundle (OFL ở màn
+  giấy phép), icon SVG + `AppIcon` (tô theo theme, lật khi RTL), thanh dưới 4 tab + nút "+" giữa; làm lại Hôm nay, Lịch, Chuyến đi, chi tiết chuyến.
+  `flutter_svg` (parsers nới `xml` về `>=6.5`). `TripsRepository.bookingInfo`, `TripSegment.carrierCode/number`, `cachedQuotaProvider`.
+- **Quyết định:** token `danger` → `#BF3035`, `travel` → `#087E89` theo Figma (màu cũ chưa đạt WCAG AA chữ nhỏ). Chế độ Tuần/Ngày, bộ lọc ở Lịch,
+  tab Tài liệu/Hành lý chưa đặt lên màn vì chưa có chức năng.
+- **Lỗi bắt được:** (1) `offset_minutes` hai quy ước: planner/UI/.ics "dương = trước", data-model/server/nhắc mặc định khi nhập vé "âm = trước"
+  → nhắc chuyến bay nhập từ vé kêu **sau** giờ bay; thống nhất "âm = trước". (2) `updateBooking(id, tripId:)` xóa ngày/giờ của item.
+  (3) Ô ngày lịch cao cố định tràn khi phóng chữ 1,3×; hàng chip tràn ở 320dp (test pseudo-locale bắt).
+- **Kiểm chứng:** core 51, data 51 (+1), parsers 74, client 71; contract Postgres 8, pgTAP 109; analyze 0; ARB 225 key; ảnh chụp sáng/tối đối chiếu Figma.
+- **Tiếp theo:** màn Xem lại khi nhập (15/15b/16), Tôi (27), Ngôn ngữ & vùng (C50), Thêm nhanh (02), chi tiết nhắc (04); tab Tài liệu + Hành lý.
+
+## 2026-11-25 · Dời việc khỏi ngày nghỉ lễ, màn Ngôn ngữ & vùng · Claude Code
+- **Làm:** `nextWorkday` (core); `ItemsRepository.openTasksOn`/`moveToDate`, `LocalPrefs` (data, khóa `pref.*` trong `sync_state`, không đồng bộ).
+  Hôm nay có thẻ ngày nghỉ lễ trong 7 ngày tới còn việc 1 lần: "Dời sang <ngày làm việc kế tiếp>" (giữ giờ, Hoàn tác) / "Để nguyên".
+  Tôi → Ngôn ngữ & vùng: quốc gia ngày lễ (theo máy / VN / US / GB / không dùng), hệ lịch phụ (theo ngôn ngữ / âm lịch VN/TQ/HQ / không dùng);
+  gói ngày lễ có thêm tên quốc gia (`name`). 17 key ARB.
+- **Quyết định:** chỉ gợi ý dời việc (kind `task`, không lặp); sự kiện, lịch hẹn, đặt chỗ không dời. Cài đặt lưu trên máy tới khi có `profiles` đồng bộ.
+- **Kiểm chứng:** core 51, data 50, client 71 (+3); analyze 0; ARB 194 key 0 lỗi.
+- **Figma:** chủ dự án gửi file thiết kế (236 frame = ~59 màn × VI/EN × sáng/tối, gồm onboarding, đăng nhập, gói, cài đặt); đọc được qua Figma MCP.
+  File không có variables (token phải đọc từ giá trị màu/chữ của layer).
+- **Tiếp theo:** áp token + từng màn theo Figma (Hôm nay, Lịch, Chuyến đi, Xem lại, Tôi, Ngôn ngữ & vùng).
+
+## 2026-11-25 · Hạn mức chuyến đi, đổi tên/Thêm hoạt động, ngày lễ + tab Lịch, lặp ngày làm việc · Claude Code
+- **Làm:** `SyncEngine`: lượt push đầu hoãn lỗi khóa ngoại `23503`; chuyến mới bị `quota_exceeded` thì bỏ ở máy, gỡ `trip_id` khỏi item, gửi lại mutation lỗi
+  (`SyncReport.rejectedTrips`); cache `quota_status` sau mỗi lần sync (`cachedQuota`, `SyncApi.quotaStatus`). Màn Xem lại đếm chuyến đang hoạt động, hết lượt thì
+  khóa "Chuyến mới" + dòng `importTripLimit`, `commit` nhận quota từ cache. Chuyến đi: đổi tên, "Thêm hoạt động" ở khoảng trống > 3h (`freeGapsAfter`).
+  `packages/core`: `HolidayCalendar` + gói VN/US/GB, `easterSunday`, `weekendDays` (CLDR), `HolidayCalendars`, `WorkdaysRecurrence`. Tab Lịch dạng tháng
+  (`countsByDay`, ngày âm, ngày lễ, chạm ngày). Lựa chọn lặp "Các ngày làm việc" (`workdays_region`).
+- **Quyết định:** ADR-017 (ngày lễ là gói luật tự viết theo văn bản luật, tính trên máy; không dùng dữ liệu `date-holidays`). Chuyến bị từ chối thì bỏ chuyến,
+  giữ đặt chỗ (như xóa chuyến). `workdays_region` ghi cả khi vùng chưa có gói ngày lễ (chỉ bỏ cuối tuần tới khi có gói).
+- **Lỗi bắt được nhờ test:** `RRuleRecurrence.between` assert khi khoảng ngày nằm trước ngày bắt đầu chuỗi. Contract test mới fail đúng chỗ khi bỏ phần sửa SyncEngine.
+- **Kiểm chứng:** core 50 (+10), data 48 (+5), contract Postgres 8 (+1), pgTAP 109, parsers 74, client 68 (+7: hạn mức chuyến, đổi tên/xóa chuyến,
+  Thêm hoạt động, 3 lịch, 2 ngày làm việc); analyze 0; check-docs/fixtures/lint/ARB (177 key)/platform 0 lỗi.
+- **Tiếp theo:** UI báo chuyến bị từ chối + paywall; gợi ý dời nhắc rơi vào ngày lễ; gói ngày lễ AU/CA/IN; tab Tài liệu + checklist hành lý; màn Cài đặt
+  (hệ âm lịch, vùng ngày lễ).
+
+## 2026-11-25 · S6 chuyến đi: booking_details, trùng/cập nhật, gom chuyến, nhắc mặc định, tab Chuyến đi · Claude Code
+- **Làm:** `packages/data`: `TripsRepository` (tạo, nới ngày, đổi tên, xóa giữ đặt chỗ, `segments`, `bookingsWithCodes`), `ItemsRepository.create` nhận
+  `tripId`/`booking`/`absoluteReminders`, `updateBooking`, `addReminderAt`; `ImportsRepository.commit(trips:)`, `ImportedItem.booking/tripIndex/updateItemId`,
+  `ImportRecord` kiểm `tier_used`/`kind` theo CHECK của server, ghi `template_id`. `packages/parsers`: `suggestTrips`, `defaultReminders`, `withAirportTimeZones`.
+  App: đặt chỗ thành `kind = booking` + `bookingRow`, `matchExistingBookings`, màn Xem lại có dòng "Gộp vào chuyến đi" + "Đã có, sẽ bỏ qua/cập nhật giờ",
+  `tier_used = t1t2` khi qua T2, tab Chuyến đi + `/trips/:id` (timeline theo ngày, giờ đi/đến theo múi giờ từng nơi). 11 key ARB.
+- **Quyết định:** quy tắc gom chuyến ở on-device-extraction.md §4.4 (khoảng cách ≤ 2 ngày; vé lẻ mặc định không gộp để giữ lượt Free); khách sạn chỉ nhắc
+  tuyệt đối (18:00 hôm trước, 1h trước trả phòng), không thêm "đúng giờ".
+- **Lỗi bắt được nhờ test:** contract test Postgres từ chối `tier_used = 't2'` (CHECK chỉ có `t1t2`) kéo theo cả item của lần nhập (khóa ngoại) → chặn ngay ở
+  client; app ghi `t0` cho kết quả T2 → sửa. Vé JSON-LD chỉ có offset nên `booking_details.origin.tz` rỗng → suy múi giờ theo sân bay.
+- **Kiểm chứng:** data 43 (+3 trips), contract Postgres 7 (+1), pgTAP 109; parsers 74 (+4); client 60 (+2 logic, +1 widget chuyến đi end-to-end); analyze 0; lint/ARB/docs 0 lỗi.
+  Postgres 16 + pgTAP cài lại trong container (apt), `PGPASSWORD=postgres`.
+- **Tiếp theo:** gỡ `trip_id` khi trip bị từ chối quota; sửa/đổi tên chuyến; gợi ý "Thêm hoạt động"; tab Tài liệu; share intent/extension (cần máy thật).
+
+## 2026-11-25 · Màn Xem lại: sửa từng trường, tô `warning` (E5.1) · Claude Code
+- **Làm:** `parsers`: `CandidateFields.copyWith` (phân biệt "giữ" với "xóa"), `Candidate.copyWith`. App: `features/import/candidate_editor.dart`
+  (`editCandidate` mở form toàn màn hình; `reviewKeys`/`needsCheck`; ô ngày/giờ sửa giờ tường của nguồn, giữ tz/offset; số chuyến "ZZ 245" tách lại mã hãng + số),
+  màn Xem lại giữ bản sửa theo vị trí, thẻ có ⓘ `warning` khi còn trường cần kiểm tra. 14 key ARB mới, bỏ `importItemName` (không còn dùng).
+- **Quyết định:** trường người dùng sửa hoặc xác nhận có độ tin cậy 1,0; dấu trên thẻ chỉ tính trường form sửa được (số khách 0,6 không lưu vào item nên không tính);
+  sửa ngày bắt đầu thì tính lại `past_date`, bỏ `date_order_ambiguous`; sửa ngày kết thúc thì bỏ `arrival_next_day`/`check_out_before_check_in`.
+- **Lỗi bắt được nhờ test:** thẻ vé bay T2 không bao giờ hết dấu vì số chuyến/số khách 0,6 không có ô sửa → thêm ô số chuyến, giới hạn dấu theo form.
+- **Kiểm chứng:** app 57 test (+1 widget sửa trường → DB, +1 logic `needsCheck`, pseudo-locale 320dp chữ 1,3× mở form khách sạn); parsers 70, core 40, platform 2, data 40;
+  analyze 0; docs/ARB/lint 0 lỗi; unslop 0 thay đổi.
+- **Tiếp theo:** evidence khi chạm ⓘ (cần giữ vị trí dòng nguồn trong `Slot`), dedupe + gom trip (S6), hiển thị hạn mức ở màn Xem lại khi có `quota_status`.
+
+## 2026-11-24 · T2: tàu/xe, lịch khám, vé sự kiện · Claude Code
+- **Làm:** `GenericExtractor` thêm `_ground` (tàu/xe: ga/điểm đón theo nhãn hoặc dòng có mũi tên, giờ + "(+1)" cùng vùng, số hiệu tàu, toa, chỗ, nhà xe),
+  `_medical` (nơi khám không nhãn: dòng ngắn hoặc cụm viết hoa quanh từ trong `facility_words`; khoa, số thứ tự, dặn dò), `_event`; `AnchorReader.hitsFor`,
+  `excludeField` + `excluded_dates` (ngày sinh, ngày đặt vé). `CandidateFields` thêm `department`, `queueNumber`, `preparation`; `Slots` thêm tên ga, nhà xe.
+  Mẫu nhà cung cấp nhận thêm `origin_name`, `destination_name`, `operator`, `department`, `queue_number`, `preparation`, `event_name`.
+  Fixtures: `synthetic-train-text-0001`, `synthetic-bus-text-0001`, `synthetic-medical-text-0001` (vi), `synthetic-email-medical-0001`, `synthetic-event-text-0001` (en).
+  App: `ImportNoteLabels` (ghi chú: dặn dò, mã đặt chỗ, toa, ghế, khoa, số thứ tự qua ARB, 4 key mới), `fallbackTitle` dùng khoa khi không có tên.
+- **Quyết định:** tàu/xe chưa có từ điển ga nên giờ ghi theo múi giờ máy; tàu/xe chỉ 1 chặng. Dặn dò chép nguyên văn (glossary `med_fasting`: không diễn giải).
+- **Lỗi bắt được nhờ test:** harness coi T2 rỗng là "chưa có tầng xử lý" (che mất 1 mẫu trượt) → nay chấm là thiếu; anchor mờ nhận "điểm đón" là "điểm đến"
+  (bỏ dấu khác 1 ký tự) → bỏ hit gần đúng trùng nhãn trường khác; "chỗ" trong "Mã đặt chỗ" bị đọc là ghế → loại theo nhãn mã đặt chỗ.
+- **Kiểm chứng:** parsers 70 (eval 15 mẫu: bắt buộc 100% 88/88, tùy chọn 100% 53/53, điền sai 0); app 55; core 40, platform 2, data 40; analyze 0; lint/ARB/docs 0 lỗi.
+- **Tiếp theo:** màn Xem lại sửa từng trường + tô vàng (E5.1); dedupe + gom trip (S6); ga → múi giờ; mẫu thật.
+
+## 2026-11-24 · Tầng luật T2: anchor mờ, extractor chung bay/khách sạn, mẫu nhà cung cấp (E3, E4.1) · Claude Code
+- **Làm:** `packages/parsers/lib/src/engine/`: `document.dart` (`TextDocument`/`TextLine`/`TextBox`, `FoldedText` giữ vị trí gốc, anchor mờ Sellers,
+  vùng phải/dưới theo bbox), `values.dart` (`ValueReader`: ngày/giờ bằng mẫu `dates`/`times` của gói, khớp dài nhất, thứ tự ngày theo vùng; tiền; số chuyến; mã sân bay),
+  `vocabulary.dart` (mục `document:` của gói), `generic.dart` (`DocClassifier`, `AnchorReader`, `GenericExtractor` bay/khách sạn), `slots.dart` (`Slots`,
+  `CandidateAssembler`: kiểm tra logic, qua đêm theo UTC, 14:00/12:00 mặc định), `template.dart` (`ProviderTemplate`, `TemplateReader`, `RuleEngine`), `airports.dart`.
+  `data/airports.tsv` + `tool/build_airports.py`, `templates/template.schema.json` (kiểm trong `validate-fixtures.py`). `Candidate` thêm `fieldConfidence`, `issues`.
+  Harness eval chạy T2 cho `.txt` và email không có T0, chấm thêm trường tùy chọn. Fixtures mới: `synthetic-email-flight-text-0001` (en, khứ hồi, +1),
+  `synthetic-hotel-text-0001` (vi, lỗi OCR ở nhãn). App: `decodeImport` gọi T2, `airportsTsvProvider`, 5 key ARB cảnh báo ở màn Xem lại.
+- **Quyết định:** ADR-016 (mwgg/Airports thay OurAirports vì có sẵn tz; từ vựng T2 trong gói NLU). Không trả tên hành khách. Tổng tiền chỉ gắn khi 1 chặng.
+  Mã sân bay đứng một mình chỉ khi có giờ sát bên. `$`, `¥` một mình không đoán tiền tệ. Tên khách sạn/địa chỉ chỉ lấy khi nhãn đứng như nhãn.
+- **Lỗi bắt được nhờ test:** dòng ghế của chặng đi bị gán cho chặng về (ranh giới khối); "ZY 5  Dec 20" đọc thành 5/12; "THE"/"END" là mã sân bay thật;
+  `rootBundle.loadString` tệp > 50 KB mở isolate (kẹt fake-async) → `load` + `utf8.decode`.
+- **Kiểm chứng:** parsers 65 test (17 engine; eval 10 mẫu: bắt buộc 100% 69/69, tùy chọn 100% 36/36, điền sai 0); app 54 test (+1 logic, +1 widget);
+  core 40, platform 2, data 40; analyze 0; check-docs, validate-fixtures (10 mẫu + 1 mẫu nhà cung cấp), lint, ARB, pseudo, platform 0 lỗi; unslop 0 thay đổi.
+- **Tiếp theo:** T2 tàu/xe (VN: mã tàu SE/TN, toa/ghế), khám bệnh; dedupe + gom trip (S6); màn Xem lại sửa từng trường (E5.1); mẫu thật khi có bộ mẫu.
+
 ## 2026-11-24 · Nhập từ tệp trong app: màn Xem lại (bản đầu E5) · Claude Code
 - **Làm:** `packages/data`: `ImportsRepository` (`commit` ghi hàng `imports` + item có `import_id`, list theo tên khớp không dấu hoặc tạo mới,
   `smartImportsThisMonth` đếm theo tháng của múi giờ máy như server, vượt hạn mức → `pending_quota`); `ItemsRepository.create` thêm `endsAt/endTz/endDate`,

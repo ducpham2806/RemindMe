@@ -1,0 +1,22 @@
+{
+  "region": "GB",
+  "name": {"en": "United Kingdom", "vi": "Vương quốc Anh"},
+  "version": 1,
+  "sources": ["Banking and Financial Dealings Act 1971; danh sách bank holiday của gov.uk (England and Wales)"],
+  "notes": "England và Wales; Scotland, Bắc Ireland có ngày riêng (chưa có).",
+  "holidays": [
+    {"id": "new_year", "rule": {"type": "fixed", "month": 1, "day": 1}, "observed": "substitute", "names": {"en": "New Year's Day", "vi": "Năm mới"}},
+    {"id": "good_friday", "rule": {"type": "easter", "offset": -2}, "names": {"en": "Good Friday", "vi": "Thứ Sáu Tuần Thánh"}},
+    {"id": "easter_monday", "rule": {"type": "easter", "offset": 1}, "names": {"en": "Easter Monday", "vi": "Thứ Hai Phục sinh"}},
+    {"id": "early_may", "rule": {"type": "nth_weekday", "month": 5, "weekday": 1, "n": 1}, "moved": {"2020": "2020-05-08"}, "names": {"en": "Early May bank holiday", "vi": "Nghỉ lễ đầu tháng 5"}},
+    {"id": "spring_bank", "rule": {"type": "nth_weekday", "month": 5, "weekday": 1, "n": -1}, "moved": {"2022": "2022-06-02"}, "names": {"en": "Spring bank holiday", "vi": "Nghỉ lễ mùa xuân"}},
+    {"id": "summer_bank", "rule": {"type": "nth_weekday", "month": 8, "weekday": 1, "n": -1}, "names": {"en": "Summer bank holiday", "vi": "Nghỉ lễ mùa hè"}},
+    {"id": "christmas", "rule": {"type": "fixed", "month": 12, "day": 25}, "observed": "substitute", "names": {"en": "Christmas Day", "vi": "Giáng sinh"}},
+    {"id": "boxing_day", "rule": {"type": "fixed", "month": 12, "day": 26}, "observed": "substitute", "names": {"en": "Boxing Day", "vi": "Boxing Day"}}
+  ],
+  "one_off": [
+    {"id": "platinum_jubilee", "date": "2022-06-03", "names": {"en": "Platinum Jubilee bank holiday", "vi": "Đại lễ Bạch kim"}},
+    {"id": "state_funeral", "date": "2022-09-19", "names": {"en": "Bank holiday for the State Funeral of Queen Elizabeth II", "vi": "Quốc tang Nữ hoàng Elizabeth II"}},
+    {"id": "coronation", "date": "2023-05-08", "names": {"en": "Bank holiday for the coronation of King Charles III", "vi": "Lễ đăng quang Vua Charles III"}}
+  ]
+}

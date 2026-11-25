@@ -172,4 +172,7 @@ class SyncException implements Exception {
 abstract interface class SyncApi {
   Future<List<MutationResult>> push(String deviceId, List<Mutation> mutations);
   Future<PullPage> pull(int since, {int limit = 500});
+
+  /// JSON của RPC `quota_status()` (pricing-entitlements.md §2): giới hạn gói + mức dùng, app cache lại để kiểm khi offline.
+  Future<Map<String, Object?>> quotaStatus();
 }

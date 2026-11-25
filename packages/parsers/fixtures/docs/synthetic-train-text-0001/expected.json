@@ -1,0 +1,40 @@
+{
+  "doc_type": "train",
+  "template_expected": null,
+  "trip_expected": false,
+  "candidates": [
+    {
+      "kind": "booking",
+      "booking_type": "train",
+      "required": {
+        "confirmation_code": "TQ8L4P",
+        "number": "SE3",
+        "origin": {
+          "name": "Sài Gòn"
+        },
+        "destination": {
+          "name": "Đà Nẵng"
+        },
+        "starts_at": {
+          "local": "2026-12-28T22:00"
+        }
+      },
+      "optional": {
+        "ends_at": {
+          "local": "2026-12-29T15:40"
+        },
+        "carriage": "5",
+        "seat": "23",
+        "price": {
+          "amount": "1250000",
+          "currency": "VND"
+        }
+      },
+      "must_not_fill": [
+        "origin.code",
+        "gate",
+        "class"
+      ]
+    }
+  ]
+}

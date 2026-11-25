@@ -1,0 +1,65 @@
+{
+  "id": "zz.eticket.v1",
+  "doc_type": "flight",
+  "version": 3,
+  "date_order": "mdy",
+  "match": {
+    "any_text": [
+      "ZZ AIR",
+      "ZZ\\s?\\d{2,4}"
+    ],
+    "sender_domains": [
+      "zzair.example"
+    ],
+    "min_score": 2
+  },
+  "fields": {
+    "confirmation_code": {
+      "anchors": [
+        "Record locator"
+      ],
+      "dir": "right|below",
+      "pattern": "\\b([A-Z0-9]{6})\\b"
+    },
+    "flight_number": {
+      "type": "flight_number"
+    },
+    "departure_date": {
+      "anchors": [
+        "Date"
+      ],
+      "type": "date"
+    },
+    "departure_time": {
+      "anchors": [
+        "Departs"
+      ],
+      "type": "time"
+    },
+    "arrival_time": {
+      "anchors": [
+        "Arrives"
+      ],
+      "type": "time"
+    },
+    "origin": {
+      "type": "iata",
+      "nth": 1
+    },
+    "destination": {
+      "type": "iata",
+      "nth": 2
+    },
+    "seat": {
+      "anchors": [
+        "Seat"
+      ],
+      "pattern": "(\\d{1,2}[A-K])"
+    }
+  },
+  "repeat_block": {
+    "start": [
+      "Segment"
+    ]
+  }
+}

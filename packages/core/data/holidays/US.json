@@ -1,0 +1,22 @@
+{
+  "region": "US",
+  "name": {"en": "United States", "vi": "Hoa Kỳ"},
+  "version": 1,
+  "sources": ["5 U.S.C. 6103 (ngày lễ liên bang, quy tắc ngày bù)"],
+  "notes": "Ngày lễ liên bang; ngày lễ riêng của từng bang chưa có.",
+  "holidays": [
+    {"id": "new_year", "rule": {"type": "fixed", "month": 1, "day": 1}, "observed": "us", "names": {"en": "New Year's Day", "vi": "Năm mới"}},
+    {"id": "mlk_day", "rule": {"type": "nth_weekday", "month": 1, "weekday": 1, "n": 3}, "names": {"en": "Martin Luther King Jr. Day", "vi": "Ngày Martin Luther King"}},
+    {"id": "washingtons_birthday", "rule": {"type": "nth_weekday", "month": 2, "weekday": 1, "n": 3}, "names": {"en": "Washington's Birthday", "vi": "Ngày sinh Washington"}},
+    {"id": "memorial_day", "rule": {"type": "nth_weekday", "month": 5, "weekday": 1, "n": -1}, "names": {"en": "Memorial Day", "vi": "Ngày Tưởng niệm"}},
+    {"id": "juneteenth", "rule": {"type": "fixed", "month": 6, "day": 19}, "from": 2021, "observed": "us", "names": {"en": "Juneteenth", "vi": "Ngày Juneteenth"}},
+    {"id": "independence_day", "rule": {"type": "fixed", "month": 7, "day": 4}, "observed": "us", "names": {"en": "Independence Day", "vi": "Ngày Độc lập"}},
+    {"id": "labor_day", "rule": {"type": "nth_weekday", "month": 9, "weekday": 1, "n": 1}, "names": {"en": "Labor Day", "vi": "Ngày Lao động"}},
+    {"id": "columbus_day", "rule": {"type": "nth_weekday", "month": 10, "weekday": 1, "n": 2}, "names": {"en": "Columbus Day", "vi": "Ngày Columbus"}},
+    {"id": "veterans_day", "rule": {"type": "fixed", "month": 11, "day": 11}, "observed": "us", "names": {"en": "Veterans Day", "vi": "Ngày Cựu chiến binh"}},
+    {"id": "thanksgiving", "rule": {"type": "nth_weekday", "month": 11, "weekday": 4, "n": 4}, "names": {"en": "Thanksgiving Day", "vi": "Lễ Tạ ơn"}},
+    {"id": "christmas", "rule": {"type": "fixed", "month": 12, "day": 25}, "observed": "us", "names": {"en": "Christmas Day", "vi": "Giáng sinh"}},
+    {"id": "mothers_day", "rule": {"type": "nth_weekday", "month": 5, "weekday": 7, "n": 2}, "day_off": false, "names": {"en": "Mother's Day", "vi": "Ngày của Mẹ"}},
+    {"id": "fathers_day", "rule": {"type": "nth_weekday", "month": 6, "weekday": 7, "n": 3}, "day_off": false, "names": {"en": "Father's Day", "vi": "Ngày của Cha"}}
+  ]
+}

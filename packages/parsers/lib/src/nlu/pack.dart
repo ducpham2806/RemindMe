@@ -1,6 +1,8 @@
 import 'package:remindme_core/remindme_core.dart';
 import 'package:yaml/yaml.dart';
 
+import '../engine/vocabulary.dart';
+
 /// Loại mẫu (ngữ nghĩa do engine định nghĩa; từ ngữ nằm trong gói). Xem `nlu/packs/README.md`.
 enum PatternType {
   // giờ
@@ -62,6 +64,7 @@ class GrammarPack {
     required this.tableColumns,
     required this.tablePriority,
     required this.tableDone,
+    required this.document,
   });
 
   final String lang;
@@ -97,6 +100,8 @@ class GrammarPack {
   final Map<String, int> tablePriority;
   /// Giá trị cột Trạng thái nghĩa là đã xong (đã fold).
   final Set<String> tableDone;
+  /// Đọc tài liệu (tầng luật T2): mục `document:` của gói.
+  final DocVocabulary document;
 
   static String norm(String s) => s.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
 
@@ -212,6 +217,7 @@ class GrammarPack {
         for (final e in ((table['priority'] as Map<String, Object?>?) ?? const {}).entries) foldForSearch(e.key): e.value! as int,
       },
       tableDone: {for (final x in (table['done'] as List<Object?>? ?? const [])) foldForSearch('$x')},
+      document: DocVocabulary.fromMap(m['document'] as Map<String, Object?>?),
       fillerTailRe: tails.isEmpty
           ? null
           : RegExp('^\\s*(?:${alt(tails)})(?![\\p{L}\\p{N}])\\s*', caseSensitive: false, unicode: true),

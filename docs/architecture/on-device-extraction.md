@@ -53,8 +53,11 @@ Tên hành khách trong BCBP/JSON-LD không được lấy ra. `EmailDecoder` ch
 → `decodeImport` trong `Isolate.run` → màn Xem lại (chọn/bỏ, sửa tên, chọn thứ tự ngày và trang tính của bảng) → `ImportsRepository.commit`
 (1 hàng `imports` + item có `import_id`; list theo tên khớp không dấu hoặc tạo mới; checklist, địa điểm, đã xong, lặp, nhắc đúng giờ hoặc theo VALARM).
 Đặt chỗ lưu thành sự kiện (tên mặc định `ZZ 245 · SGN → HAN`, mã đặt chỗ vào ghi chú) tới khi có chuyến đi. Giờ chỉ có offset: dùng múi giờ máy nếu trùng,
-không thì `Etc/GMT∓h`. `.csv` tính là `xlsx` trong `imports.kind`/`items.source`. Chưa có: chia sẻ vào app (share intent/extension), đổi cột ở màn xem trước
-và nhớ mapping (E5.3), hiển thị hạn mức (chưa có `quota_status` khi offline; `commit` đã nhận `QuotaStatus` để đánh `pending_quota`).
+không thì `Etc/GMT∓h`. `.csv` tính là `xlsx` trong `imports.kind`/`items.source`. Chạm 1 mục mở form sửa (E5.1, `candidate_editor.dart`): tên, bắt đầu/kết thúc
+(giữ múi giờ của nguồn), địa điểm, mã đặt chỗ, số chuyến/số hiệu tàu, ghế, toa, khoa, số thứ tự, dặn dò; trường < 0,7 viền `warning` + ⓘ, sửa hoặc xác nhận
+(mở bộ chọn giờ rồi OK) thì thành 1,0. Dấu "cần kiểm tra" trên thẻ chỉ tính trường form sửa được. Chưa có: evidence (đoạn chữ gốc) khi chạm ⓘ, sửa tuyến bay,
+chia sẻ vào app (share intent/extension), đổi cột ở màn xem trước
+và nhớ mapping (E5.3), hiển thị hạn mức nhập thông minh (`commit` nhận `QuotaStatus` từ cache để đánh `pending_quota`, chưa có dòng báo trên màn).
 
 ## 3. T1: OCR trên thiết bị
 | Nền tảng | Engine | Hệ chữ |
@@ -72,7 +75,7 @@ và nhớ mapping (E5.3), hiển thị hạn mức (chưa có `quota_status` khi
 
 ## 4. T2: Bộ máy luật (trái tim của hệ thống)
 ### 4.1 Phân loại tài liệu
-Chấm điểm theo từ khóa có trọng số. Từ khóa nằm trong **gói ngôn ngữ** (`packs/<lang>/classifier.json`), trọng số dev huấn luyện offline từ bộ mẫu;
+Chấm điểm theo từ khóa có trọng số. Từ khóa nằm trong **gói ngôn ngữ** (mục `document.classify` của `nlu/packs/<lang>.yaml`, ADR-016), trọng số dev huấn luyện offline từ bộ mẫu;
 app chạy gói của ngôn ngữ người dùng + ngôn ngữ đoán được của tài liệu. Ví dụ tín hiệu (vi/en; các ngôn ngữ khác tương tự trong gói):
 | Loại | Tín hiệu mạnh |
 |---|---|
@@ -103,7 +106,9 @@ Mẫu dạng JSON khai báo, không phải code, nên **cập nhật qua CDN mà
 }
 ```
 - Engine đọc mẫu: tìm anchor (so khớp mờ), lấy vùng bên phải/bên dưới theo bbox, áp `pattern`/`type`, chấm confidence.
-- Kho mẫu: `packages/parsers/templates/*.json` + test fixtures. Ký số (Ed25519) khi phát hành lên CDN; app chỉ nhận mẫu có chữ ký hợp lệ.
+- Kho mẫu: `packages/parsers/templates/*.json` theo `templates/template.schema.json` (CI kiểm bằng `tools/validate-fixtures.py`) + test fixtures.
+  Ký số (Ed25519) khi phát hành lên CDN; app chỉ nhận mẫu có chữ ký hợp lệ. Khác ví dụ trên: kiểu ngày là `date` + `date_order` của mẫu
+  (không có `date_vi`); `passengers`/`person_name` không có vì T2 không trả tên hành khách (dữ liệu cá nhân, như BCBP).
 - **Danh sách ứng viên** theo thị trường (đợt 1 chọn 12 mẫu, xem `plan/implementation-plan.md` E4.3; cần mẫu thật để xác nhận định dạng):
   | Thị trường | Bay | Tàu/xe | Lưu trú / OTA | Khám bệnh / sự kiện |
   |---|---|---|---|---|
@@ -118,7 +123,7 @@ Mẫu dạng JSON khai báo, không phải code, nên **cập nhật qua CDN mà
 | Trường | Cách làm |
 |---|---|
 | Ngày/giờ | Dùng gói ngôn ngữ chung với NLU: `20/12/2026`, `12/20/2026` (theo ngôn ngữ/nhà cung cấp tài liệu), `Thứ Hai, 20 tháng 12`, `Dec 20, 2026`, `20. Dezember 2026`, `2026年12月20日`, `10:30`, `10h30`, `10:30 PM`, khoảng `14:00 - 15:30` |
-| Sân bay | Từ điển IATA đầy đủ (OurAirports) + tên thành phố theo nhiều ngôn ngữ → tz |
+| Sân bay | Từ điển IATA → tz (`packages/parsers/data/airports.tsv`, ADR-016) + tên thành phố theo nhiều ngôn ngữ (chưa có). Nhận mã trong ngoặc `(SGN)`, cặp `SGN → HAN`; mã đứng một mình chỉ khi có giờ ngay cạnh ("THE", "END" cũng là mã sân bay) |
 | Số chuyến bay | `\b(VN|VJ|QH|VU|9G|BL|...)\s?\d{2,4}\b` (danh sách mã hãng IATA) |
 | PNR | 6 ký tự `[A-Z0-9]` gần anchor "mã đặt chỗ/PNR/booking"; loại từ tiếng Anh thường gặp |
 | Ghế/toa | `\b\d{1,2}[A-K]\b`, "Toa \d+", "Ghế|Giường \d+" |
@@ -132,7 +137,27 @@ Mẫu dạng JSON khai báo, không phải code, nên **cập nhật qua CDN mà
 - Kiểm tra: giờ đến < giờ đi khi không qua đêm; ngày quá khứ (cảnh báo, không chặn); năm thiếu thì lấy lần gần nhất trong tương lai;
   check-in/check-out khách sạn thiếu giờ thì dùng 14:00/12:00; mã IATA đi = đến thì loại.
 - Dedupe với dữ liệu sẵn có: `(confirmation_code, starts_at)` hoặc hash file. Trùng thì đề xuất **cập nhật** (đổi giờ bay).
-- Gom trip, nhắc mặc định: như `reminder-engine.md` mục 5.
+  **Đã có** (`matchExistingBookings`): cùng mã + cùng loại + cùng chặng (số chuyến, không có thì cặp mã sân bay) + cùng giờ = trùng (mặc định bỏ chọn);
+  giờ khác = cập nhật item cũ (`ItemsRepository.updateBooking`). Hash file chưa làm.
+- Gom trip (US-21, `suggestTrips`): chỉ đặt chỗ đi lại (bay, tàu, xe, phà, lưu trú, thuê xe), sắp theo ngày bắt đầu; đặt chỗ bắt đầu trong vòng 2 ngày
+  sau khi đặt chỗ trước kết thúc thì cùng chuyến. Tên mặc định theo thành phố của sân bay đến chặng đầu (hoặc ga/điểm đến), không có thì theo ngày.
+  Mặc định gộp khi ≥ 2 đặt chỗ hoặc có lưu trú; vé lẻ mặc định không gộp (giữ lượt `max_active_trips`). Khoảng ngày chồng chuyến đang có (±1 ngày)
+  hoặc đặt chỗ đã thuộc 1 chuyến thì mặc định gộp vào chuyến đó. Hết lượt (giới hạn trong cache `quota_status` trừ chuyến đang hoạt động trên máy):
+  "Chuyến mới" bị khóa, mặc định không gộp, kèm dòng `importTripLimit`. Chưa sync lần nào (không có cache) thì để server quyết (data-model §4).
+- Nhắc mặc định: `reminder-engine.md` mục 5 (`defaultReminders`; bay nội địa/quốc tế theo nước của 2 sân bay, không biết thì như quốc tế).
+- Vé chỉ có offset (JSON-LD, `.ics` không TZID): `withAirportTimeZones` lấy múi giờ sân bay khi offset khớp múi đó lúc bay.
+
+**Đã có (E3.1-E3.4 phần đầu, E4.1):** `packages/parsers/lib/src/engine/`. `TextDocument` (dòng + bbox tùy chọn, dạng chung cho text email/PDF và OCR),
+anchor mờ (bỏ dấu, lỗi OCR ≤ 1 ký tự/6, trọn từ trừ CJK), vùng phải/dưới theo bbox; `ValueReader` (ngày/giờ bằng mẫu của gói NLU, thứ tự `03/04` theo vùng,
+khớp dài nhất khi chồng nhau; tiền theo ISO 4217, `$`/`¥` một mình không đoán; số chuyến bay; mã sân bay); `DocClassifier`; extractor chung cho bay
+(nhiều chặng, giờ đi/đến theo vị trí mã sân bay, "+1", qua đêm suy theo UTC), khách sạn (tên/địa chỉ chỉ lấy sau nhãn), tàu/xe (ga/điểm đón theo tên
+qua nhãn hoặc dòng có mũi tên, toa, chỗ, nhà xe), lịch khám (nơi khám không nhãn: dòng ngắn hoặc cụm viết hoa quanh "Clinic"/"Bệnh viện"; khoa, số thứ tự,
+dặn dò chép nguyên văn; ngày sinh/ngày đặt vé thuộc nhãn `excluded_dates` không bao giờ là ngày hẹn; không trả tên bệnh nhân) và vé sự kiện; `CandidateAssembler`
+(kiểm tra logic, `Candidate.fieldConfidence`, `issues`); `ProviderTemplate` + `TemplateReader` (khối lặp, trường đầu tài liệu dùng chung); `RuleEngine`
+(mẫu khớp nhất, không có thì extractor chung). App: email không có dữ liệu có cấu trúc và tệp `.txt` dạng vé chạy qua T2, màn Xem lại hiện cảnh báo
+và "hãy kiểm tra lại" khi có trường < 0,7. Eval 15 mẫu tổng hợp (T2 rỗng vẫn bị chấm là thiếu): 100% trường bắt buộc, 100% tùy chọn, 0 điền sai.
+Anchor mờ không nhận đoạn chữ khớp đúng nhãn của trường khác (bỏ dấu xong "điểm đón" chỉ khác "điểm đến" 1 ký tự).
+Chưa có: tàu/xe nhiều chặng, ga → múi giờ (tàu/xe dùng giờ tường theo máy), SĐT, địa chỉ ngoài nhãn, tên thành phố → sân bay, dedupe với dữ liệu sẵn có, gom trip, mẫu thật (E4.3), ký mẫu (E4.4), học mapping (§4.5).
 
 ### 4.5 Học từ người dùng mà không cần AI
 - **Nhớ mapping**: người dùng sửa cột xlsx hoặc chọn đúng loại tài liệu thì lưu theo "chữ ký" (hash header / tập anchor), lần sau tự áp dụng.

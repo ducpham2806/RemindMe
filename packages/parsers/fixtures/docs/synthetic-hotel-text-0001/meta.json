@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-hotel-text-0001",
+  "source_kind": "photo",
+  "market": "VN",
+  "doc_language": "vi",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Text kiểu OCR của phiếu xác nhận khách sạn tổng hợp: nhãn 'Ngày trả phòng' có lỗi OCR (g → q) để thử anchor mờ; tên khách sạn bắt đầu bằng chính nhãn 'Khách sạn'. Khách sạn và địa chỉ giả."
+}

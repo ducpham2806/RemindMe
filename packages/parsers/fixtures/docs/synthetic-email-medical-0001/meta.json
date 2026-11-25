@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-email-medical-0001",
+  "source_kind": "email",
+  "market": "US",
+  "doc_language": "en",
+  "provider": null,
+  "collected_at": "2026-11-24",
+  "consent": "synthetic",
+  "anonymized": true,
+  "notes": "Email nhắc lịch nha khoa tổng hợp: tên phòng khám nằm trong câu văn, 'Date of birth' trước 'Appointment date' (không được lấy), giờ 12 tiếng. Mọi tên đều giả."
+}

@@ -1,0 +1,44 @@
+{
+  "doc_type": "flight",
+  "template_expected": null,
+  "trip_expected": true,
+  "candidates": [
+    {
+      "kind": "booking",
+      "booking_type": "flight",
+      "required": {
+        "confirmation_code": "K7PQ2W",
+        "carrier_code": "ZY",
+        "number": "1208",
+        "origin": { "code": "JFK" },
+        "destination": { "code": "LHR" },
+        "starts_at": { "local": "2027-01-09T23:55", "tz": "America/New_York" }
+      },
+      "optional": {
+        "ends_at": { "local": "2027-01-10T12:05", "tz": "Europe/London" },
+        "passenger_count": 2,
+        "class": "Economy",
+        "origin": { "code": "JFK", "terminal": "4" }
+      },
+      "must_not_fill": ["price", "carriage"]
+    },
+    {
+      "kind": "booking",
+      "booking_type": "flight",
+      "required": {
+        "confirmation_code": "K7PQ2W",
+        "carrier_code": "ZY",
+        "number": "1213",
+        "origin": { "code": "LHR" },
+        "destination": { "code": "JFK" },
+        "starts_at": { "local": "2027-01-17T09:40", "tz": "Europe/London" }
+      },
+      "optional": {
+        "ends_at": { "local": "2027-01-17T12:55", "tz": "America/New_York" },
+        "passenger_count": 2,
+        "origin": { "code": "LHR", "terminal": "5" }
+      },
+      "must_not_fill": ["price", "carriage", "seat"]
+    }
+  ]
+}

@@ -16,6 +16,10 @@ class SyncReport {
   /// Server phải kẹp clock của máy này: đồng hồ máy chạy nhanh quá 1 ngày. App nên nhắc người dùng chỉnh giờ.
   bool clockSkewDetected = false;
 
+  /// Chuyến đi mới bị server từ chối vì vượt `max_active_trips`: đã bỏ ở máy, đặt chỗ của nó được gỡ khỏi chuyến và gửi lại.
+  /// Lỗi `quota_exceeded` của chuyến vẫn nằm trong [issues] để app mở paywall.
+  final List<String> rejectedTrips = [];
+
   /// Server báo phiên đã bị đá (ADR-013): app phải hủy thông báo đã lập lịch và đăng xuất.
   bool get sessionRevoked => error == SyncErrorCode.sessionRevoked;
 }
@@ -39,6 +43,7 @@ class SyncEngine {
 
   static const pushBatchSize = 200;
   static const _sinceKey = 'pull_since';
+  static const _quotaKey = 'quota_status';
 
   // ------------------------------------------------------------------ sửa local
 
@@ -108,17 +113,49 @@ class SyncEngine {
       await _pull(report);
     } on SyncException catch (e) {
       report.error = e.code;
+      return report;
+    }
+    // Hạn mức không chặn đồng bộ: lỗi thì giữ cache cũ.
+    try {
+      await _setState(_quotaKey, jsonEncode({'fetched_at': _now().toUtc().toIso8601String(), 'status': await api.quotaStatus()}));
+    } on SyncException {
+      // giữ cache cũ
     }
     return report;
   }
 
+  /// `quota_status` lấy ở lần sync thành công gần nhất (có thể đã cũ hơn [QuotaStatus.cacheTtl]); null = chưa sync lần nào.
+  /// Mức dùng trong đó là lúc lấy về: đếm lại ở máy cho dữ liệu tạo offline sau đó.
+  Future<QuotaStatus?> cachedQuota() async {
+    final raw = await _getState(_quotaKey);
+    if (raw == null) return null;
+    final j = jsonDecode(raw) as Map<String, Object?>;
+    return QuotaStatus.fromJson((j['status']! as Map).cast<String, Object?>(), fetchedAt: DateTime.parse(j['fetched_at']! as String));
+  }
+
+  /// Lỗi khóa ngoại của Postgres: hàng cha (chuyến, item) chưa có trên server.
+  static const _fkViolation = '23503';
+
   Future<void> _push(SyncReport report) async {
+    // Lượt 1 hoãn lỗi khóa ngoại: chúng thường do hàng cha bị từ chối trong cùng lượt (chuyến vượt hạn mức → item trỏ
+    // `trip_id` tới chuyến đó → nhắc/booking_details của item). Sửa xong hàng cha thì gửi lại 1 lần, lượt 2 ghi lỗi như thường.
+    final pass = _PushPass();
     while (true) {
       final batch = await (db.select(db.outbox)
             ..orderBy([(o) => OrderingTerm.asc(o.seq)])
             ..limit(pushBatchSize))
           .get();
-      if (batch.isEmpty) return;
+      if (batch.isEmpty) {
+        if (!pass.retried && pass.rejectedTrips.isNotEmpty) {
+          await _detachRejectedTrips(pass, report);
+          pass.retried = true;
+          continue;
+        }
+        for (final (m, r) in pass.deferred) {
+          await _recordIssue(m, r, report);
+        }
+        return;
+      }
       final mutations = [for (final e in batch) Mutation.fromJson(jsonDecode(e.mutation) as Map<String, Object?>)];
       List<MutationResult> results;
       try {
@@ -130,7 +167,7 @@ class SyncEngine {
       final pendingAfter = await _pendingFields(afterSeq: batch.last.seq);
       await db.transaction(() async {
         for (var i = 0; i < results.length; i++) {
-          await _applyResult(mutations[i], results[i], report, pendingAfter);
+          await _applyResult(mutations[i], results[i], report, pendingAfter, pass);
         }
         await (db.delete(db.outbox)..where((o) => o.seq.isIn(batch.map((e) => e.seq)))).go();
       });
@@ -138,7 +175,7 @@ class SyncEngine {
     }
   }
 
-  Future<void> _applyResult(Mutation m, MutationResult r, SyncReport report, Set<String> pendingAfter) async {
+  Future<void> _applyResult(Mutation m, MutationResult r, SyncReport report, Set<String> pendingAfter, _PushPass pass) async {
     final row = r.serverRow;
     // Trường bị kẹp: clock local (ở tương lai) phải nhường clock server, nếu không bản sửa đúng giờ từ máy khác
     // sẽ không bao giờ thắng ở máy này. Bỏ qua trường còn bản sửa mới hơn đang chờ trong outbox.
@@ -149,6 +186,20 @@ class SyncEngine {
     if (r.clampedFields.isNotEmpty) report.clockSkewDetected = true;
     if (row != null) await _applyServerRow(m.table, row, forceFields: force);
     if (r.status == MutationStatus.ok) return;
+    if (!pass.retried) {
+      if (r.status == MutationStatus.invalid && r.error == _fkViolation) {
+        pass.deferred.add((m, r));
+        return;
+      }
+      if (m.table == SyncTable.trips && r.status == MutationStatus.quotaExceeded && await _neverSynced(SyncTable.trips, m.id)) {
+        // Sửa tiếp chuyến đã bị từ chối (nới ngày) cũng bị từ chối: chỉ báo 1 lần.
+        if (!pass.rejectedTrips.add(m.id)) return;
+      }
+    }
+    await _recordIssue(m, r, report);
+  }
+
+  Future<void> _recordIssue(Mutation m, MutationResult r, SyncReport report) async {
     report.issues.add(r);
     await db.into(db.syncIssues).insert(SyncIssuesCompanion.insert(
           tableName_: m.table.wire,
@@ -157,6 +208,50 @@ class SyncEngine {
           detail: Value(jsonEncode({'details': r.details, if (r.isNotesConflict) 'local_notes': m.payload['notes']})),
           createdAt: _now().millisecondsSinceEpoch,
         ));
+  }
+
+  /// Chuyến chưa từng lên server bị từ chối vì hạn mức: bỏ chuyến ở máy (đặt chỗ vẫn giữ, như xóa chuyến), gỡ `trip_id`
+  /// khỏi item của nó rồi gửi lại các mutation bị lỗi khóa ngoại theo thứ tự cũ (item trước, nhắc/booking_details sau).
+  Future<void> _detachRejectedTrips(_PushPass pass, SyncReport report) => db.transaction(() async {
+        final trips = pass.rejectedTrips.toList();
+        final nowMs = _now().millisecondsSinceEpoch;
+        final unlink = clock.send().pack();
+        final members = await (db.select(db.items)..where((t) => t.tripId.isIn(trips))).get();
+        for (final i in members) {
+          await _mergeIntoLocal(SyncTable.items, {'id': i.id, 'trip_id': null}, {'trip_id': unlink}, fromServer: false);
+        }
+        final tripsCodec = _codecs[SyncTable.trips]!;
+        await db.customUpdate(
+          'UPDATE trips SET deleted_at = ? WHERE id IN (${List.filled(trips.length, '?').join(', ')}) AND deleted_at IS NULL',
+          variables: [Variable.withInt(nowMs), for (final t in trips) Variable.withString(t)],
+          updates: {tripsCodec.table},
+        );
+        report.rejectedTrips.addAll(trips);
+        final retry = [...pass.deferred]..sort((a, b) => a.$1.table.index.compareTo(b.$1.table.index));
+        pass.deferred.clear();
+        final unlinked = {for (final i in members) i.id};
+        for (final (m, _) in retry) {
+          final payload = {...m.payload}, clocks = {...m.fieldClock};
+          if (m.table == SyncTable.items && trips.contains(payload['trip_id'])) {
+            payload['trip_id'] = null;
+            clocks['trip_id'] = unlink;
+            unlinked.remove(m.id);
+          }
+          await _enqueue(Mutation(table: m.table, id: m.id, op: m.op, payload: payload, fieldClock: clocks, baseClock: m.baseClock));
+        }
+        // Item đã có trên server mà mutation gắn vào chuyến không nằm trong lượt này: gửi riêng việc gỡ `trip_id`.
+        for (final id in unlinked) {
+          if (!await _neverSynced(SyncTable.items, id)) {
+            await _enqueue(Mutation(table: SyncTable.items, id: id, op: MutationOp.upsert, payload: {'id': id, 'trip_id': null}, fieldClock: {'trip_id': unlink}));
+          }
+        }
+      });
+
+  /// Hàng chưa từng được server xác nhận (version local = 0).
+  Future<bool> _neverSynced(SyncTable t, String id) async {
+    final keys = RowCodec.keyColumns(t);
+    final r = await db.customSelect('SELECT version FROM ${t.wire} WHERE ${keys.first} = ?', variables: [Variable.withString(id)]).getSingleOrNull();
+    return ((r?.data['version'] as int?) ?? 0) == 0;
   }
 
   Future<void> _pull(SyncReport report) async {
@@ -286,4 +381,11 @@ class SyncEngine {
         final bool b => Variable.withBool(b),
         _ => Variable.withString(v.toString()),
       };
+}
+
+/// Trạng thái 1 lần push (có thể 2 lượt).
+class _PushPass {
+  bool retried = false;
+  final List<(Mutation, MutationResult)> deferred = [];
+  final Set<String> rejectedTrips = {};
 }
