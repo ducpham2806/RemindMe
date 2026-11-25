@@ -184,8 +184,8 @@ void main() {
     await tester.tap(find.byKey(Key('trip-${trips.single.id}')));
     await tester.pumpAndSettle();
     expect(find.byKey(Key('tripSegment-${items.single.id}')), findsOneWidget);
-    expect(find.text('14:00 → 12:00'), findsOneWidget, reason: 'nhận phòng → trả phòng theo giờ nơi ở');
-    expect(find.byIcon(Icons.hotel), findsOneWidget);
+    expect(find.text('14:00 · Nhận phòng'), findsOneWidget, reason: 'nhận phòng và trả phòng theo giờ nơi ở');
+    expect(find.text('12:00 · Trả phòng'), findsOneWidget);
 
     await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
     await tester.tap(find.byKey(const Key('importPick')));

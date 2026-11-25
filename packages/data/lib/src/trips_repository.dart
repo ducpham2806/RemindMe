@@ -32,12 +32,14 @@ class TripSummary {
 
 /// 1 đặt chỗ trong timeline chuyến đi (UX §2.5): item + chi tiết đặt chỗ.
 class TripSegment {
-  const TripSegment({required this.item, this.bookingType, this.origin, this.destination, this.confirmationCode});
+  const TripSegment({required this.item, this.bookingType, this.origin, this.destination, this.confirmationCode, this.carrierCode, this.number});
   final ItemView item;
   final String? bookingType;
   final Map<String, Object?>? origin;
   final Map<String, Object?>? destination;
   final String? confirmationCode;
+  final String? carrierCode;
+  final String? number;
 }
 
 /// Đặt chỗ đã có (để màn Xem lại nhận ra vé nhập lại: trùng thì bỏ, đổi giờ thì đề xuất cập nhật).
@@ -151,6 +153,8 @@ class TripsRepository {
           origin: json(details[i.id]?.origin),
           destination: json(details[i.id]?.destination),
           confirmationCode: details[i.id]?.confirmationCode,
+          carrierCode: details[i.id]?.carrierCode,
+          number: details[i.id]?.number,
         ),
     ];
   }

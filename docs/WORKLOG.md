@@ -12,6 +12,18 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · UI theo Figma đợt 1 (Hôm nay, Lịch, Chuyến đi, chi tiết chuyến) + 2 lỗi dữ liệu · Claude Code
+- **Làm:** đọc file Figma qua MCP (236 frame); token màu/chữ/bo góc theo Figma (design-system.md §2-5), font Be Vietnam Pro bundle (OFL ở màn
+  giấy phép), icon SVG + `AppIcon` (tô theo theme, lật khi RTL), thanh dưới 4 tab + nút "+" giữa; làm lại Hôm nay, Lịch, Chuyến đi, chi tiết chuyến.
+  `flutter_svg` (parsers nới `xml` về `>=6.5`). `TripsRepository.bookingInfo`, `TripSegment.carrierCode/number`, `cachedQuotaProvider`.
+- **Quyết định:** token `danger` → `#BF3035`, `travel` → `#087E89` theo Figma (màu cũ chưa đạt WCAG AA chữ nhỏ). Chế độ Tuần/Ngày, bộ lọc ở Lịch,
+  tab Tài liệu/Hành lý chưa đặt lên màn vì chưa có chức năng.
+- **Lỗi bắt được:** (1) `offset_minutes` hai quy ước: planner/UI/.ics "dương = trước", data-model/server/nhắc mặc định khi nhập vé "âm = trước"
+  → nhắc chuyến bay nhập từ vé kêu **sau** giờ bay; thống nhất "âm = trước". (2) `updateBooking(id, tripId:)` xóa ngày/giờ của item.
+  (3) Ô ngày lịch cao cố định tràn khi phóng chữ 1,3×; hàng chip tràn ở 320dp (test pseudo-locale bắt).
+- **Kiểm chứng:** core 51, data 51 (+1), parsers 74, client 71; contract Postgres 8, pgTAP 109; analyze 0; ARB 225 key; ảnh chụp sáng/tối đối chiếu Figma.
+- **Tiếp theo:** màn Xem lại khi nhập (15/15b/16), Tôi (27), Ngôn ngữ & vùng (C50), Thêm nhanh (02), chi tiết nhắc (04); tab Tài liệu + Hành lý.
+
 ## 2026-11-25 · Dời việc khỏi ngày nghỉ lễ, màn Ngôn ngữ & vùng · Claude Code
 - **Làm:** `nextWorkday` (core); `ItemsRepository.openTasksOn`/`moveToDate`, `LocalPrefs` (data, khóa `pref.*` trong `sync_state`, không đồng bộ).
   Hôm nay có thẻ ngày nghỉ lễ trong 7 ngày tới còn việc 1 lần: "Dời sang <ngày làm việc kế tiếp>" (giữ giờ, Hoàn tác) / "Để nguyên".

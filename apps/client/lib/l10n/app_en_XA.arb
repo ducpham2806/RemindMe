@@ -211,6 +211,18 @@
   "planName": "[{plan, select, free{Ƒŕéé~~} plus{Þļûš~~} other{{plan}}}]",
   "tripsQuotaUsage": "[{plan} · Ûšîñĝ ~~{used}/{limit} ţŕîþš.~~]",
   "tripsQuotaFull": "[Ýöû çàñ šţîļļ àđđ ƀööķîñĝš ţö ýöûŕ çûŕŕéñţ ţŕîþ.~~~~~~~~~~~~~~~~]",
+  "tripDayN": "[Đàý ~{n}]",
+  "tripLocalTime": "[Ļöçàļ ţîɱé · ~~~~{offset}]",
+  "tripDuration": "[{hours} ĥ {minutes} ɱîñ~]",
+  "tripBookingCode": "[Ɓööķîñĝ çöđé~~~~]",
+  "tripCopyCode": "[Çöþý çöđé~~~]",
+  "tripCodeCopied": "[Çöđé çöþîéđ~~~~]",
+  "tripCheckIn": "[Çĥéçķ-îñ~~~]",
+  "tripCheckOut": "[Çĥéçķ-öûţ~~~]",
+  "tripOpenDetails": "[Ṽîéŵ đéţàîļš~~~~]",
+  "tripEmptyDay": "[Ñöţĥîñĝ þļàññéđ ƒöŕ ~~~~~~~{date} ýéţ.~]",
+  "tripEmptyDayHint": "[Ýöû çàñ àđđ àñ àçţîṽîţý àñý ţîɱé.~~~~~~~~~~]",
+  "tripAddToItinerary": "[Àđđ ţö îţîñéŕàŕý~~~~~~]",
   "tripDelete": "[Đéļéţé ţŕîþ~~~~]",
   "tripDeleteBody": "[Ţĥé ƀööķîñĝš šţàý îñ ýöûŕ çàļéñđàŕ.~~~~~~~~~~~~]"
 }

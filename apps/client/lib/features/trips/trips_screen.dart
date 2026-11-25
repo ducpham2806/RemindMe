@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -9,8 +11,10 @@ import '../../core/theme/app_icons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
+import '../../data/reminders.dart' show describeReminderOffset;
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
+import '../items/item_tile.dart';
 import '../common/text_prompt.dart';
 
 /// Tab Chuyến đi (US-20, Figma 20): lọc Sắp tới / Đã qua, thẻ chuyến (ngày, số ngày, nơi đến, tuyến, vài chặng đầu, "Xem lịch trình"),
@@ -356,80 +360,264 @@ Map<String, (DateTime, String)> freeGapsAfter(List<TripSegment> segments, {Durat
   return out;
 }
 
-/// Chi tiết chuyến đi (UX §2.5): timeline theo giờ địa phương của từng điểm (giờ đi theo nơi đi, giờ đến theo nơi đến).
+/// Chi tiết chuyến đi (UX §2.5, Figma 21): theo từng ngày của chuyến, giờ theo nơi diễn ra (giờ đi theo nơi đi, giờ đến theo nơi đến).
+/// Chuyến bay: giờ đi/đến lớn + mã sân bay, thời lượng, mã đặt chỗ (sao chép), nhắc; khách sạn: thẻ nhận phòng và trả phòng.
+/// Ngày chưa có gì: dòng gợi ý; khoảng trống > 3h giữa 2 chặng: "Thêm hoạt động".
 class TripDetailScreen extends ConsumerWidget {
   const TripDetailScreen({super.key, required this.id});
   final String id;
 
+  static IconData iconFor(String? type) => switch (type) {
+        'flight' => Icons.flight,
+        'train' => Icons.train,
+        'bus' => Icons.directions_bus,
+        'hotel' => Icons.hotel,
+        'ferry' => Icons.directions_boat,
+        'car_rental' => Icons.directions_car,
+        _ => Icons.event,
+      };
+
+  static CivilDateTime? _wall(DateTime? utc, String? tz) => utc == null || tz == null || !TimeZones.isValid(tz) ? null : TimeZones.toWall(utc, tz);
+
+  static String? _destTz(TripSegment s) {
+    final tz = s.destination?['tz'] as String?;
+    return tz != null && TimeZones.isValid(tz) ? tz : s.item.tz;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final colors = RemindColors.of(context);
     final trip = (ref.watch(tripsProvider).value ?? const <TripSummary>[]).where((t) => t.id == id).firstOrNull;
     final segments = ref.watch(tripSegmentsProvider(id)).value ?? const <TripSegment>[];
     final now = ref.read(nowProvider)();
-    final fmt = Fmt.of(context);
     final range = trip == null ? null : tripDateRange(context, trip, now);
-    String? lastDay;
-    final children = <Widget>[
-      if (range != null)
-        Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space2, Tokens.screenMargin, Tokens.space2),
-          child: Text(range, style: Theme.of(context).textTheme.titleMedium),
-        ),
-    ];
+    final start = trip?.startsOn == null ? null : CivilDate.parse(trip!.startsOn!);
+    final end = trip?.endsOn == null ? start : CivilDate.parse(trip!.endsOn!);
+    final days = start == null ? null : end!.daysSince(start) + 1;
     final gaps = freeGapsAfter(segments);
+    final locale = Localizations.localeOf(context).toLanguageTag();
+
+    // Sự kiện theo ngày địa phương: mỗi chặng ở ngày bắt đầu; khách sạn thêm thẻ trả phòng ở ngày kết thúc.
+    final byDay = <String, List<Widget>>{};
+    void add(CivilDate d, Widget w) => byDay.putIfAbsent(d.toIso(), () => []).add(w);
     for (final s in segments) {
-      final wall = _startWall(s);
-      final day = wall?.date.toIso();
-      if (day != null && day != lastDay) {
-        lastDay = day;
-        children.add(Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space4, Tokens.screenMargin, Tokens.space1),
-          child: Text(fmt.dayHeader(DateTime.parse(day)), style: Theme.of(context).textTheme.labelLarge),
-        ));
+      final i = s.item;
+      final startWall = _wall(i.startsAt, i.tz) ?? (i.startDate == null ? null : CivilDateTime(CivilDate.parse(i.startDate!)));
+      if (startWall == null) continue;
+      if (s.bookingType == 'hotel') {
+        add(startWall.date, _HotelCard(segment: s, checkOut: false));
+        final out = _wall(i.endsAt, _destTz(s) ?? i.tz);
+        if (out != null && out.date != startWall.date) add(out.date, _HotelCard(segment: s, checkOut: true));
+      } else if (s.bookingType != null) {
+        add(startWall.date, _LegCard(segment: s));
+      } else {
+        add(startWall.date, KeyedSubtree(key: Key('tripSegment-${i.id}'), child: ItemTile(key: ValueKey(i.rowKey), item: i, inset: false)));
       }
-      children.add(ListTile(
-        key: Key('tripSegment-${s.item.id}'),
-        leading: Icon(_icon(s.bookingType)),
-        title: Text(s.item.title),
-        subtitle: _times(context, s) == null ? null : Text(_times(context, s)!),
-        onTap: () => context.push('/item/${s.item.id}'),
-      ));
-      if (gaps[s.item.id] case (final from, final tz)) {
-        children.add(ListTile(
-          key: Key('tripAddActivity-${s.item.id}'),
-          leading: const Icon(Icons.add),
-          title: Text(l.tripAddActivity),
+      if (gaps[i.id] case (final from, final tz)) {
+        add(startWall.date, ListTile(
+          key: Key('tripAddActivity-${i.id}'),
+          contentPadding: EdgeInsetsDirectional.zero,
+          leading: Icon(Icons.add, color: scheme.primary),
+          title: Text(l.tripAddActivity, style: theme.textTheme.titleSmall?.copyWith(color: scheme.primary)),
           onTap: () => _addActivity(context, ref, from, tz),
         ));
       }
     }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(trip?.title ?? l.navTrips),
-        actions: [
-          PopupMenuButton<String>(
-            key: const Key('tripMenu'),
-            onSelected: (action) async {
-              final repo = ref.read(tripsRepositoryProvider);
-              if (action == 'rename') {
-                final name = await askText(context, title: l.tripRename, initial: trip?.title, hint: l.tripNameHint, fieldKey: const Key('tripName'));
-                if (name != null) await repo.rename(id, name);
-                return;
-              }
-              if (!await _confirmDelete(context)) return;
-              await repo.delete(id);
-              if (context.mounted) context.go('/trips');
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(value: 'rename', child: Text(l.tripRename)),
-              PopupMenuItem(value: 'delete', child: Text(l.tripDelete)),
+    final zones = {for (final s in segments) ?s.item.tz, for (final s in segments) ?_destTz(s)}.where(TimeZones.isValid).toSet();
+    String offsetOf(String tz) {
+      final w = TimeZones.toWall(now.toUtc(), tz);
+      final asUtc = DateTime.utc(w.date.year, w.date.month, w.date.day, w.time!.hour, w.time!.minute);
+      final m = asUtc.difference(DateTime.utc(now.toUtc().year, now.toUtc().month, now.toUtc().day, now.toUtc().hour, now.toUtc().minute)).inMinutes;
+      final sign = m < 0 ? '-' : '+';
+      final h = (m.abs() ~/ 60).toString().padLeft(2, '0'), mm = (m.abs() % 60).toString().padLeft(2, '0');
+      return 'UTC$sign$h${mm == '00' ? '' : ':$mm'}';
+    }
+
+    final dayList = <Widget>[];
+    if (start != null) {
+      for (var n = 0; n < days!; n++) {
+        final d = start.addDays(n);
+        final items = byDay.remove(d.toIso()) ?? const <Widget>[];
+        if (items.isEmpty) continue;
+        dayList.add(_dayHeader(context, d, l.tripDayN(n + 1), locale));
+        for (final w in items) {
+          dayList.add(Padding(padding: const EdgeInsetsDirectional.only(bottom: Tokens.space3), child: w));
+        }
+      }
+      final empty = [for (var n = 0; n < days; n++) if (!segments.any((s) => _onDay(s, start.addDays(n)))) start.addDays(n)];
+      for (final d in empty) {
+        dayList.add(Padding(
+          padding: const EdgeInsetsDirectional.only(bottom: Tokens.space2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l.tripEmptyDay(Fmt.of(context).date(DateTime(d.year, d.month, d.day), now: now)), style: theme.textTheme.bodySmall),
+              Text(l.tripEmptyDayHint, style: theme.textTheme.bodySmall),
             ],
           ),
+        ));
+      }
+    }
+    // Ngày ngoài khoảng của chuyến (dữ liệu cũ): vẫn hiện, không đánh số ngày.
+    for (final e in (byDay.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))) {
+      dayList.add(_dayHeader(context, CivilDate.parse(e.key), null, locale));
+      for (final w in e.value) {
+        dayList.add(Padding(padding: const EdgeInsetsDirectional.only(bottom: Tokens.space3), child: w));
+      }
+    }
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space2, Tokens.screenMargin, Tokens.space4),
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        key: const Key('tripBack'),
+                        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                        icon: AppIcon(AppIcons.back, size: 22, color: scheme.onSurface),
+                        onPressed: () => context.canPop() ? context.pop() : context.go('/trips'),
+                      ),
+                      Expanded(
+                        child: Semantics(
+                          header: true,
+                          child: Text(trip?.destination ?? trip?.title ?? l.navTrips,
+                              style: theme.textTheme.headlineLarge?.copyWith(fontSize: 27, height: 39 / 27)),
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        key: const Key('tripMenu'),
+                        icon: const Icon(Icons.more_horiz),
+                        onSelected: (action) async {
+                          final repo = ref.read(tripsRepositoryProvider);
+                          if (action == 'rename') {
+                            final name = await askText(context, title: l.tripRename, initial: trip?.title, hint: l.tripNameHint, fieldKey: const Key('tripName'));
+                            if (name != null) await repo.rename(id, name);
+                            return;
+                          }
+                          if (!context.mounted || !await _confirmDelete(context)) return;
+                          await repo.delete(id);
+                          if (context.mounted) context.go('/trips');
+                        },
+                        itemBuilder: (_) => [
+                          PopupMenuItem(value: 'rename', child: Text(l.tripRename)),
+                          PopupMenuItem(value: 'delete', child: Text(l.tripDelete)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  if (trip?.destination != null && trip?.title != null)
+                    Text(trip!.title!, key: const Key('tripTitle'), style: theme.textTheme.titleSmall),
+                  Text([?range, if (days != null) l.tripDays(days)].join(' · '), style: theme.textTheme.bodySmall),
+                  const SizedBox(height: Tokens.space4),
+                  if (zones.isNotEmpty)
+                    DecoratedBox(
+                      decoration: BoxDecoration(color: colors.travelContainer, borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.all(Tokens.space3),
+                        child: Row(
+                          children: [
+                            AppIcon(AppIcons.globe, size: 18, color: colors.travel),
+                            const SizedBox(width: Tokens.space2),
+                            Expanded(
+                              child: Text(
+                                zones.length == 1 ? l.tripLocalTime(offsetOf(zones.single)) : l.calendarLocalTimeNote,
+                                style: theme.textTheme.labelSmall?.copyWith(color: colors.travel),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: Tokens.space4),
+                  ...dayList,
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space3, Tokens.screenMargin, Tokens.space3),
+              child: FilledButton.icon(
+                key: const Key('tripAddToItinerary'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsetsDirectional.all(14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.radiusMd)),
+                  textStyle: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                icon: AppIcon(AppIcons.plus, size: 20, color: scheme.onPrimary),
+                label: Text(l.tripAddToItinerary),
+                onPressed: () => _addMenu(context, ref, start),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static bool _onDay(TripSegment s, CivilDate d) {
+    final i = s.item;
+    final a = _wall(i.startsAt, i.tz)?.date ?? (i.startDate == null ? null : CivilDate.parse(i.startDate!));
+    if (a == null) return false;
+    final b = _wall(i.endsAt, _destTz(s) ?? i.tz)?.date ?? a;
+    // Khách sạn chiếm cả các đêm ở giữa (đang ở thì không coi là ngày trống).
+    return !d.isBefore(a) && !d.isAfter(s.bookingType == 'hotel' ? b : a);
+  }
+
+  Widget _dayHeader(BuildContext context, CivilDate d, String? dayN, String locale) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(top: Tokens.space2, bottom: Tokens.space3),
+      child: Row(
+        children: [
+          Expanded(
+            child: Semantics(
+              header: true,
+              child: Text(DateFormat.MMMMEEEEd(locale).format(DateTime(d.year, d.month, d.day)), style: theme.textTheme.labelMedium),
+            ),
+          ),
+          if (dayN != null)
+            Text(dayN, style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant)),
         ],
       ),
-      body: ListView(padding: const EdgeInsetsDirectional.only(bottom: Tokens.space6), children: children),
     );
+  }
+
+  Future<void> _addMenu(BuildContext context, WidgetRef ref, CivilDate? start) async {
+    final l = AppLocalizations.of(context);
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(key: const Key('tripAddMenuActivity'), leading: const Icon(Icons.add_task), title: Text(l.tripAddActivity), onTap: () => Navigator.pop(context, 'activity')),
+            ListTile(
+                key: const Key('tripAddMenuImport'),
+                leading: const Icon(Icons.upload_file_outlined),
+                title: Text(l.tripsAddBookingTitle),
+                onTap: () => Navigator.pop(context, 'import')),
+          ],
+        ),
+      ),
+    );
+    if (!context.mounted) return;
+    if (choice == 'import') {
+      await context.push('/import');
+    } else if (choice == 'activity') {
+      final title = await askText(context, title: l.tripAddActivity, hint: l.tripActivityHint, fieldKey: const Key('tripActivityName'));
+      if (title == null) return;
+      final itemId = await ref.read(itemsRepositoryProvider).create(title: title, startDate: start?.toIso(), tripId: id);
+      if (context.mounted) await context.push('/item/$itemId');
+    }
   }
 
   /// Tạo việc trong chuyến ở đầu khoảng trống (tròn lên giờ kế tiếp theo giờ nơi đó), nhắc đúng giờ như Quick Add; mở chi tiết để chỉnh giờ.
@@ -440,50 +628,15 @@ class TripDetailScreen extends ConsumerWidget {
     final wall = TimeZones.toWall(from, tz);
     final t = wall.time!;
     final rounded = t.minute == 0 ? wall : CivilDateTime(t.hour == 23 ? wall.date.addDays(1) : wall.date, CivilTime(t.hour == 23 ? 0 : t.hour + 1, 0));
-    final id = await ref.read(itemsRepositoryProvider).create(
+    final itemId = await ref.read(itemsRepositoryProvider).create(
           title: title,
           startsAt: TimeZones.toUtc(rounded, tz).utc,
           tz: tz,
-          tripId: this.id,
+          tripId: id,
           reminderOffsets: const [0],
         );
-    if (context.mounted) await context.push('/item/$id');
+    if (context.mounted) await context.push('/item/$itemId');
   }
-
-  static CivilDateTime? _startWall(TripSegment s) {
-    final i = s.item;
-    if (i.startsAt != null && i.tz != null) return TimeZones.toWall(i.startsAt!, i.tz!);
-    if (i.startDate != null) return CivilDateTime(CivilDate.parse(i.startDate!));
-    return null;
-  }
-
-  /// "10:30 → 12:40": giờ đến theo múi giờ nơi đến (chuyến bay qua múi giờ).
-  static String? _times(BuildContext context, TripSegment s) {
-    final i = s.item;
-    if (i.startsAt == null || i.tz == null) return null;
-    String hm(DateTime utc, String tz) {
-      final w = TimeZones.toWall(utc, tz);
-      return MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay(hour: w.time!.hour, minute: w.time!.minute),
-          alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
-    }
-
-    final start = hm(i.startsAt!, i.tz!);
-    if (i.endsAt == null) return start;
-    final endTz = (s.destination?['tz'] as String?) ?? i.tz!;
-    return '$start → ${hm(i.endsAt!, TimeZones.isValid(endTz) ? endTz : i.tz!)}';
-  }
-
-  static IconData iconFor(String? type) => _icon(type);
-
-  static IconData _icon(String? type) => switch (type) {
-        'flight' => Icons.flight,
-        'train' => Icons.train,
-        'bus' => Icons.directions_bus,
-        'hotel' => Icons.hotel,
-        'ferry' => Icons.directions_boat,
-        'car_rental' => Icons.directions_car,
-        _ => Icons.event,
-      };
 
   Future<bool> _confirmDelete(BuildContext context) async {
     final l = AppLocalizations.of(context);
@@ -499,5 +652,201 @@ class TripDetailScreen extends ConsumerWidget {
           ),
         ) ??
         false;
+  }
+}
+
+String _hm(BuildContext context, CivilDateTime w) => MaterialLocalizations.of(context)
+    .formatTimeOfDay(TimeOfDay(hour: w.time!.hour, minute: w.time!.minute), alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
+
+/// Hàng mã đặt chỗ + nút sao chép (Figma 21).
+class _CodeRow extends StatelessWidget {
+  const _CodeRow({required this.code});
+  final String code;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(color: theme.scaffoldBackgroundColor, borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(10, Tokens.space1, Tokens.space1, Tokens.space1),
+        child: Row(
+          children: [
+            Expanded(child: Text(l.tripBookingCode, style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: theme.colorScheme.onSurfaceVariant))),
+            SelectableText(code, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+            IconButton(
+              key: Key('tripCopy-$code'),
+              tooltip: l.tripCopyCode,
+              visualDensity: VisualDensity.compact,
+              icon: Icon(Icons.copy_outlined, size: 18, color: theme.colorScheme.primary),
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: code));
+                if (context.mounted) {
+                  ScaffoldMessenger.maybeOf(context)
+                    ?..hideCurrentSnackBar()
+                    ..showSnackBar(SnackBar(content: Text(l.tripCodeCopied)));
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Chặng bay/tàu/xe: giờ đi – thời lượng – giờ đến, mã nơi đi/đến, mã đặt chỗ, nhắc, "Xem chi tiết".
+class _LegCard extends ConsumerWidget {
+  const _LegCard({required this.segment});
+  final TripSegment segment;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final travel = RemindColors.of(context).travel;
+    final i = segment.item;
+    final dep = TripDetailScreen._wall(i.startsAt, i.tz);
+    final arr = TripDetailScreen._wall(i.endsAt, TripDetailScreen._destTz(segment));
+    final dur = i.startsAt != null && i.endsAt != null ? i.endsAt!.difference(i.startsAt!) : null;
+    String place(Map<String, Object?>? p) => [?(p?['code'] as String?), ?((p?['name'] ?? p?['city']) as String?)].join(' · ');
+    final reminders = ref.watch(remindersProvider(i.id)).value ?? const [];
+    final offsets = [for (final r in reminders) if (r.offsetMinutes != null) r.offsetMinutes!]..sort();
+    Widget icon(double size) => segment.bookingType == 'flight'
+        ? AppIcon(AppIcons.plane, size: size, color: travel)
+        : Icon(TripDetailScreen.iconFor(segment.bookingType), size: size, color: travel);
+    final big = theme.textTheme.headlineLarge?.copyWith(fontSize: 26, height: 38 / 26);
+    final small = theme.textTheme.bodySmall;
+    return Material(
+      key: Key('tripSegment-${i.id}'),
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.all(Tokens.space4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(children: [
+              icon(22),
+              const SizedBox(width: 10),
+              Expanded(child: Text(i.title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600))),
+            ]),
+            if (dep != null) ...[
+              const SizedBox(height: Tokens.space3),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(_hm(context, dep), style: big),
+                      Text(place(segment.origin), style: small),
+                    ]),
+                  ),
+                  Expanded(
+                    child: Column(children: [
+                      icon(20),
+                      if (dur != null)
+                        Text(l.tripDuration(dur.inHours, dur.inMinutes % 60),
+                            style: theme.textTheme.labelSmall?.copyWith(fontSize: 10, fontWeight: FontWeight.w400, color: scheme.onSurfaceVariant)),
+                    ]),
+                  ),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                      if (arr != null) Text(_hm(context, arr), style: big),
+                      Text(place(segment.destination), style: small, textAlign: TextAlign.end),
+                    ]),
+                  ),
+                ],
+              ),
+            ],
+            if (segment.confirmationCode != null) ...[const SizedBox(height: Tokens.space3), _CodeRow(code: segment.confirmationCode!)],
+            if (offsets.isNotEmpty) ...[
+              const SizedBox(height: Tokens.space3),
+              Row(children: [
+                Icon(Icons.schedule, size: 16, color: scheme.primary),
+                const SizedBox(width: Tokens.space2),
+                Expanded(
+                  child: Text([for (final o in offsets) describeReminderOffset(l, o)].join(' · '),
+                      style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: scheme.onSurfaceVariant)),
+                ),
+              ]),
+            ],
+            const SizedBox(height: Tokens.space3),
+            Material(
+              color: scheme.primaryContainer,
+              borderRadius: BorderRadius.circular(Tokens.radiusMd),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(Tokens.radiusMd),
+                onTap: () => context.push('/item/${i.id}'),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.all(14),
+                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Icon(Icons.description_outlined, size: 20, color: scheme.primary),
+                    const SizedBox(width: Tokens.space2),
+                    Text(l.tripOpenDetails, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: scheme.primary)),
+                  ]),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Thẻ nhận phòng / trả phòng.
+class _HotelCard extends StatelessWidget {
+  const _HotelCard({required this.segment, required this.checkOut});
+  final TripSegment segment;
+  final bool checkOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final travel = RemindColors.of(context).travel;
+    final i = segment.item;
+    final tz = i.tz;
+    final inWall = TripDetailScreen._wall(i.startsAt, tz);
+    final outWall = TripDetailScreen._wall(i.endsAt, TripDetailScreen._destTz(segment) ?? tz);
+    final at = checkOut ? outWall : inWall;
+    final nights = inWall != null && outWall != null ? outWall.date.daysSince(inWall.date) : null;
+    final title = [if (at != null) _hm(context, at), checkOut ? l.tripCheckOut : l.tripCheckIn].join(' · ');
+    final sub = [i.title, if (!checkOut && nights != null && nights > 0) l.tripNights(nights)].join(' · ');
+    return Material(
+      key: Key(checkOut ? 'tripCheckOut-${i.id}' : 'tripSegment-${i.id}'),
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.push('/item/${i.id}'),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(Tokens.space4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(children: [
+                AppIcon(AppIcons.hotel, size: 24, color: travel),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(title, style: theme.textTheme.titleMedium?.copyWith(fontSize: 15, height: 22 / 15)),
+                    const SizedBox(height: 3),
+                    Text(sub, style: theme.textTheme.bodySmall),
+                  ]),
+                ),
+              ]),
+              if (!checkOut && segment.confirmationCode != null) ...[
+                const SizedBox(height: Tokens.space3),
+                _CodeRow(code: segment.confirmationCode!),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

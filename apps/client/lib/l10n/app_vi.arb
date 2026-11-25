@@ -211,6 +211,18 @@
   "planName": "{plan, select, free{Free} plus{Plus} other{{plan}}}",
   "tripsQuotaUsage": "{plan} · Đang dùng {used}/{limit} chuyến đi.",
   "tripsQuotaFull": "Bạn vẫn có thể thêm lịch hẹn vào chuyến đang có.",
+  "tripDayN": "Ngày {n}",
+  "tripLocalTime": "Giờ địa phương · {offset}",
+  "tripDuration": "{hours} giờ {minutes} phút",
+  "tripBookingCode": "Mã đặt chỗ",
+  "tripCopyCode": "Sao chép mã",
+  "tripCodeCopied": "Đã sao chép mã",
+  "tripCheckIn": "Nhận phòng",
+  "tripCheckOut": "Trả phòng",
+  "tripOpenDetails": "Xem chi tiết",
+  "tripEmptyDay": "Chưa có lịch trình cho ngày {date}.",
+  "tripEmptyDayHint": "Bạn có thể thêm hoạt động bất cứ lúc nào.",
+  "tripAddToItinerary": "Thêm vào lịch trình",
   "tripDelete": "Xóa chuyến đi",
   "tripDeleteBody": "Các đặt chỗ vẫn được giữ trong lịch."
 }

@@ -1262,6 +1262,82 @@
   "@tripsQuotaFull": {
     "description": "Second footnote line when the plan's trip limit is reached."
   },
+  "tripDayN": "Day {n}",
+  "@tripDayN": {
+    "description": "Trip timeline: day number within the trip.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "tripLocalTime": "Local time · {offset}",
+  "@tripLocalTime": {
+    "description": "Trip details banner when every booking is in one time zone. The offset is like UTC+07.",
+    "placeholders": {
+      "offset": {
+        "type": "String",
+        "example": "UTC+07"
+      }
+    }
+  },
+  "tripDuration": "{hours} h {minutes} min",
+  "@tripDuration": {
+    "description": "Flight duration on a trip.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      },
+      "minutes": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "tripBookingCode": "Booking code",
+  "@tripBookingCode": {
+    "description": "Label next to a booking code on a trip."
+  },
+  "tripCopyCode": "Copy code",
+  "@tripCopyCode": {
+    "description": "Tooltip of the copy button next to a booking code."
+  },
+  "tripCodeCopied": "Code copied",
+  "@tripCodeCopied": {
+    "description": "Snackbar after copying a booking code."
+  },
+  "tripCheckIn": "Check-in",
+  "@tripCheckIn": {
+    "description": "Hotel card on a trip day."
+  },
+  "tripCheckOut": "Check-out",
+  "@tripCheckOut": {
+    "description": "Hotel card on the last day of the stay."
+  },
+  "tripOpenDetails": "View details",
+  "@tripOpenDetails": {
+    "description": "Button on a flight card: opens the booking."
+  },
+  "tripEmptyDay": "Nothing planned for {date} yet.",
+  "@tripEmptyDay": {
+    "description": "Trip details, a day of the trip with no bookings.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Dec 21"
+      }
+    }
+  },
+  "tripEmptyDayHint": "You can add an activity any time.",
+  "@tripEmptyDayHint": {
+    "description": "Second line under an empty trip day."
+  },
+  "tripAddToItinerary": "Add to itinerary",
+  "@tripAddToItinerary": {
+    "description": "Main button at the bottom of trip details: add an activity or import a booking."
+  },
   "tripDelete": "Delete trip",
   "@tripDelete": {
     "description": "Menu action on the trip screen."

@@ -30,7 +30,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('tripName')), '  Lisbon with family ');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'Lisbon with family'), findsOneWidget);
+    expect(find.text('Lisbon with family'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tripMenu')));
     await tester.pumpAndSettle();
