@@ -10,6 +10,7 @@ import 'package:remindme_parsers/remindme_parsers.dart';
 import 'package:remindme_platform/remindme_platform.dart';
 
 import '../platform/device_time.dart';
+import 'remote/account.dart';
 import 'remote/remote_sync.dart';
 
 /// Mở DB local của app (file `remindme.sqlite` trong thư mục dữ liệu app, do drift_flutter chọn theo nền tảng).
@@ -117,6 +118,24 @@ final syncApiProvider = Provider<SyncApi>((ref) => const OfflineSyncApi());
 
 /// Luồng đăng nhập + đồng bộ với server; null = offline (test, build không cấu hình). main() override.
 final remoteSyncProvider = Provider<RemoteSync?>((ref) => null);
+
+/// Đăng nhập email (OTP) + phiên; null = app không có server. main() override.
+final accountProvider = Provider<AccountApi?>((ref) => null);
+
+final accountInfoProvider = StreamProvider<AccountInfo?>((ref) async* {
+  final account = ref.watch(accountProvider);
+  yield account?.current;
+  if (account != null) yield* account.changes;
+});
+
+/// Lịch sử đăng nhập của tài khoản (màn Tài khoản & thiết bị).
+final accountSessionsProvider = FutureProvider.autoDispose<List<SessionInfo>>((ref) async {
+  ref.watch(accountInfoProvider);
+  return await ref.watch(accountProvider)?.sessions() ?? const [];
+});
+
+final revokedByProvider = FutureProvider.autoDispose<({String? device, DateTime? at})>(
+    (ref) async => await ref.watch(accountProvider)?.revokedBy() ?? (device: null, at: null));
 
 /// Trạng thái đồng bộ cho UI (banner offline, thẻ Đồng bộ ở Tôi); null = app không có server.
 final remoteSyncStatusProvider = StreamProvider<RemoteSyncStatus?>((ref) async* {

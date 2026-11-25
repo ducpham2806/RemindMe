@@ -56,8 +56,27 @@ class RemoteSync {
   /// Một lượt đồng bộ; gọi lúc mở app, khi app trở lại, sau khi sửa (đã gom).
   Future<SyncReport?> run() => _running ??= _run().whenComplete(() => _running = null);
 
+  bool _paused = false;
+
+  /// Đang đổi tài khoản (giữa lúc xác nhận mã và lúc người dùng đồng ý): không đồng bộ, không claim phiên.
+  Future<void> pause() async {
+    _paused = true;
+    await _running;
+  }
+
+  /// Sau khi đổi/đăng xuất tài khoản: quên phiên đã claim, bỏ trạng thái revoked, rồi đồng bộ lại.
+  Future<SyncReport?> resume({bool reset = false}) {
+    _paused = false;
+    if (reset) {
+      _claimedSession = null;
+      _lastOk = null;
+      _set(RemoteSyncState.idle);
+    }
+    return run();
+  }
+
   Future<SyncReport?> _run() async {
-    if (_current == RemoteSyncState.revoked) return null;
+    if (_paused || _current == RemoteSyncState.revoked) return null;
     _set(RemoteSyncState.syncing);
     try {
       if (!await _ensureSignedIn()) {
@@ -122,6 +141,9 @@ class RemoteSync {
     }
     _claimedSession = sid;
   }
+
+  /// Phiên (claim `session_id`) của access token hiện tại.
+  String? get sessionId => _sessionId();
 
   /// Claim `session_id` trong access token (Supabase Auth đặt sẵn).
   String? _sessionId() {

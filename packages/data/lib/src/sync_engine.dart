@@ -371,6 +371,17 @@ class SyncEngine {
     return out;
   }
 
+  /// Đổi/đăng xuất tài khoản (UX §3.7): xóa mọi dữ liệu của tài khoản trên máy (bảng đồng bộ, outbox, con trỏ pull, cache hạn mức,
+  /// lỗi đồng bộ, thông báo đã lập lịch). Giữ device id và tùy chọn `pref.*` của máy. Thông báo trên OS do ReminderBinding hủy theo DB.
+  Future<void> resetLocalData() => db.transaction(() async {
+        for (final t in <TableInfo<Table, Object?>>[db.bookingDetails, db.reminders, db.recurrences, db.occurrenceLog, db.items, db.imports, db.trips, db.lists]) {
+          await db.delete(t).go();
+        }
+        await db.delete(db.outbox).go();
+        await db.delete(db.syncIssues).go();
+        await (db.delete(db.syncState)..where((s) => s.key.isNotIn(const ['device_id']) & s.key.like('pref.%').not())).go();
+      });
+
   Future<int> pendingCount() async => (await db.select(db.outbox).get()).length;
 
   static Variable<Object> _variable(Object? v) => switch (v) {

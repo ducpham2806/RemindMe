@@ -60,7 +60,7 @@ class _RemindMeAppState extends ConsumerState<RemindMeApp> {
       localeListResolutionCallback: (preferred, supported) => resolveLocale(preferred, supported),
       routerConfig: _router,
       builder: (context, child) =>
-          RemoteSyncBinding(child: ReminderBinding(router: _router, child: child ?? const SizedBox.shrink())),
+          RemoteSyncBinding(router: _router, child: ReminderBinding(router: _router, child: child ?? const SizedBox.shrink())),
     );
   }
 }

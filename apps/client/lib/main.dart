@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 import 'app.dart';
 import 'core/l10n/locale_resolution.dart';
 import 'data/providers.dart';
+import 'data/remote/account.dart';
 import 'data/remote/remote_sync.dart';
 import 'data/remote/supabase_config.dart';
 import 'data/remote/supabase_sync_api.dart';
@@ -54,6 +55,7 @@ Future<void> main() async {
       if (remote != null) ...[
         syncApiProvider.overrideWithValue(remote.api),
         remoteSyncProvider.overrideWith((ref) => remote.sync(ref.watch(syncEngineProvider))),
+        accountProvider.overrideWith((ref) => remote.account(ref.watch(syncEngineProvider), ref.watch(remoteSyncProvider)!)),
       ],
     ],
     child: const RemindMeApp(),
@@ -61,7 +63,7 @@ Future<void> main() async {
 }
 
 /// Khởi tạo Supabase (phiên đăng nhập lưu trên máy, tự refresh token). Trả null khi build không có cấu hình.
-Future<({SupabaseSyncApi api, RemoteSync Function(SyncEngine) sync})?> _initRemote(
+Future<({SupabaseSyncApi api, RemoteSync Function(SyncEngine) sync, AccountApi Function(SyncEngine, RemoteSync) account})?> _initRemote(
     AppDatabase db, String deviceId, String tz, Appearance appearance) async {
   if (!SupabaseConfig.isConfigured) return null;
   await Supabase.initialize(url: SupabaseConfig.url, publishableKey: SupabaseConfig.publishableKey);
@@ -86,5 +88,7 @@ Future<({SupabaseSyncApi api, RemoteSync Function(SyncEngine) sync})?> _initRemo
   return (
     api: SupabaseSyncApi(client),
     sync: (SyncEngine engine) => RemoteSync(client: client, engine: engine, deviceId: deviceId, profile: profile),
+    account: (SyncEngine engine, RemoteSync sync) =>
+        SupabaseAccount(client: client, engine: engine, sync: sync, deviceId: deviceId, deviceProfile: profile),
   );
 }

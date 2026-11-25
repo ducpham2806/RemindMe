@@ -1725,5 +1725,226 @@
         "type": "int"
       }
     }
+  },
+  "loginTitle": "Sign in",
+  "@loginTitle": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "loginHeadline": "Keep what matters with you.",
+  "@loginHeadline": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "loginBody": "Sign in to back up and sync. You can still use {app} without an account.",
+  "@loginBody": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "loginEmailLabel": "Email address",
+  "@loginEmailLabel": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "loginEmailHint": "No password needed. We'll email you a one-time sign-in code.",
+  "@loginEmailHint": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "loginSendCode": "Send sign-in code",
+  "@loginSendCode": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "loginSkip": "Continue without an account",
+  "@loginSkip": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "verifyTitle": "Confirm email",
+  "@verifyTitle": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "verifyHeadline": "Check your inbox",
+  "@verifyHeadline": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "verifySentTo": "We sent a sign-in code to",
+  "@verifySentTo": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "verifyCodeLabel": "Sign-in code",
+  "@verifyCodeLabel": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "verifyConfirm": "Confirm and continue",
+  "@verifyConfirm": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "verifyResend": "Didn't get it? Resend code",
+  "@verifyResend": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "verifyResendIn": "Resend in {seconds}s",
+  "@verifyResendIn": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "verifyChangeEmail": "Change email",
+  "@verifyChangeEmail": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "verifyTip": "Check your spam folder too. Don't share your sign-in code with anyone.",
+  "@verifyTip": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountErrorInvalidEmail": "That email address doesn't look right.",
+  "@accountErrorInvalidEmail": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountErrorRateLimited": "Too many codes sent. Try again in a few minutes.",
+  "@accountErrorRateLimited": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountErrorInvalidCode": "That code is wrong or has expired.",
+  "@accountErrorInvalidCode": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountErrorNetwork": "Couldn't connect. Check your connection and try again.",
+  "@accountErrorNetwork": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountErrorUnknown": "Couldn't sign in. Try again later.",
+  "@accountErrorUnknown": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "switchTitle": "Switch to {email}?",
+  "@switchTitle": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "switchBodyData": "The data on this device will be replaced with that account's data.",
+  "@switchBodyData": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "switchBodyDevices": "These devices will be signed out: {devices}",
+  "@switchBodyDevices": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)",
+    "placeholders": {
+      "devices": {
+        "type": "String"
+      }
+    }
+  },
+  "switchConfirm": "Continue",
+  "@switchConfirm": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountAnonymousTitle": "You don't have an account yet",
+  "@accountAnonymousTitle": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountAnonymousBody": "Your data is backed up, but only this device can open it. Add an email to use it on other devices and keep it when you change phones.",
+  "@accountAnonymousBody": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountSignIn": "Sign in with email",
+  "@accountSignIn": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountLinked": "Email added. Your data stays as it is.",
+  "@accountLinked": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountSwitched": "Signed in. Loading your data…",
+  "@accountSwitched": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "planFree": "Free",
+  "@planFree": {
+    "description": "Plan name. Product names stay untranslated unless the l10n decision says otherwise."
+  },
+  "planPlus": "Plus",
+  "@planPlus": {
+    "description": "Plan name. Product names stay untranslated unless the l10n decision says otherwise."
+  },
+  "accountHistory": "Sign-in history",
+  "@accountHistory": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountThisDevice": "This device",
+  "@accountThisDevice": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountSessionActive": "Active",
+  "@accountSessionActive": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountSessionEnded": "Ended",
+  "@accountSessionEnded": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountEndReplaced": "Signed in on another device",
+  "@accountEndReplaced": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountEndSignedOut": "Signed out",
+  "@accountEndSignedOut": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountEndPlan": "Plus ended",
+  "@accountEndPlan": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountSignOut": "Sign out",
+  "@accountSignOut": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountSignOutConfirm": "Sign out on this device?",
+  "@accountSignOutConfirm": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "accountSignOutBody": "Your account's data will be removed from this device. It stays in your account.",
+  "@accountSignOutBody": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "revokedTitle": "You've been signed out",
+  "@revokedTitle": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "revokedBody": "Your account was just signed in on {device} at {time}.",
+  "@revokedBody": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "revokedBodyUnknown": "Your account was just signed in on another device.",
+  "@revokedBodyUnknown": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
+  },
+  "revokedPending": "{count, plural, =1{1 change hasn't synced yet. It'll sync when you sign back in to this account.} other{{count} changes haven't synced yet. They'll sync when you sign back in to this account.}}",
+  "@revokedPending": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "revokedSignIn": "Sign in again",
+  "@revokedSignIn": {
+    "description": "Account & sign-in (Figma C35-C37, UX §3.7)"
   }
 }

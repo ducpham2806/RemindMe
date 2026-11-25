@@ -68,9 +68,13 @@
   build có server bằng `--dart-define-from-file=env/dev.json`, không có thì offline như cũ. Test live `test/live_supabase_test.dart` (REMINDME_LIVE=1).
   Đăng nhập ẩn danh đã bật; test live pass (đăng nhập → profile → phiên → push → máy thứ 2 pull về đúng). Banner offline trên Hôm nay,
   thẻ Đồng bộ ở Tôi (trạng thái, giờ đồng bộ gần nhất, số thay đổi chờ, Đồng bộ ngay).
+  Tài khoản (Figma C35-C37, UX §3.7): đăng nhập email + mã OTP (gắn vào user ẩn danh, giữ dữ liệu; email đã có tài khoản thì hỏi rồi thay dữ liệu
+  trên máy, nêu máy bị đăng xuất), Tài khoản & thiết bị (email, gói, lịch sử đăng nhập, Đăng xuất), màn "Bạn đã được đăng xuất" khi phiên bị
+  máy khác thay (hủy mọi thông báo, số thay đổi chưa đồng bộ, Đăng nhập lại). `SyncEngine.resetLocalData`. Chờ chủ dự án thêm `{{ .Token }}`
+  vào email template để mã gửi tới email (guides/backend-setup.md §3).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
-  tab Tài liệu + checklist hành lý của chuyến, đăng nhập có tài khoản (Google/Apple/email), flavors staging/prod.
+  tab Tài liệu + checklist hành lý của chuyến, đăng nhập Google/Apple, flavors staging/prod.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
@@ -80,8 +84,8 @@
 4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
 5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
    Bộ câu NLU thật ≥ 300 câu/gói (vi chia đều Bắc/Trung/Nam) thay bộ tổng hợp trong `packages/parsers/fixtures/nlu/`.
-6. Sprint S1 phần còn lại: đăng nhập email OTP / Google / Apple liên kết vào user ẩn danh (giữ dữ liệu) + màn phiên bị kết thúc (UX §3.7,
-   chỉ cần khi có tài khoản thật); Firebase (FCM); flavors staging/prod; golden test.
+6. Sprint S1 phần còn lại: chủ dự án sửa email template (thêm `{{ .Token }}`) rồi thử đăng nhập email trên máy thật; Google/Apple
+   (`linkIdentity`, cần OAuth client); SMTP riêng trước khi ra mắt; Firebase (FCM); flavors staging/prod; golden test.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
 - Tên thương mại/domain (docs dùng giả định `RemindMe`, `remindme.app`, bundle `app.remindme`).
@@ -94,7 +98,7 @@
 - S3 còn thiếu (cần máy thật hoặc hạ tầng): chạy thử trên Android/iOS thật (chưa có SDK trong container; CI build APK sẽ kiểm biên dịch),
   method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
   onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
-  hủy thông báo khi `session_revoked` (cần đăng nhập có tài khoản), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
+  , cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
 - T2: chưa có tên thành phố → sân bay, ga → múi giờ, tàu/xe nhiều chặng, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
   nên không tính `smart_imports_per_month` (cần chủ dự án chốt: văn bản dán vào có tính là nhập thông minh không).
 - Chuyến đi: chưa có UI báo/paywall từ `SyncReport.rejectedTrips` (chờ luồng sync thật); dòng hạn mức ở màn Xem lại chưa có nút nâng cấp (chưa có paywall).

@@ -23,7 +23,16 @@ Region chọn lúc tạo, không đổi được. Đề xuất region cho bản 
 
 - Đăng nhập đầu tiên là **ẩn danh** (S1): Authentication → Sign In / Providers → bật "Allow anonymous sign-ins".
   Chưa bật thì app vẫn chạy offline, trạng thái đồng bộ là `signedOut`.
-- Google, Apple, email OTP: làm sau (`integrations/integration-guide.md`), liên kết vào user ẩn danh để không mất dữ liệu.
+- **Email + mã (OTP), không mật khẩu** (app: Tôi → Tài khoản & thiết bị, `lib/data/remote/account.dart`):
+  - Máy đang ẩn danh + email mới: `updateUser(email)` → mã loại `email_change` → user ẩn danh thành tài khoản email, cùng id, giữ dữ liệu.
+  - Email đã có tài khoản: `signInWithOtp` → mã loại `email` → app hỏi rồi thay dữ liệu trên máy bằng dữ liệu tài khoản (`SyncEngine.resetLocalData`),
+    nêu máy sẽ bị đăng xuất theo `session_status.will_replace`. Hủy thì đăng xuất tài khoản đó, máy quay về ẩn danh mới.
+  - Đăng xuất: `session_end` → `signOut` → xóa dữ liệu tài khoản khỏi máy → ẩn danh mới.
+  - **Email template phải chứa mã**: Authentication → Email Templates, ở "Magic Link" và "Change Email Address" thêm `{{ .Token }}`
+    (mặc định chỉ có link, app không mở link). Ví dụ nội dung: `<p>Mã đăng nhập RemindMe / Your RemindMe code: <b>{{ .Token }}</b></p>`.
+  - SMTP mặc định của Supabase giới hạn vài email mỗi giờ và chỉ để thử: trước khi ra mắt cấu hình SMTP riêng (Authentication → SMTP).
+    Không gửi thử tới địa chỉ không có thật (thư bị trả lại làm Supabase hạn chế project).
+- Google, Apple: làm sau (`integrations/integration-guide.md`), cũng liên kết vào user ẩn danh (`linkIdentity`) để không mất dữ liệu.
 
 ## 4. Build app có server
 

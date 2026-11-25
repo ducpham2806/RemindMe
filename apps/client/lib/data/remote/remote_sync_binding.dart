@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart' show TableUpdateQuery;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../providers.dart';
@@ -10,7 +11,8 @@ import 'remote_sync.dart';
 /// Khi có server: đồng bộ lúc mở app, khi app trở lại, vài giây sau mỗi thay đổi local (gom nhiều lần sửa), và định kỳ
 /// khi app đang mở. Không có server ([remoteSyncProvider] null) thì không làm gì.
 class RemoteSyncBinding extends ConsumerStatefulWidget {
-  const RemoteSyncBinding({super.key, required this.child});
+  const RemoteSyncBinding({super.key, required this.router, required this.child});
+  final GoRouter router;
   final Widget child;
 
   static const debounce = Duration(seconds: 3);
@@ -63,5 +65,13 @@ class _RemoteSyncBindingState extends ConsumerState<RemoteSyncBinding> with Widg
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) {
+    // Tài khoản đăng nhập ở máy khác (UX §3.7): màn toàn trang, đăng nhập lại mới dùng tiếp.
+    ref.listen(remoteSyncStatusProvider, (prev, next) {
+      final was = prev?.value?.state, now = next.value?.state;
+      if (now == RemoteSyncState.revoked && was != RemoteSyncState.revoked) widget.router.go('/revoked');
+      if (was == RemoteSyncState.revoked && now != RemoteSyncState.revoked) widget.router.go('/today');
+    });
+    return widget.child;
+  }
 }

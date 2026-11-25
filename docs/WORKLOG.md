@@ -12,6 +12,16 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Đăng nhập email (OTP), Tài khoản & thiết bị, màn bị đăng xuất · Claude Code
+- **Làm:** `AccountApi` + `SupabaseAccount` (gửi mã: user ẩn danh thử `updateUser(email)`, email đã có thì `signInWithOtp`; xác nhận mã; đổi tài khoản
+  hỏi trước rồi `resetLocalData` + claim phiên mới; đăng xuất qua `session_end`; lịch sử phiên từ `user_sessions`; `revokedBy` từ `session_status`).
+  `RemoteSync.pause/resume` (không claim/đồng bộ giữa lúc đổi tài khoản). Màn Đăng nhập, Xác nhận mã (gửi lại sau 60 giây), Tài khoản & thiết bị,
+  Bạn đã được đăng xuất (`/revoked`, ReminderBinding hủy mọi thông báo khi phiên bị kết thúc). Tôi → Tài khoản & thiết bị bật khi có server. 47 key ARB.
+- **Quyết định:** email đã có tài khoản thì dữ liệu ẩn danh trên máy bị thay (không gộp 2 tài khoản), có hộp thoại xác nhận (UX §3.7).
+- **Kiểm chứng:** client 87 (+4 tài khoản với AccountApi giả), data 52 (+1 resetLocalData), live 1 pass; analyze 0; lint 0; ARB 350 key; unslop không đổi.
+  Chưa thử gửi mã thật: email template mặc định không có mã, SMTP mặc định giới hạn.
+- **Tiếp theo:** chủ dự án sửa email template → thử trên máy thật; Google/Apple; SMTP riêng.
+
 ## 2026-11-25 · Đồng bộ thật với Supabase dev, trạng thái đồng bộ trong app · Claude Code
 - **Làm:** chủ dự án bật anonymous sign-ins; test live pass (đăng nhập ẩn danh → profile_init → session_claim → push → máy thứ 2 pull; server có
   1 việc + Inbox + 1 phiên), đã xóa user test. Xác nhận `postgres` (owner `app.end_sessions`) xóa được `auth.sessions`. App: `RemoteSyncStatus`,

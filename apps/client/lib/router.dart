@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
 
+import 'data/remote/account.dart';
+import 'features/account/account_screens.dart';
 import 'features/calendar/calendar_screen.dart';
 import 'features/import/import_screen.dart';
 import 'features/items/item_detail_screen.dart';
@@ -29,6 +31,7 @@ GoRouter buildRouter() => GoRouter(
             StatefulShellBranch(routes: [
               GoRoute(path: '/me', builder: (_, _) => const MeScreen(), routes: [
                 GoRoute(path: 'language', builder: (_, _) => const LanguageRegionScreen()),
+                GoRoute(path: 'account', builder: (_, _) => const AccountScreen()),
                 GoRoute(path: 'lists', builder: (_, _) => const ListsScreen(), routes: [
                   GoRoute(path: ':id', builder: (_, state) => ListDetailScreen(id: state.pathParameters['id']!)),
                 ]),
@@ -39,5 +42,15 @@ GoRouter buildRouter() => GoRouter(
         GoRoute(path: '/item/:id', builder: (_, state) => ItemDetailScreen(id: state.pathParameters['id']!)),
         GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
         GoRoute(path: '/import', builder: (_, _) => const ImportScreen()),
+        GoRoute(path: '/login', builder: (_, state) => LoginScreen(email: state.uri.queryParameters['email']), routes: [
+          GoRoute(
+            path: 'verify',
+            builder: (_, state) => VerifyScreen(
+              email: state.uri.queryParameters['email'] ?? '',
+              mode: OtpMode.values.byName(state.uri.queryParameters['mode'] ?? OtpMode.signIn.name),
+            ),
+          ),
+        ]),
+        GoRoute(path: '/revoked', builder: (_, _) => const RevokedScreen()),
       ],
     );

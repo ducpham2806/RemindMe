@@ -46,6 +46,24 @@ void main() {
     expect(server.rows['items/i1']!['title'], 'Buy milk');
   });
 
+  test('resetLocalData: xóa dữ liệu tài khoản + outbox + con trỏ pull, giữ device id và pref.*', () async {
+    final a = Device('phone', server, now: now);
+    final deviceId = await InstallInfo.deviceId(a.db);
+    await LocalPrefs(a.db).set('theme', 'dark');
+    await a.engine.edit(SyncTable.items, 'i1', {'kind': 'task', 'title': 'Synced'});
+    await a.engine.sync();
+    await a.engine.edit(SyncTable.items, 'i2', {'kind': 'task', 'title': 'Pending'});
+
+    await a.engine.resetLocalData();
+    expect(await a.db.select(a.db.items).get(), isEmpty);
+    expect(await a.engine.pendingCount(), 0);
+    expect(await InstallInfo.deviceId(a.db), deviceId);
+    expect(await LocalPrefs(a.db).get('theme'), 'dark');
+    // Con trỏ pull về 0: đồng bộ lại kéo đủ dữ liệu của tài khoản trên server.
+    await a.engine.sync();
+    expect((await a.row('items', 'i1'))!['title'], 'Synced');
+  });
+
   test('2 máy sửa offline 2 trường khác nhau: cả 2 thay đổi được giữ (LWW theo trường)', () async {
     final phone = Device('phone', server, now: now);
     final tablet = Device('tablet', server, now: now);

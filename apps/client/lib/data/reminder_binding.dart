@@ -10,6 +10,7 @@ import 'package:remindme_platform/remindme_platform.dart';
 import '../l10n/app_localizations.dart';
 import '../platform/local_notifications.dart';
 import 'providers.dart';
+import 'remote/remote_sync.dart';
 import 'reminders.dart';
 
 const _askedKey = 'notification_permission_asked';
@@ -94,6 +95,12 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
     try {
       final db = ref.read(appDatabaseProvider);
       final os = ref.read(notificationSchedulerProvider);
+      // Tài khoản đã đăng nhập ở máy khác (UX §3.7): hủy mọi thông báo, không lập lại tới khi đăng nhập lại.
+      if (ref.read(remoteSyncProvider)?.state == RemoteSyncState.revoked) {
+        await os.cancelAll();
+        await db.delete(db.scheduledNotifications).go();
+        return;
+      }
       final report = await rescheduleReminders(
         db: db,
         os: os,

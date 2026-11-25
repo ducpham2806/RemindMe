@@ -150,6 +150,8 @@ Khi 2 thiết bị sửa cùng ghi chú lúc offline (`system-architecture.md` �
 - **Máy cũ, khi nhận `session.revoked` hoặc lỗi `session_revoked`:** hủy mọi thông báo đã lập lịch, rồi màn toàn trang
   "Bạn đã được đăng xuất vì tài khoản vừa đăng nhập trên {device_model} lúc {time}." Nếu không phải bạn: nút "Đổi mật khẩu / bảo mật tài khoản".
   Có thay đổi chưa đồng bộ: "Còn {count} thay đổi chưa đồng bộ, sẽ được đồng bộ khi bạn đăng nhập lại tài khoản này." [Đăng nhập lại].
+- **Máy đang ẩn danh gắn email** (Figma C35/C36): email chưa có tài khoản thì gắn vào user ẩn danh, giữ nguyên dữ liệu ("Đã gắn email…");
+  email đã có tài khoản thì hộp thoại "Chuyển sang tài khoản {email}?" + "Dữ liệu trên máy này sẽ được thay…" + máy sẽ bị đăng xuất.
 - **Đăng nhập tài khoản khác trên máy có dữ liệu chưa đồng bộ:** cảnh báo "{count} thay đổi của tài khoản trước sẽ bị xóa khỏi máy này" [Xuất trước] [Tiếp tục].
 - **Cài đặt → Tài khoản & thiết bị:** thiết bị đang dùng; lịch sử đăng nhập (mẫu máy, nền tảng, quốc gia, thời điểm đăng nhập/kết thúc, lý do:
   "Đăng nhập ở máy khác", "Đã đăng xuất", "Hết gói Plus"); Plus thấy danh sách máy đang hoạt động theo loại, nút Đăng xuất từng máy. Không hiện IP đầy đủ, chỉ quốc gia.
