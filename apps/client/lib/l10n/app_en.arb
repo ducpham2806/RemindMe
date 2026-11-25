@@ -56,6 +56,58 @@
   "@todayEmptyBody": {
     "description": "Empty state body on Today. Max 90 chars."
   },
+  "todayLunarDate": "lunar {day}/{month}",
+  "@todayLunarDate": {
+    "description": "Today header, after the date when an additional (lunar) calendar is on. Day and month are already formatted numbers.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "16"
+      },
+      "month": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "todayProgressTitle": "One thing at a time.",
+  "@todayProgressTitle": {
+    "description": "Title of the progress card on Today."
+  },
+  "todayProgressCount": "{done} / {total} done",
+  "@todayProgressCount": {
+    "description": "Chip on the progress card: tasks done out of all tasks shown today.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "2"
+      },
+      "total": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "todayProgressBody": "{count, plural, =0{Nothing finished yet today.} =1{You finished 1 task today.} other{You finished {count} tasks today.}}",
+  "@todayProgressBody": {
+    "description": "Line under the progress card title.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "todaySectionCount": "{count, plural, =1{1 task} other{{count} tasks}}",
+  "@todaySectionCount": {
+    "description": "Count at the end of a section header on Today (Overdue, Today, No time set, Done).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "holidayHintTitle": "{date} is a public holiday: {holiday}",
   "@holidayHintTitle": {
     "description": "Today screen card (US-12b): an upcoming day off in the user's country has tasks planned. The holiday name comes from the holiday data pack.",

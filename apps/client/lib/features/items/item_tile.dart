@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:remindme_data/remindme_data.dart';
 
 import '../../core/l10n/formatters.dart';
+import '../../core/theme/app_icons.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
@@ -36,52 +38,129 @@ class ItemTile extends ConsumerWidget {
     }
   }
 
-  Widget? _trailing(BuildContext context, WidgetRef ref) {
+  List<Widget> _badges(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final recurring = item.isOccurrence || (ref.watch(recurringIdsProvider).value?.contains(item.id) ?? false);
-    final icons = [
-      if (recurring) Icon(Icons.repeat, size: 18, color: theme.colorScheme.onSurfaceVariant, semanticLabel: l.recurCustom),
-      if (item.priority >= 3) Icon(Icons.priority_high, color: theme.colorScheme.error, semanticLabel: l.priorityHigh),
+    return [
+      if (recurring) Icon(Icons.repeat, size: 16, color: theme.colorScheme.onSurfaceVariant, semanticLabel: l.recurCustom),
+      if (item.priority >= 3) Icon(Icons.priority_high, size: 18, color: theme.colorScheme.error, semanticLabel: l.priorityHigh),
     ];
-    return icons.isEmpty ? null : Row(mainAxisSize: MainAxisSize.min, children: icons);
+  }
+
+  /// Vòng đánh dấu xong 23dp (Figma): viền xám, quá hạn viền đỏ nhạt; đã xong thì tô primary + dấu ✓.
+  Widget _check(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final colors = RemindColors.of(context);
+    return Semantics(
+      container: true,
+      button: true,
+      checked: item.isDone,
+      label: item.isDone ? l.itemMarkOpen : l.itemMarkDone,
+      excludeSemantics: true,
+      child: InkResponse(
+        key: Key('check-${item.rowKey}'),
+        radius: 22,
+        onTap: () => _toggle(context, ref),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(Tokens.space1),
+          child: item.isDone
+              ? Container(
+                  width: 23,
+                  height: 23,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: scheme.primary),
+                  child: Icon(Icons.check, size: 16, color: scheme.onPrimary),
+                )
+              : AppIcon(AppIcons.check, color: overdue ? colors.checkOverdue : colors.checkOutline),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final when = Fmt.of(context).when(item, today: ref.watch(todayWindowProvider));
-    final tile = ListTile(
+    final scheme = theme.colorScheme;
+    final today = ref.watch(todayWindowProvider);
+    final fmt = Fmt.of(context);
+    // Giờ trong hôm nay hiện ở bên phải (Figma 01); ngày khác thì ghi ở dòng phụ.
+    final timedToday = item.startsAt != null && !item.allDay && !item.startsAt!.isBefore(today.startUtc) && item.startsAt!.isBefore(today.endUtc);
+    final listName = item.listId == null
+        ? null
+        : (ref.watch(listsProvider).value ?? const <ListSummary>[]).where((s) => s.id == item.listId).firstOrNull?.name;
+    final subtitle = [?listName, if (!timedToday) ?fmt.when(item, today: today)].join(' · ');
+    final accent = overdue ? scheme.error : scheme.primary;
+    final badges = _badges(context, ref);
+    final card = Card(
       key: Key('item-${item.rowKey}'),
-      contentPadding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.screenMargin),
-      leading: Checkbox(
-        value: item.isDone,
-        semanticLabel: item.isDone ? l.itemMarkOpen : l.itemMarkDone,
-        onChanged: (_) => _toggle(context, ref),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push('/item/${item.id}'),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(10, 10, 14, 10),
+          child: Row(
+            children: [
+              _check(context, ref),
+              const SizedBox(width: Tokens.space2),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        decoration: item.isDone ? TextDecoration.lineThrough : null,
+                        color: item.isDone ? scheme.onSurfaceVariant : null,
+                      ),
+                    ),
+                    if (subtitle.isNotEmpty) ...[
+                      const SizedBox(height: Tokens.space1),
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: overdue ? scheme.error : scheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              ...badges.map((b) => Padding(padding: const EdgeInsetsDirectional.only(start: Tokens.space1), child: b)),
+              if (timedToday)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: Tokens.space3),
+                  child: Text(
+                    fmt.time(item.startsAt!),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: item.isDone ? scheme.onSurfaceVariant : accent,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
-      title: Text(
-        item.title,
-        style: item.isDone
-            ? theme.textTheme.bodyLarge?.copyWith(
-                decoration: TextDecoration.lineThrough, color: theme.colorScheme.onSurfaceVariant)
-            : null,
-      ),
-      subtitle: when == null
-          ? null
-          : Text(when, style: overdue ? TextStyle(color: theme.colorScheme.error) : null),
-      trailing: _trailing(context, ref),
-      onTap: () => context.push('/item/${item.id}'),
+    );
+    final tile = Padding(
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.screenMargin, vertical: Tokens.space1),
+      child: card,
     );
     if (item.isDone) return tile;
     return Dismissible(
       key: ValueKey('dismiss-${item.rowKey}'),
       direction: DismissDirection.startToEnd,
-      background: Container(
-        color: theme.colorScheme.primaryContainer,
-        alignment: AlignmentDirectional.centerStart,
-        padding: const EdgeInsetsDirectional.only(start: Tokens.screenMargin),
-        child: Icon(Icons.check, color: theme.colorScheme.onPrimaryContainer),
+      background: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.screenMargin, vertical: Tokens.space1),
+        child: DecoratedBox(
+          decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(Tokens.radiusMd)),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(start: Tokens.space4),
+              child: Icon(Icons.check, color: scheme.primary),
+            ),
+          ),
+        ),
       ),
       confirmDismiss: (_) async {
         await _toggle(context, ref);

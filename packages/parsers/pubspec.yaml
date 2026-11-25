@@ -7,7 +7,7 @@ environment:
 dependencies:
   archive: ^4.7.1
   remindme_core: any
-  xml: ^7.1.0
+  xml: '>=6.5.0 <8.0.0' # 6.x để tương thích flutter_svg (vector_graphics_compiler) trong app
   yaml: ^3.1.2
 dev_dependencies:
   test: ^1.25.0

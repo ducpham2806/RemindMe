@@ -64,7 +64,7 @@ void main() {
 
   testWidgets('vùng chưa có gói ngày lễ (JP) và chữ lớn ở 320dp: lịch vẫn hiện, không vỡ bố cục', (tester) async {
     await pumpApp(tester, size: const Size(320, 640), locale: const Locale('en', 'XA'), textScale: 1.3, region: 'JP');
-    await tester.tap(find.byIcon(Icons.calendar_month_outlined).last);
+    await tester.tap(find.byKey(const Key('nav-1')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('calendarDay-2026-12-01')), findsOneWidget);
     expect(tester.takeException(), isNull);

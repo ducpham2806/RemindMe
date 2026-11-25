@@ -11,7 +11,7 @@ void main() {
   group('layout thích ứng (multi-platform.md §2)', () {
     testWidgets('compact: thanh điều hướng dưới', (tester) async {
       await pumpApp(tester, size: const Size(390, 844), locale: const Locale('en'));
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byKey(const Key('bottomNav')), findsOneWidget);
       expect(find.byType(NavigationRail), findsNothing);
     });
 

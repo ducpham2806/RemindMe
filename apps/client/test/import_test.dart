@@ -249,7 +249,7 @@ void main() {
       syncDecoder,
       filePickerProvider.overrideWithValue(picker([fixture('synthetic-email-hotel-0001', 'input.eml')])),
     ]);
-    await tester.tap(find.byIcon(Icons.person_outline).last);
+    await tester.tap(find.byKey(const Key('nav-3')));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.upload_file_outlined));
     await tester.pumpAndSettle();
