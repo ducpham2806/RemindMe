@@ -288,4 +288,41 @@ void main() {
         parameters: {'i': first.itemIds.first});
     expect(moved.single.first, '05:00');
   }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
+
+  test('Free: chuyến thứ 2 vượt max_active_trips thì bị bỏ, đặt chỗ + nhắc + booking_details vẫn lên server', () async {
+    final login = await newUser();
+    final (phone, db) = await login('phone-1', 'android', 'phone');
+    final repo = ImportsRepository(phone, ItemsRepository(phone), ListsRepository(phone), trips: TripsRepository(phone));
+    ImportedItem hotel(String code, DateTime at) => ImportedItem(
+          title: 'Hotel $code',
+          kind: 'booking',
+          startsAt: at,
+          tz: 'Asia/Ho_Chi_Minh',
+          absoluteReminders: [at.subtract(const Duration(hours: 13))],
+          tripIndex: 0,
+          booking: {'booking_type': 'hotel', 'confirmation_code': code},
+        );
+    await repo.commit(const ImportRecord(kind: 'text', docType: 'hotel', tierUsed: 't1t2'), [hotel('H-1', DateTime.utc(2027, 2, 1, 7))],
+        deviceTz: 'Asia/Ho_Chi_Minh', trips: const [TripDraft(title: 'Đà Nẵng', startsOn: '2027-02-01', endsOn: '2027-02-03')]);
+    expect((await phone.sync()).issues, isEmpty);
+
+    final second = await repo.commit(const ImportRecord(kind: 'text', docType: 'hotel', tierUsed: 't1t2'),
+        [hotel('H-2', DateTime.utc(2027, 3, 1, 7)), hotel('H-3', DateTime.utc(2027, 3, 2, 7))],
+        deviceTz: 'Asia/Ho_Chi_Minh', trips: const [TripDraft(title: 'Huế', startsOn: '2027-03-01', endsOn: '2027-03-03')]);
+    final r = await phone.sync();
+    expect(r.issues.map((i) => '${i.table.wire} ${i.error}'), ['trips quota_exceeded'], reason: '${r.issues.map((i) => i.details)}');
+    expect(r.issues.single.details!['key'], 'max_active_trips');
+    expect(r.rejectedTrips, second.tripIds);
+    final server = await conn.execute(
+        Sql.named('select count(*) filter (where i.trip_id is null), count(b.item_id), '
+            "(select count(*) from public.reminders m where m.item_id = any(@ids::uuid[]) and m.trigger_kind = 'absolute') "
+            'from public.items i left join public.booking_details b on b.item_id = i.id where i.id = any(@ids::uuid[])'),
+        parameters: {'ids': second.itemIds});
+    expect(server.single.toList(), [2, 2, 2]);
+    final local = await TripsRepository(phone).trips();
+    expect(local.map((t) => t.title), ['Đà Nẵng']);
+    expect((await row(db, second.itemIds.first))['trip_id'], isNull);
+    expect(await phone.pendingCount(), 0);
+    expect((await phone.sync()).issues, isEmpty);
+  }, skip: enabled ? false : 'đặt REMINDME_PG=1 để chạy với Postgres');
 }

@@ -216,6 +216,8 @@ create table usage_counters (
 ## 4. Quy tắc đếm quota (thực thi trong RPC `sync_push`, hàm `app.usage_for`)
 Chỉ chặn khi mức dùng sau thay đổi **vượt giới hạn và tăng so với trước** (hạ gói không khóa dữ liệu cũ). Vượt với item `pending_quota` (hoặc con của nó)
 thì item thành `archived` + `archived_reason='quota'`; vượt ở trường hợp khác thì mutation bị hoàn tác và trả `quota_exceeded` kèm `{key, limit, used}`.
+Chuyến mới (chưa từng lên server) bị `quota_exceeded`: `SyncEngine` bỏ chuyến ở máy, gỡ `trip_id` khỏi item của nó và gửi lại các mutation
+bị lỗi khóa ngoại (`23503`) trong cùng lần sync, nên đặt chỗ, nhắc, `booking_details` vẫn lên server; lỗi của chuyến giữ trong `sync_issues` cho paywall.
 | Key | Cách đếm |
 |---|---|
 | `max_reminders_per_day` | Số thông báo dự kiến kêu trong 1 ngày theo `home_tz`, gồm cả lần lặp. Kiểm khi tạo/sửa reminder, recurrence, item: mở rộng 7 ngày tới, lấy ngày nhiều nhất. Đổi `home_tz` không tính lại nhắc cũ. Server tính xấp xỉ để chống lách (`app.rrule_fires_on`: DAILY/WEEKLY/MONTHLY/YEARLY, BYDAY, BYMONTHDAY, BYHOUR×BYMINUTE; bỏ qua hệ lịch và `after_completion`); engine trên máy chặn chính xác |

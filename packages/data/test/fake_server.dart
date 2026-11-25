@@ -8,6 +8,23 @@ class FakeServer {
   SyncErrorCode? failWith;
   bool Function(Mutation m)? rejectQuota;
 
+  /// Mô phỏng khóa ngoại của Postgres: item trỏ `trip_id`/`list_id` chưa có, hoặc hàng con trỏ `item_id` chưa có → invalid 23503.
+  bool checkForeignKeys = false;
+
+  MutationResult? _foreignKey(Mutation m) {
+    if (!checkForeignKeys || m.op == MutationOp.delete) return null;
+    final refs = <String, Object?>{
+      if (m.table == SyncTable.items) ...{'trips': m.payload['trip_id'], 'lists': m.payload['list_id']},
+      if (m.table != SyncTable.items && m.payload.containsKey('item_id')) 'items': m.payload['item_id'],
+    };
+    for (final e in refs.entries) {
+      if (e.value != null && !rows.containsKey('${e.key}/${e.value}')) {
+        return MutationResult(table: m.table, id: m.id, status: MutationStatus.invalid, error: '23503');
+      }
+    }
+    return null;
+  }
+
   FakeApi apiFor(String device) => FakeApi(this, device);
 
   String _k(Mutation m) => m.table == SyncTable.occurrenceLog
@@ -27,6 +44,7 @@ class FakeServer {
     if (existing != null && existing['deleted_at'] != null) {
       return MutationResult(table: m.table, id: m.id, status: MutationStatus.conflict, error: 'deleted', serverRow: existing);
     }
+    if (_foreignKey(m) case final fk?) return fk;
     if (existing == null && (rejectQuota?.call(m) ?? false)) {
       return MutationResult(table: m.table, id: m.id, status: MutationStatus.quotaExceeded, error: 'quota_exceeded',
           details: {'key': 'max_active_appointments', 'limit': 10, 'used': 10});
