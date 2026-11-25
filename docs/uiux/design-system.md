@@ -58,7 +58,7 @@ Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương
 
 ## 5. Icon & hình
 - Icon nét 1,8 lấy từ Figma (`apps/client/assets/icons/*.svg`, widget `AppIcon` tô theo màu theme, 1 tệp cho sáng/tối): thanh điều hướng
-  (today, calendar, trip, user), `search`, `plus`, vòng `check`, `back`/`chevron`/`chevronSmall` (lật khi RTL), `plane`, `hotel`, `globe`, `file`, `alert`, `edit`, `tick`. Icon khác tạm dùng Material Symbols tới khi lấy đủ từ Figma.
+  (today, calendar, trip, user), `search`, `plus`, vòng `check`, `back`/`chevron`/`chevronSmall` (lật khi RTL), `plane`, `hotel`, `globe`, `file`, `alert`, `edit`, `tick`, `inbox`, `mail`, `link`, `bell`, `shield`. Icon khác tạm dùng Material Symbols tới khi lấy đủ từ Figma.
 - Icon loại booking: ✈ máy bay, 🚆 tàu, 🚌 xe, 🏨 khách sạn, 🚗 thuê xe, ⛴ phà, 🩺 khám bệnh, 🎫 sự kiện (dùng icon vector, emoji chỉ trong thông báo).
 - Minh họa empty state: nét đơn, 2 màu (`primary` + `textSecondary`).
 

@@ -162,6 +162,34 @@ final holidayRegionSettingProvider = FutureProvider<String>((ref) async => await
 final calendarSystemSettingProvider =
     FutureProvider<String>((ref) async => await ref.watch(localPrefsProvider).get(calendarSystemPref) ?? prefAuto);
 
+/// Ngôn ngữ giao diện và sáng/tối chọn ở Tôi (Figma 27), lưu trên máy. [prefAuto] = theo máy; ngôn ngữ: mã ('vi', 'en');
+/// giao diện: 'light' / 'dark'. Đọc trước `runApp` ([initialAppearanceProvider]) để khung đầu tiên đã đúng, không nháy.
+const appLanguagePref = 'app_language', themePref = 'theme';
+
+typedef Appearance = ({String language, String theme});
+
+final initialAppearanceProvider = Provider<Appearance>((_) => (language: prefAuto, theme: prefAuto));
+
+Future<Appearance> loadAppearance(LocalPrefs prefs) async =>
+    (language: await prefs.get(appLanguagePref) ?? prefAuto, theme: await prefs.get(themePref) ?? prefAuto);
+
+class AppearanceSettings extends Notifier<Appearance> {
+  @override
+  Appearance build() => ref.watch(initialAppearanceProvider);
+
+  Future<void> setLanguage(String value) async {
+    state = (language: value, theme: state.theme);
+    await ref.read(localPrefsProvider).set(appLanguagePref, value);
+  }
+
+  Future<void> setTheme(String value) async {
+    state = (language: state.language, theme: value);
+    await ref.read(localPrefsProvider).set(themePref, value);
+  }
+}
+
+final appearanceProvider = NotifierProvider<AppearanceSettings, Appearance>(AppearanceSettings.new);
+
 /// Vùng tính ngày lễ theo cài đặt; null = không dùng ngày lễ.
 String? effectiveHolidayRegion(String setting, String? deviceRegion) =>
     setting == prefAuto ? deviceRegion?.toUpperCase() : (setting == prefNone ? null : setting);

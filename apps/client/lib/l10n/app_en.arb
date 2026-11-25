@@ -320,10 +320,6 @@
   "@meLanguageRegion": {
     "description": "Row in Me. Glossary set_language_region."
   },
-  "meSettings": "Settings",
-  "@meSettings": {
-    "description": "Row in Me. Glossary set_settings."
-  },
   "quotaUsed": "{used} of {limit} used",
   "@quotaUsed": {
     "description": "Quota meter text, for example on Plan & usage.",
@@ -1472,5 +1468,93 @@
   "importEditDone": "Confirm and go back",
   "@importEditDone": {
     "description": "Import review (Figma 15/15b/16)"
+  },
+  "meSubtitle": "Your space",
+  "@meSubtitle": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meListsHint": "Organize what matters",
+  "@meListsHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meSuggestionsHint": "Review appointments from documents and email",
+  "@meSuggestionsHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meImportHint": "Add tickets, bookings or to-do lists",
+  "@meImportHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meAccountSettings": "Account & settings",
+  "@meAccountSettings": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meAccountDevicesHint": "Sign-in, sync and session history",
+  "@meAccountDevicesHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meIntegrationsHint": "Email forwarding and moving from To Do",
+  "@meIntegrationsHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "mePlanUsageHint": "Limits, Plus and billing",
+  "@mePlanUsageHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meNotifications": "Notifications & reminders",
+  "@meNotifications": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meNotificationsHint": "Default reminders and reliability",
+  "@meNotificationsHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "mePrivacy": "Data & privacy",
+  "@mePrivacy": {
+    "description": "Me screen (Figma 27)"
+  },
+  "mePrivacyHint": "Export data, consent and account deletion",
+  "@mePrivacyHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meLanguageRegionHint": "Holiday country and lunar calendar",
+  "@meLanguageRegionHint": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meComingSoon": "Coming soon",
+  "@meComingSoon": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meAppearance": "Language & appearance",
+  "@meAppearance": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meLanguage": "Language",
+  "@meLanguage": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meTheme": "Appearance",
+  "@meTheme": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meFollowDevice": "Device",
+  "@meFollowDevice": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meThemeLight": "Light",
+  "@meThemeLight": {
+    "description": "Me screen (Figma 27)"
+  },
+  "meThemeDark": "Dark",
+  "@meThemeDark": {
+    "description": "Me screen (Figma 27)"
+  },
+  "langNameVi": "Tiếng Việt",
+  "@langNameVi": {
+    "description": "Language name in its own language (endonym): same in every locale."
+  },
+  "langNameEn": "English",
+  "@langNameEn": {
+    "description": "Language name in its own language (endonym): same in every locale."
   }
 }

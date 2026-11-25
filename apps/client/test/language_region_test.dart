@@ -12,7 +12,9 @@ void main() {
     final c = await pumpApp(tester, size: const Size(390, 844), region: 'US');
     await tester.tap(find.text('Me').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Language & region'));
+    await tester.ensureVisible(find.byKey(const Key('me-globe')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('me-globe')));
     await tester.pumpAndSettle();
     expect(find.text('Same as this device (United States)'), findsOneWidget);
     expect(find.text('Same as app language (none)'), findsOneWidget);

@@ -290,7 +290,9 @@ void main() {
     ]);
     await tester.tap(find.byKey(const Key('nav-3')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.upload_file_outlined));
+    await tester.ensureVisible(find.byKey(const Key('me-file')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('me-file')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('importPick')));
     await tester.tap(find.byKey(const Key('importPick')));

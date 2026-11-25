@@ -24,8 +24,11 @@ Future<void> main() async {
   final deviceId = await InstallInfo.deviceId(db);
   final tz = await deviceTimeZone();
   await loadBundledHolidays(effectiveHolidayRegion(await LocalPrefs(db).get(holidayRegionPref) ?? prefAuto, deviceRegion()));
+  final appearance = await loadAppearance(LocalPrefs(db));
   // Nút trên thông báo đăng ký theo ngôn ngữ máy lúc khởi động; ReminderBinding đăng ký lại khi ngôn ngữ app khác.
-  final locale = resolveLocale(WidgetsBinding.instance.platformDispatcher.locales, appSupportedLocales());
+  final locale = appearance.language == prefAuto
+      ? resolveLocale(WidgetsBinding.instance.platformDispatcher.locales, appSupportedLocales())
+      : Locale(appearance.language);
   final local = LocalNotificationScheduler.supported ? LocalNotificationScheduler() : null;
   final launchTap = await local?.init(
     AppNotificationTexts(lookupAppLocalizations(locale), localeTag: locale.toLanguageTag(), use24h: false).labels,
@@ -40,6 +43,7 @@ Future<void> main() async {
       notificationSchedulerProvider.overrideWithValue(os),
       notificationTapsProvider.overrideWithValue(local?.taps ?? const Stream.empty()),
       launchNotificationTapProvider.overrideWithValue(launchTap),
+      initialAppearanceProvider.overrideWithValue(appearance),
     ],
     child: const RemindMeApp(),
   ));
