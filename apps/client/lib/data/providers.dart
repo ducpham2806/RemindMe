@@ -9,6 +9,7 @@ import 'package:remindme_parsers/remindme_parsers.dart';
 import 'package:remindme_platform/remindme_platform.dart';
 
 import '../platform/device_time.dart';
+import 'remote/remote_sync.dart';
 
 /// Mở DB local của app (file `remindme.sqlite` trong thư mục dữ liệu app, do drift_flutter chọn theo nền tảng).
 AppDatabase openAppDatabase() => AppDatabase(driftDatabase(name: 'remindme'));
@@ -109,8 +110,12 @@ final remindersProvider = StreamProvider.family<List<Reminder>, String>((ref, it
 /// Giờ hiện tại; test override để cố định ngày.
 final nowProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
-/// API đồng bộ. Tới khi có project Supabase (STATE "Tiếp theo" mục 6) app chạy offline: mọi thay đổi nằm trong outbox.
+/// API đồng bộ. Build không có cấu hình Supabase (`SupabaseConfig`) thì chạy offline: mọi thay đổi nằm trong outbox.
+/// main() override bằng `SupabaseSyncApi` khi có cấu hình.
 final syncApiProvider = Provider<SyncApi>((ref) => const OfflineSyncApi());
+
+/// Luồng đăng nhập + đồng bộ với server; null = offline (test, build không cấu hình). main() override.
+final remoteSyncProvider = Provider<RemoteSync?>((ref) => null);
 
 final syncEngineProvider = Provider<SyncEngine>((ref) {
   final deviceId = ref.watch(deviceIdProvider);

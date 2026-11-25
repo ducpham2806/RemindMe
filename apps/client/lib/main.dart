@@ -4,12 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_platform/remindme_platform.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 
 import 'app.dart';
 import 'core/l10n/locale_resolution.dart';
 import 'data/providers.dart';
+import 'data/remote/remote_sync.dart';
+import 'data/remote/supabase_config.dart';
+import 'data/remote/supabase_sync_api.dart';
 import 'data/reminders.dart';
 import 'l10n/app_localizations.dart';
+import 'platform/device_info.dart';
 import 'platform/device_time.dart';
 import 'platform/local_notifications.dart';
 import 'platform/notification_background.dart';
@@ -35,6 +40,8 @@ Future<void> main() async {
     onBackground: onNotificationActionInBackground,
   );
   final NotificationScheduler os = local ?? const NoopNotificationScheduler();
+  // Server (S1): có cấu hình thì đăng nhập + đồng bộ; không có thì app chạy offline như trước.
+  final remote = await _initRemote(db, deviceId, tz, appearance);
   runApp(ProviderScope(
     overrides: [
       appDatabaseProvider.overrideWithValue(db),
@@ -44,7 +51,40 @@ Future<void> main() async {
       notificationTapsProvider.overrideWithValue(local?.taps ?? const Stream.empty()),
       launchNotificationTapProvider.overrideWithValue(launchTap),
       initialAppearanceProvider.overrideWithValue(appearance),
+      if (remote != null) ...[
+        syncApiProvider.overrideWithValue(remote.api),
+        remoteSyncProvider.overrideWith((ref) => remote.sync(ref.watch(syncEngineProvider))),
+      ],
     ],
     child: const RemindMeApp(),
   ));
+}
+
+/// Khởi tạo Supabase (phiên đăng nhập lưu trên máy, tự refresh token). Trả null khi build không có cấu hình.
+Future<({SupabaseSyncApi api, RemoteSync Function(SyncEngine) sync})?> _initRemote(
+    AppDatabase db, String deviceId, String tz, Appearance appearance) async {
+  if (!SupabaseConfig.isConfigured) return null;
+  await Supabase.initialize(url: SupabaseConfig.url, publishableKey: SupabaseConfig.publishableKey);
+  final client = Supabase.instance.client;
+  Future<DeviceProfile> profile() async {
+    final dispatcher = WidgetsBinding.instance.platformDispatcher;
+    final view = dispatcher.views.firstOrNull;
+    final shortest = view == null ? 0.0 : (view.physicalSize / view.devicePixelRatio).shortestSide;
+    final locale = appearance.language == prefAuto ? dispatcher.locale : Locale(appearance.language, dispatcher.locale.countryCode);
+    final region = effectiveHolidayRegion(await LocalPrefs(db).get(holidayRegionPref) ?? prefAuto, deviceRegion()) ??
+        deviceRegion()?.toUpperCase();
+    return (
+      uiLocale: locale.toLanguageTag(),
+      region: region,
+      homeTz: tz,
+      platform: sessionPlatform(),
+      deviceClass: shortest >= 600 ? 'tablet' : 'phone',
+      appVersion: null,
+    );
+  }
+
+  return (
+    api: SupabaseSyncApi(client),
+    sync: (SyncEngine engine) => RemoteSync(client: client, engine: engine, deviceId: deviceId, profile: profile),
+  );
 }

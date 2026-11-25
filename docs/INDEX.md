@@ -29,4 +29,5 @@
 | `security-privacy.md` | Phân loại dữ liệu, kiểm soát, bên thứ ba, pháp lý theo thị trường, xóa/xuất | Đụng dữ liệu nhạy cảm, bên thứ ba | Bên thứ ba, định dạng export |
 | `engineering/testing-and-release.md` | Ma trận thiết bị, tầng test, CI/CD, phát hành | Viết test, release | Thiết bị QA, quy trình release |
 | `plan/implementation-plan.md` | Phase 0-4, sprint, kế hoạch E/V/L (ngày công, AC), rủi ro | Lập kế hoạch sprint | Lịch, sprint |
+| `guides/backend-setup.md` | Project Supabase, áp migration, auth ẩn danh, build app có server, test với server thật | Đụng server, chạy app có đồng bộ | Project ref, region, cách build |
 | `guides/ai-dev-workflow.md` | Token budget, graphify, unslop, agency agents, handoff | Thiết lập quy trình AI | Lệnh tooling |

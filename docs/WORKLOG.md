@@ -12,6 +12,16 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Server Supabase dev: áp migrations, nối app (SupabaseSyncApi, RemoteSync) · Claude Code
+- **Làm:** áp 8 migration lên project `msgamxrlohgszgpvvyfd` (ap-southeast-1) qua Supabase MCP; chạy thử luồng chính bằng SQL trong transaction
+  rollback (profile_init, session_claim, sync_push, sync_pull, quota_status đều đúng; DB vẫn trống). App: `supabase_flutter`, `SupabaseSyncApi`,
+  `RemoteSync` + `RemoteSyncBinding`, `SupabaseConfig` (dart-define), `env/dev.json`, `guides/backend-setup.md`.
+- **Quyết định:** publishable key nằm trong `env/dev.json` (công khai theo thiết kế Supabase); đăng nhập đầu tiên là ẩn danh; máy không có vùng thì
+  chưa tạo profile (không đoán vùng, AGENTS quy tắc 5).
+- **Kiểm chứng:** client 80 test (+4 SupabaseSyncApi với PostgREST giả; test live bỏ qua mặc định); analyze 0; lint 0. Test live với server thật:
+  app báo `signedOut` đúng vì project chưa bật đăng nhập ẩn danh (settings `anonymous_users: false`).
+- **Tiếp theo:** chủ dự án bật anonymous sign-ins → chạy test live; UI trạng thái đồng bộ, màn phiên bị kết thúc; đăng nhập Google/Apple/email.
+
 ## 2026-11-25 · UI theo Figma đợt 2: Xem lại khi nhập, form sửa, Tôi + chọn ngôn ngữ/giao diện · Claude Code
 - **Làm:** màn Xem lại (Figma 15/15b): thẻ tệp nguồn, thẻ từng mục (ô chọn, nút sửa, tuyến lớn SGN ✈ HAN, giờ đi/đến hoặc nhận/trả phòng,
   ô "Cần kiểm tra: <trường>" / "Đã kiểm tra"), banner cần kiểm tra / đã xác nhận đủ, thẻ gộp chuyến chạm mở danh sách chọn (thay dropdown),

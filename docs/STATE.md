@@ -1,6 +1,6 @@
 # STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 
-**Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (code chạy offline; chờ tài khoản Supabase/Firebase) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
+**Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (có server Supabase dev; chờ bật auth ẩn danh, Firebase) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
 
 ## Đã có
 - Bộ docs v2 (`docs/INDEX.md`) + 17 ADR (ADR-017: ngày lễ là gói luật tự viết, tính trên máy; ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
@@ -61,6 +61,11 @@
   Ngôn ngữ & vùng (C50): ngôn ngữ giao diện, định dạng + múi giờ (theo máy, chỉ xem), quốc gia ngày lễ kèm ngày nghỉ cuối tuần, hệ lịch phụ, xem trước.
   Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến,
   bước chọn ngày giờ/lặp/hoãn (05-08), onboarding/đăng nhập/gói (chờ auth, paywall).
+- Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-08, chạy thử
+  `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
+  App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →
+  sync, thử lại 1 lần khi thiếu profile/phiên), `RemoteSyncBinding` (đồng bộ lúc mở app, khi trở lại, 3 giây sau sửa, 15 phút/lần);
+  build có server bằng `--dart-define-from-file=env/dev.json`, không có thì offline như cũ. Test live `test/live_supabase_test.dart` (REMINDME_LIVE=1).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.
@@ -73,12 +78,12 @@
 4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
 5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
    Bộ câu NLU thật ≥ 300 câu/gói (vi chia đều Bắc/Trung/Nam) thay bộ tổng hợp trong `packages/parsers/fixtures/nlu/`.
-6. Sprint S1 phần còn lại: tạo project Supabase/Firebase (cần tài khoản chủ dự án) → flavors dev/staging/prod, auth (ẩn danh + Google + Apple + email OTP),
-   `SupabaseSyncApi` (bản thật của `SyncApi`, thay `OfflineSyncApi`) + luồng `profile_init` → `session_claim` → sync; bundle font Be Vietnam Pro; golden test.
+6. Sprint S1 phần còn lại: **chủ dự án bật "Allow anonymous sign-ins"** ở project dev rồi chạy test live; UI trạng thái đồng bộ + màn
+   phiên bị kết thúc (UX §3.7); đăng nhập Google/Apple/email OTP liên kết vào user ẩn danh; Firebase (FCM); flavors staging/prod; golden test.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
 - Tên thương mại/domain (docs dùng giả định `RemindMe`, `remindme.app`, bundle `app.remindme`).
-- Đợt locale 1, region, nhóm giá: xem Tiếp theo mục 1.
+- Đợt locale 1, region, nhóm giá: xem Tiếp theo mục 1. Project dev đã tạo ở `ap-southeast-1` (khác đề xuất `eu-central-1`): giữ cho dev, prod chọn sau?
 - l10n: giữ tên gói "Free" không dịch ở mọi locale? Đổi tên list mặc định "Inbox/Hộp thư" (trùng nghĩa hộp thư email, đề xuất "Chưa phân loại")?
   Một file `en` hay thêm `en_GB`; tách `es-ES`/`es-419` ở đợt 1? Ngân sách dịch giả cấp B.
 - Đăng nhập theo thị trường (Zalo/LINE/Kakao) ở Phase 1? Bán qua web? Chấp nhận CASA cho Gmail nếu Google yêu cầu? Đội ngũ thực tế.
@@ -105,7 +110,7 @@
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.
 
 ## Blocker
-- Không có.
+- Đồng bộ thật chờ bật đăng nhập ẩn danh ở project Supabase dev (Authentication → Sign In / Providers).
 
 ## Chưa xác minh (kiểm tra ở spike)
 Vision iOS với tiếng Việt và các hệ chữ khác; locale STT on-device thực tế trên máy; chất lượng Foundation Models/Gemini Nano theo ngôn ngữ;
