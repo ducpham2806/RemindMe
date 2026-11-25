@@ -163,6 +163,10 @@
   "tripTitleOn": "[Ţŕîþ öñ ~~{date}]",
   "tripDates": "[{start} – {end}]",
   "tripsItemCount": "[{count, plural, =1{1 ƀööķîñĝ~~~} other{{count} ƀööķîñĝš~~~}}]",
+  "tripRename": "[Ŕéñàɱé ţŕîþ~~~~]",
+  "tripNameHint": "[Ţŕîþ ñàɱé~~~]",
+  "tripAddActivity": "[Àđđ àçţîṽîţý~~~~]",
+  "tripActivityHint": "[Ŵĥàţ đö ýöû þļàñ ţö đö?~~~~~~~]",
   "tripDelete": "[Đéļéţé ţŕîþ~~~~]",
   "tripDeleteBody": "[Ţĥé ƀööķîñĝš šţàý îñ ýöûŕ çàļéñđàŕ.~~~~~~~~~~~~]"
 }

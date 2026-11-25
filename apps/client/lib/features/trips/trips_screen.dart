@@ -9,6 +9,7 @@ import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
+import '../common/text_prompt.dart';
 
 /// Tab Chuyến đi (US-20): các chuyến theo ngày đi, chuyến đã qua ở cuối.
 class TripsScreen extends ConsumerWidget {
@@ -49,6 +50,24 @@ String? tripDateRange(BuildContext context, TripSummary t, DateTime now) {
   return AppLocalizations.of(context).tripDates(s, fmt.date(DateTime.parse(t.endsOn!), now: now));
 }
 
+/// Khoảng trống > [minGap] giữa 2 đặt chỗ có giờ (UX §2.5): id đặt chỗ đứng trước → (lúc rảnh từ, múi giờ nơi đó).
+/// Lưu trú, thuê xe không chiếm thời gian (đang ở khách sạn vẫn đi chơi được).
+Map<String, (DateTime, String)> freeGapsAfter(List<TripSegment> segments, {Duration minGap = const Duration(hours: 3)}) {
+  final timed = [
+    for (final s in segments)
+      if (s.item.startsAt != null && s.item.tz != null && s.bookingType != 'hotel' && s.bookingType != 'car_rental') s,
+  ];
+  final out = <String, (DateTime, String)>{};
+  for (var i = 0; i + 1 < timed.length; i++) {
+    final a = timed[i], b = timed[i + 1];
+    final free = a.item.endsAt ?? a.item.startsAt!;
+    if (b.item.startsAt!.difference(free) <= minGap) continue;
+    final tz = (a.destination?['tz'] as String?) ?? a.item.tz!;
+    out[a.item.id] = (free, TimeZones.isValid(tz) ? tz : a.item.tz!);
+  }
+  return out;
+}
+
 /// Chi tiết chuyến đi (UX §2.5): timeline theo giờ địa phương của từng điểm (giờ đi theo nơi đi, giờ đến theo nơi đến).
 class TripDetailScreen extends ConsumerWidget {
   const TripDetailScreen({super.key, required this.id});
@@ -70,6 +89,7 @@ class TripDetailScreen extends ConsumerWidget {
           child: Text(range, style: Theme.of(context).textTheme.titleMedium),
         ),
     ];
+    final gaps = freeGapsAfter(segments);
     for (final s in segments) {
       final wall = _startWall(s);
       final day = wall?.date.toIso();
@@ -87,6 +107,14 @@ class TripDetailScreen extends ConsumerWidget {
         subtitle: _times(context, s) == null ? null : Text(_times(context, s)!),
         onTap: () => context.push('/item/${s.item.id}'),
       ));
+      if (gaps[s.item.id] case (final from, final tz)) {
+        children.add(ListTile(
+          key: Key('tripAddActivity-${s.item.id}'),
+          leading: const Icon(Icons.add),
+          title: Text(l.tripAddActivity),
+          onTap: () => _addActivity(context, ref, from, tz),
+        ));
+      }
     }
     return Scaffold(
       appBar: AppBar(
@@ -94,17 +122,44 @@ class TripDetailScreen extends ConsumerWidget {
         actions: [
           PopupMenuButton<String>(
             key: const Key('tripMenu'),
-            onSelected: (_) async {
+            onSelected: (action) async {
+              final repo = ref.read(tripsRepositoryProvider);
+              if (action == 'rename') {
+                final name = await askText(context, title: l.tripRename, initial: trip?.title, hint: l.tripNameHint, fieldKey: const Key('tripName'));
+                if (name != null) await repo.rename(id, name);
+                return;
+              }
               if (!await _confirmDelete(context)) return;
-              await ref.read(tripsRepositoryProvider).delete(id);
+              await repo.delete(id);
               if (context.mounted) context.go('/trips');
             },
-            itemBuilder: (_) => [PopupMenuItem(value: 'delete', child: Text(l.tripDelete))],
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'rename', child: Text(l.tripRename)),
+              PopupMenuItem(value: 'delete', child: Text(l.tripDelete)),
+            ],
           ),
         ],
       ),
       body: ListView(padding: const EdgeInsetsDirectional.only(bottom: Tokens.space6), children: children),
     );
+  }
+
+  /// Tạo việc trong chuyến ở đầu khoảng trống (tròn lên giờ kế tiếp theo giờ nơi đó), nhắc đúng giờ như Quick Add; mở chi tiết để chỉnh giờ.
+  Future<void> _addActivity(BuildContext context, WidgetRef ref, DateTime from, String tz) async {
+    final l = AppLocalizations.of(context);
+    final title = await askText(context, title: l.tripAddActivity, hint: l.tripActivityHint, fieldKey: const Key('tripActivityName'));
+    if (title == null) return;
+    final wall = TimeZones.toWall(from, tz);
+    final t = wall.time!;
+    final rounded = t.minute == 0 ? wall : CivilDateTime(t.hour == 23 ? wall.date.addDays(1) : wall.date, CivilTime(t.hour == 23 ? 0 : t.hour + 1, 0));
+    final id = await ref.read(itemsRepositoryProvider).create(
+          title: title,
+          startsAt: TimeZones.toUtc(rounded, tz).utc,
+          tz: tz,
+          tripId: this.id,
+          reminderOffsets: const [0],
+        );
+    if (context.mounted) await context.push('/item/$id');
   }
 
   static CivilDateTime? _startWall(TripSegment s) {

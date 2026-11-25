@@ -36,12 +36,13 @@
   trường độ tin cậy thấp viền `warning` + ⓘ, xác nhận/sửa thì hết dấu trên thẻ.
 - S6 chuyến đi (offline): đặt chỗ lưu `kind = booking` + `booking_details` (không có tên hành khách), nhắc mặc định theo loại (reminder-engine §5,
   khách sạn bằng nhắc tuyệt đối), trùng/đổi giờ với đặt chỗ đã có (bỏ qua hoặc cập nhật), gợi ý gom chuyến ở màn Xem lại (mới / có sẵn / không gộp),
-  tab Chuyến đi (danh sách + timeline giờ địa phương từng điểm, xóa chuyến giữ đặt chỗ), múi giờ sân bay cho vé chỉ có offset. `TripsRepository` trong `packages/data`.
+  tab Chuyến đi (danh sách + timeline giờ địa phương từng điểm, đổi tên, xóa chuyến giữ đặt chỗ, "Thêm hoạt động" ở khoảng trống > 3h giữa 2 chặng có giờ
+  (khách sạn/thuê xe không tính là bận) tạo việc trong chuyến), múi giờ sân bay cho vé chỉ có offset. `TripsRepository` trong `packages/data`.
   Contract test Postgres: trips + booking_details + nhắc tuyệt đối + cập nhật qua `sync_push` thật.
 - Hạn mức chuyến đi: `SyncEngine` cache `quota_status` sau mỗi lần sync; màn Xem lại đếm chuyến đang hoạt động trên máy, hết lượt thì khóa "Chuyến mới"
   + dòng giải thích (số lấy từ gói). Chuyến mới vẫn bị server từ chối thì máy bỏ chuyến, gỡ `trip_id` khỏi đặt chỗ và gửi lại (không mất item, data-model §4).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
-  mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + hạn mức ở màn Xem lại, sửa/đổi tên chuyến, gợi ý "Thêm hoạt động" khi trống > 3h,
+  mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)

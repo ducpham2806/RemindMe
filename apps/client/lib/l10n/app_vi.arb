@@ -163,6 +163,10 @@
   "tripTitleOn": "Chuyến đi ngày {date}",
   "tripDates": "{start} – {end}",
   "tripsItemCount": "{count, plural, other{{count} đặt chỗ}}",
+  "tripRename": "Đổi tên chuyến đi",
+  "tripNameHint": "Tên chuyến đi",
+  "tripAddActivity": "Thêm hoạt động",
+  "tripActivityHint": "Bạn định làm gì?",
   "tripDelete": "Xóa chuyến đi",
   "tripDeleteBody": "Các đặt chỗ vẫn được giữ trong lịch."
 }

@@ -928,6 +928,22 @@
       }
     }
   },
+  "tripRename": "Rename trip",
+  "@tripRename": {
+    "description": "Menu action on the trip screen; also the title of the rename dialog."
+  },
+  "tripNameHint": "Trip name",
+  "@tripNameHint": {
+    "description": "Hint of the trip name field."
+  },
+  "tripAddActivity": "Add activity",
+  "@tripAddActivity": {
+    "description": "Trip timeline: suggestion shown in a free gap of more than 3 hours between two bookings; also the dialog title."
+  },
+  "tripActivityHint": "What do you plan to do?",
+  "@tripActivityHint": {
+    "description": "Hint of the activity name field (it becomes a task in the trip)."
+  },
   "tripDelete": "Delete trip",
   "@tripDelete": {
     "description": "Menu action on the trip screen."
