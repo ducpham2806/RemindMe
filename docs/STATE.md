@@ -68,8 +68,11 @@
   xác nhận, RPC `account_delete`) và Đã nhận yêu cầu xóa (C55).
   Onboarding (C30-C33, UX §3.1): Chào mừng, Mục tiêu (tạo list khởi đầu), Thử nhắc đầu tiên (câu mẫu + NLU), Bật thông báo (priming trước hộp
   thoại hệ điều hành); chỉ ở lần mở đầu. `saveParsedItem` dùng chung với Thêm nhanh.
+  Tìm kiếm (09: ô tròn, gợi ý, đếm kết quả, lọc theo list, nhóm Hôm nay/Sắp tới/Trước đó/Chưa đặt giờ/Đã xong), Danh sách (10: thẻ có màu,
+  số quá hạn/hôm nay từ `watchLists(today:)`, chạm giữ để đổi tên/xóa), list (11: nhóm Quá hạn/Hôm nay/Sắp tới/Chưa đặt giờ, "Thêm vào <list>"
+  mở Thêm nhanh vào list), Hôm nay trống (12: thẻ mời + 2 câu mẫu mở Thêm nhanh điền sẵn).
   Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, C34 (pin theo hãng Android, cần native),
-  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 09-14, 17-19, 25-26.
+  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 13-14, 17-19, 25-26.
 - Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09, chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
   App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →

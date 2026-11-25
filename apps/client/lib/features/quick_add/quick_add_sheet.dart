@@ -16,11 +16,12 @@ import '../schedule/date_time_sheet.dart';
 
 /// Quick Add (UX §2.2): gõ câu tự nhiên, NLU (V1) phân tích ngay khi gõ và hiện chip thời điểm / lặp / tag / ưu tiên.
 /// Mơ hồ thì hiện lựa chọn, không đoán im lặng (voice-and-text-input.md §5). Mic (V2) thêm sau.
-Future<void> showQuickAdd(BuildContext context) => showModalBottomSheet<void>(
+/// [initialText]: câu điền sẵn (gợi ý ở Hôm nay trống). [listId]: việc vào list này nếu câu không có `#tag` khớp list khác.
+Future<void> showQuickAdd(BuildContext context, {String? initialText, String? listId}) => showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => const QuickAddSheet(),
+      builder: (context) => QuickAddSheet(initialText: initialText, listId: listId),
     );
 
 /// Một việc đã phân tích + lựa chọn của người dùng ở các chip mơ hồ.
@@ -53,7 +54,13 @@ class _Draft {
 /// Lưu 1 việc đã phân tích từ câu tự nhiên (Thêm nhanh, onboarding C32). Trả id item.
 /// [reminder]: độ lệch nhắc (phút); có thời điểm thì thêm nhắc, null = không nhắc.
 Future<String> saveParsedItem(WidgetRef ref,
-    {required String title, CivilDateTime? when, RecurrenceSpec? recurrence, List<String> tags = const [], int? priority, int? reminder}) async {
+    {required String title,
+    CivilDateTime? when,
+    RecurrenceSpec? recurrence,
+    List<String> tags = const [],
+    int? priority,
+    int? reminder,
+    String? listId}) async {
   final repo = ref.read(itemsRepositoryProvider);
   final tz = ref.read(deviceTimeZoneProvider);
   final today = CivilDate.of(ref.read(nowProvider)());
@@ -64,13 +71,13 @@ Future<String> saveParsedItem(WidgetRef ref,
   // Giờ tường theo múi giờ của máy → UTC (DateTime local của Dart dùng tzdata của OS).
   final local = when == null ? null : DateTime(when.date.year, when.date.month, when.date.day, when.time?.hour ?? 0, when.time?.minute ?? 0);
   // "#congviec" khớp list "Công việc" thì việc vào list đó (UX §2.2); tag vẫn giữ.
-  String? listId;
+  String? tagList;
   for (final t in tags) {
-    listId = await ref.read(listsRepositoryProvider).matchTag(t);
-    if (listId != null) break;
+    tagList = await ref.read(listsRepositoryProvider).matchTag(t);
+    if (tagList != null) break;
   }
   return repo.create(
-    listId: listId,
+    listId: tagList ?? listId,
     title: title,
     startsAt: when?.time == null ? null : local!.toUtc(),
     startDate: when != null && when.time == null ? when.date.toIso() : null,
@@ -85,16 +92,19 @@ Future<String> saveParsedItem(WidgetRef ref,
 }
 
 class QuickAddSheet extends ConsumerStatefulWidget {
-  const QuickAddSheet({super.key});
+  const QuickAddSheet({super.key, this.initialText, this.listId});
+  final String? initialText;
+  final String? listId;
 
   @override
   ConsumerState<QuickAddSheet> createState() => _QuickAddSheetState();
 }
 
 class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
-  final _text = TextEditingController();
+  late final _text = TextEditingController(text: widget.initialText);
   List<_Draft> _drafts = const [];
   bool _saving = false;
+  bool _parsedInitial = false;
 
   @override
   void dispose() {
@@ -124,7 +134,13 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
     setState(() => _saving = true);
     for (final d in _drafts) {
       await saveParsedItem(ref,
-          title: d.title, when: d.when, recurrence: d.result.recurrence, tags: d.result.tags, priority: d.result.priority, reminder: d.reminder);
+          title: d.title,
+          when: d.when,
+          recurrence: d.result.recurrence,
+          tags: d.result.tags,
+          priority: d.result.priority,
+          reminder: d.reminder,
+          listId: widget.listId);
     }
     if (mounted) Navigator.of(context).pop();
   }
@@ -136,6 +152,13 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
     final engine = ref.watch(nluEngineProvider(key)).value;
     // Gói tải xong sau khi người dùng đã gõ: phân tích lại.
     ref.listen(nluEngineProvider(key), (_, next) => _reparse(next.value));
+    // Câu điền sẵn: phân tích ngay khi có gói (gói có sẵn từ trước thì listen không chạy).
+    if (!_parsedInitial && _text.text.isNotEmpty && engine != null) {
+      _parsedInitial = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _reparse(engine);
+      });
+    }
     final today = CivilDate.of(ref.watch(nowProvider)());
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;

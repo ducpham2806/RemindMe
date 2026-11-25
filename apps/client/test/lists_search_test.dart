@@ -20,7 +20,7 @@ void main() {
     await pumpApp(tester, size: phone, locale: vi, region: 'VN', seed: (r) async => r.create(title: 'Gọi mẹ'));
     await openLists(tester);
     expect(find.text('Hộp thư'), findsOneWidget);
-    expect(find.text('1 mục đang mở'), findsOneWidget);
+    expect(find.text('Những việc bạn vừa thêm'), findsOneWidget);
     await tester.tap(find.byKey(const Key('newList')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('listName')), 'Công việc');
@@ -46,23 +46,23 @@ void main() {
     await tester.pumpAndSettle();
 
     // Đổi tên rồi xóa list.
-    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.longPress(find.text('Công việc'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Đổi tên'));
+    await tester.tap(find.byKey(const Key('listRename')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('listName')), 'Việc công ty');
     await tester.tap(find.text('Lưu'));
     await settleReminders(tester);
     expect(find.text('Việc công ty'), findsOneWidget);
-    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.longPress(find.text('Việc công ty'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Xóa danh sách').last);
+    await tester.tap(find.byKey(const Key('listDelete')));
     await tester.pumpAndSettle();
     expect(find.text('Các mục trong danh sách sẽ chuyển về Hộp thư.'), findsOneWidget);
     await tester.tap(find.text('Xóa'));
     await settleReminders(tester);
     expect(find.text('Việc công ty'), findsNothing);
-    expect(find.text('1 mục đang mở'), findsOneWidget);
+    expect(find.text('Những việc bạn vừa thêm'), findsOneWidget, reason: 'việc về Hộp thư');
   });
 
   testWidgets('Quick Add "#congviec" vào list "Công việc"', (tester) async {
@@ -95,5 +95,57 @@ void main() {
     await tester.enterText(find.byKey(const Key('searchField')), 'xyz');
     await settleReminders(tester);
     expect(find.text('Không có mục nào khớp'), findsOneWidget);
+  });
+
+  testWidgets('list: đếm quá hạn/hôm nay trên thẻ, nhóm trong list, "Thêm vào" đưa việc mới vào list', (tester) async {
+    await pumpApp(tester, size: phone, locale: vi, region: 'VN', seed: (r) async {
+      final work = await ListsRepository(r.engine).create('Công việc');
+      await r.create(title: 'Gửi báo giá', listId: work, startsAt: testNow.toUtc().subtract(const Duration(days: 1)), tz: 'Asia/Ho_Chi_Minh');
+      await r.create(title: 'Họp nhóm', listId: work, startsAt: testNow.toUtc().add(const Duration(minutes: 30)), tz: 'Asia/Ho_Chi_Minh');
+    });
+    await openLists(tester);
+    expect(find.descendant(of: find.byKey(const Key('list-inbox')), matching: find.text('Không có mục đang mở')), findsOneWidget);
+    expect(find.text('1 quá hạn · 1 việc hôm nay'), findsOneWidget);
+    await tester.tap(find.text('Công việc'));
+    await tester.pumpAndSettle();
+    expect(find.text('2 việc đang chờ · 1 quá hạn'), findsOneWidget);
+    expect(find.text('Quá hạn'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('listAddBottom')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'Viết báo cáo');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('quickAddSave')));
+    await settleReminders(tester);
+    expect(find.text('Viết báo cáo'), findsOneWidget, reason: 'việc mới vào đúng list đang xem');
+    expect(find.text('Chưa đặt giờ'), findsOneWidget);
+  });
+
+  testWidgets('tìm kiếm: gợi ý khi chưa gõ, đếm kết quả, lọc theo list, nhóm Đã xong', (tester) async {
+    await pumpApp(tester, size: phone, locale: vi, region: 'VN', seed: (r) async {
+      final work = await ListsRepository(r.engine).create('Công việc');
+      await r.create(title: 'Họp nhóm', listId: work);
+      final done = await r.create(title: 'Họp tổng kết');
+      await r.setDone(done, done: true);
+    });
+    await tester.tap(find.byKey(const Key('openSearch')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('searchTip')), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('searchField')), 'hop');
+    await settleReminders(tester);
+    expect(find.text('2 kết quả cho “hop”'), findsOneWidget);
+    expect(find.text('Đã xong'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('searchFilter-inbox')));
+    await tester.pumpAndSettle();
+    expect(find.text('1 kết quả cho “hop”'), findsOneWidget);
+    expect(find.text('Họp nhóm'), findsNothing);
+  });
+
+  testWidgets('Hôm nay trống: câu mẫu mở Thêm nhanh điền sẵn và đã phân tích', (tester) async {
+    await pumpApp(tester, size: phone, locale: vi, region: 'VN');
+    expect(find.byKey(const Key('todayEmpty')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('todayTryHabit')));
+    await tester.pumpAndSettle();
+    expect(find.text('Uống vitamin mỗi ngày lúc 20:00'), findsOneWidget);
+    expect(find.byKey(const Key('chipRepeat')), findsOneWidget);
   });
 }

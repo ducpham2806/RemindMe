@@ -12,6 +12,13 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Figma 09-12: Tìm kiếm, Danh sách, list, Hôm nay trống · Claude Code
+- **Làm:** `ListSummary.overdue/today` (`watchLists(today:)`, SQL theo ranh giới ngày); màn Danh sách dạng thẻ (chạm giữ → sheet đổi tên/xóa),
+  chi tiết list theo nhóm + nút "Thêm vào <list>" (`showQuickAdd(listId:)`), Tìm kiếm (ô tròn, gợi ý, đếm, lọc theo list, nhóm), Hôm nay trống
+  (`showQuickAdd(initialText:)` với câu mẫu trong ARB). 24 key ARB.
+- **Kiểm chứng:** client 106 (+3), data 55 (+1); analyze 0; lint 0; ảnh chụp so với Figma.
+- **Tiếp theo:** 13-14 (nhập tài liệu/đang đọc), 25-26.
+
 ## 2026-11-25 · Onboarding C30-C33 · Claude Code
 - **Làm:** màn Chào mừng, Mục tiêu (tạo list khởi đầu theo mục đã chọn), Thử nhắc đầu tiên (câu mẫu trong ARB, xem trước thời gian/lặp/list
   từ gói NLU, tạo việc với mốc nhắc mặc định), Bật thông báo (thẻ việc vừa tạo, Cho phép / Để sau). Router mở `/welcome` ở lần đầu

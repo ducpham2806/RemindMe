@@ -100,7 +100,8 @@ final recurrenceProvider =
 final listsRepositoryProvider =
     Provider<ListsRepository>((ref) => ListsRepository(ref.watch(syncEngineProvider), now: ref.watch(nowProvider)));
 
-final listsProvider = StreamProvider<List<ListSummary>>((ref) => ref.watch(listsRepositoryProvider).watchLists());
+final listsProvider =
+    StreamProvider<List<ListSummary>>((ref) => ref.watch(listsRepositoryProvider).watchLists(today: ref.watch(todayWindowProvider)));
 
 /// Việc của 1 list; khóa 'inbox' = Inbox ảo (việc chưa thuộc list nào).
 final listItemsProvider = StreamProvider.family<List<ItemView>, String>(

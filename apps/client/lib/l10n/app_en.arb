@@ -2909,5 +2909,141 @@
   "notifyNote": "Next, your device will ask for notification permission.",
   "@notifyNote": {
     "description": "Footer note"
+  },
+  "listsSubtitle": "{open, plural, =1{1 open item} other{{open} open items}} · {lists, plural, =1{1 list} other{{lists} lists}}",
+  "@listsSubtitle": {
+    "description": "Under the Lists title (Figma 10)",
+    "placeholders": {
+      "open": {
+        "type": "int"
+      },
+      "lists": {
+        "type": "int"
+      }
+    }
+  },
+  "listsIntroTitle": "Everything has its place.",
+  "@listsIntroTitle": {
+    "description": "Intro card title"
+  },
+  "listsIntroBody": "Group things by what matters to you.",
+  "@listsIntroBody": {
+    "description": "Intro card body"
+  },
+  "listsInboxHint": "Things you just added",
+  "@listsInboxHint": {
+    "description": "Inbox subtitle when it has no overdue/today items"
+  },
+  "listsOverdue": "{n} overdue",
+  "@listsOverdue": {
+    "description": "List card subtitle part",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "listsToday": "{n} today",
+  "@listsToday": {
+    "description": "List card subtitle part",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "listsLongPressHint": "Touch and hold a list to rename or delete it.",
+  "@listsLongPressHint": {
+    "description": "Hint under the list cards"
+  },
+  "listDetailSubtitle": "{open, plural, =1{1 open item} other{{open} open items}}",
+  "@listDetailSubtitle": {
+    "description": "Under a list's title (Figma 11)",
+    "placeholders": {
+      "open": {
+        "type": "int"
+      }
+    }
+  },
+  "listAddTo": "Add to {list}",
+  "@listAddTo": {
+    "description": "Bottom button of a list (opens Quick Add into this list)",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Work"
+      }
+    }
+  },
+  "searchCount": "{n, plural, =1{1 result for “{query}”} other{{n} results for “{query}”}}",
+  "@searchCount": {
+    "description": "Result count",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "query": {
+        "type": "String",
+        "example": "meeting"
+      }
+    }
+  },
+  "searchAll": "All",
+  "@searchAll": {
+    "description": "Filter chip: all lists"
+  },
+  "searchClear": "Clear",
+  "@searchClear": {
+    "description": "Tooltip of the clear button in the search field"
+  },
+  "searchTipTitle": "Search the way you remember",
+  "@searchTipTitle": {
+    "description": "Tip card title"
+  },
+  "searchTipBody": "Item names, notes or booking codes. With or without accents.",
+  "@searchTipBody": {
+    "description": "Tip card body"
+  },
+  "sectionPast": "Earlier",
+  "@sectionPast": {
+    "description": "Search group of open items dated before today"
+  },
+  "todayEmptyHeadline": "A new day, start light.",
+  "@todayEmptyHeadline": {
+    "description": "Empty Today headline (Figma 12)"
+  },
+  "todayEmptyCta": "Create your first reminder",
+  "@todayEmptyCta": {
+    "description": "Empty Today button"
+  },
+  "todayTryQuick": "TRY A QUICK WAY",
+  "@todayTryQuick": {
+    "description": "Section header on empty Today"
+  },
+  "todayTrySentence": "Say it in one sentence",
+  "@todayTrySentence": {
+    "description": "Shortcut title (opens Quick Add with the example)"
+  },
+  "todayTrySentenceExample": "Meet a client tomorrow at 8am",
+  "@todayTrySentenceExample": {
+    "description": "Example sentence; must parse with this locale's NLU pack"
+  },
+  "todayTryHabit": "Start a habit",
+  "@todayTryHabit": {
+    "description": "Shortcut title"
+  },
+  "todayTryHabitExample": "Take vitamins every day at 8pm",
+  "@todayTryHabitExample": {
+    "description": "Example repeating sentence; must parse with this locale's NLU pack"
+  },
+  "quoted": "“{text}”",
+  "@quoted": {
+    "description": "Wraps a quoted example sentence; use this language's quotation marks",
+    "placeholders": {
+      "text": {
+        "type": "String",
+        "example": "Meet a client tomorrow at 8am"
+      }
+    }
   }
 }

@@ -32,6 +32,21 @@ void main() {
     expect((await lists.watchItems(work).first).single.title, 'B');
   });
 
+  test('đếm việc quá hạn / hôm nay theo ngày đang xem (có giờ và cả ngày)', () async {
+    final work = await lists.create('Công việc');
+    // Ngày 1/12/2026 giờ UTC+7: [30/11 17:00Z, 1/12 17:00Z).
+    final day = DayWindow(startUtc: DateTime.utc(2026, 11, 30, 17), endUtc: DateTime.utc(2026, 12, 1, 17), localDate: '2026-12-01');
+    await items.create(title: 'trễ', listId: work, startsAt: DateTime.utc(2026, 11, 30, 10), tz: 'Asia/Ho_Chi_Minh');
+    await items.create(title: 'trễ cả ngày', listId: work, startDate: '2026-11-29');
+    await items.create(title: 'hôm nay', listId: work, startsAt: DateTime.utc(2026, 12, 1, 3), tz: 'Asia/Ho_Chi_Minh');
+    await items.create(title: 'hôm nay cả ngày', listId: work, startDate: '2026-12-01');
+    await items.create(title: 'mai', listId: work, startsAt: DateTime.utc(2026, 12, 1, 18), tz: 'Asia/Ho_Chi_Minh');
+    await items.create(title: 'chưa hẹn', listId: work);
+    final w = (await lists.watchLists(today: day).first).last;
+    expect((w.openCount, w.overdue, w.today), (6, 2, 2));
+    expect((await lists.watchLists().first).last.overdue, 0, reason: 'không truyền ngày thì không đếm');
+  });
+
   test('Inbox từ server (is_inbox) gộp với việc không có list', () async {
     await db.into(db.lists).insert(ListsCompanion.insert(id: 'inbox', isInbox: const Value(true)));
     await items.create(title: 'A');

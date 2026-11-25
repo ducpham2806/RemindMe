@@ -14,6 +14,7 @@ import '../../data/remote/remote_sync.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 import '../items/item_tile.dart';
+import '../quick_add/quick_add_sheet.dart';
 
 /// Hôm nay (UX §2.1, Figma 01): tiêu đề lớn + ngày (kèm ngày âm khi có hệ lịch phụ), thẻ tiến độ, Quá hạn · Hôm nay · Chưa đặt giờ · Đã xong.
 /// Đọc stream từ DB local (offline-first).
@@ -38,7 +39,7 @@ class TodayScreen extends ConsumerWidget {
                     children: [
                       const _ReminderHealthCard(),
                       const _HolidayHintCard(),
-                      EmptyState(icon: Icons.wb_sunny_outlined, title: l.todayEmptyTitle, body: l.todayEmptyBody),
+                      const _EmptyToday(),
                     ],
                   ),
                 AsyncData(:final value) => _SectionList(sections: value),
@@ -341,5 +342,90 @@ class _SectionList extends StatelessWidget {
       ),
       for (final i in items) ItemTile(key: ValueKey(i.rowKey), item: i, overdue: overdue),
     ];
+  }
+}
+
+/// Hôm nay trống (Figma 12): thẻ mời tạo nhắc đầu tiên + 2 câu mẫu mở Thêm nhanh điền sẵn.
+class _EmptyToday extends StatelessWidget {
+  const _EmptyToday();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    Widget tryRow(Key key, AppIcons icon, String title, String example) => Padding(
+          padding: const EdgeInsetsDirectional.only(top: Tokens.space3),
+          child: Material(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(Tokens.radiusMd),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              key: key,
+              onTap: () => showQuickAdd(context, initialText: example),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.all(Tokens.space4),
+                child: Row(
+                  children: [
+                    AppIcon(icon, size: 21, color: scheme.primary),
+                    const SizedBox(width: Tokens.space3),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                          Text(l.quoted(example), style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: scheme.onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                    AppIcon(AppIcons.chevronSmall, size: 17, color: scheme.onSurfaceVariant),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space4, Tokens.screenMargin, Tokens.space6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            key: const Key('todayEmpty'),
+            padding: const EdgeInsetsDirectional.fromSTEB(Tokens.space5, Tokens.space6, Tokens.space5, Tokens.space5),
+            decoration: BoxDecoration(color: scheme.surface, borderRadius: BorderRadius.circular(Tokens.radiusXl)),
+            child: Column(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(18)),
+                  child: AppIcon(AppIcons.today, size: 30, color: scheme.primary),
+                ),
+                const SizedBox(height: Tokens.space4),
+                Text(l.todayEmptyHeadline, textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
+                const SizedBox(height: Tokens.space2),
+                Text(l.todayEmptyTitle, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+                const SizedBox(height: Tokens.space4),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    key: const Key('todayEmptyCta'),
+                    onPressed: () => showQuickAdd(context),
+                    icon: AppIcon(AppIcons.plus, size: 18, color: scheme.onPrimary),
+                    label: Text(l.todayEmptyCta),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: Tokens.space5),
+          Text(l.todayTryQuick, style: theme.textTheme.labelLarge?.copyWith(color: scheme.onSurfaceVariant)),
+          tryRow(const Key('todayTrySentence'), AppIcons.mic, l.todayTrySentence, l.todayTrySentenceExample),
+          tryRow(const Key('todayTryHabit'), AppIcons.repeat, l.todayTryHabit, l.todayTryHabitExample),
+        ],
+      ),
+    );
   }
 }
