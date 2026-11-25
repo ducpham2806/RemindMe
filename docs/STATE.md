@@ -71,8 +71,10 @@
   Tìm kiếm (09: ô tròn, gợi ý, đếm kết quả, lọc theo list, nhóm Hôm nay/Sắp tới/Trước đó/Chưa đặt giờ/Đã xong), Danh sách (10: thẻ có màu,
   số quá hạn/hôm nay từ `watchLists(today:)`, chạm giữ để đổi tên/xóa), list (11: nhóm Quá hạn/Hôm nay/Sắp tới/Chưa đặt giờ, "Thêm vào <list>"
   mở Thêm nhanh vào list), Hôm nay trống (12: thẻ mời + 2 câu mẫu mở Thêm nhanh điền sẵn).
+  Nhập tài liệu: chọn nguồn (13: chụp/thư viện ảnh "Sắp có" tới khi có OCR, tệp, bảng tính), đang đọc (14: tên tệp, Hủy), không đọc được
+  (25: lý do, không tính lượt, chọn tệp khác / tự nhập), đã lưu (26: danh sách mục, "Xem chuyến đi" khi vừa gộp vào chuyến).
   Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, C34 (pin theo hãng Android, cần native),
-  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 13-14, 17-19, 25-26.
+  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 17-19 (nhập tay kèm tài liệu, ghép cột, hộp đề xuất), 22-23 (tài liệu, hành lý của chuyến).
 - Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09, chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
   App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →

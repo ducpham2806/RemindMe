@@ -12,6 +12,13 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Figma 13, 14, 25, 26: luồng nhập tài liệu · Claude Code
+- **Làm:** màn Nhập có 4 trạng thái mới: chọn nguồn (chụp/thư viện "Sắp có"), đang đọc (tên tệp, thanh chạy, Hủy bỏ kết quả giải mã),
+  không đọc được (lý do theo trường hợp, "Không tính lượt nhập", chọn tệp khác, Tự nhập → Thêm nhanh), đã lưu (thay snackbar + quay về:
+  danh sách mục, cảnh báo khi có mục chờ hạn mức, "Xem chuyến đi"). 29 key ARB.
+- **Kiểm chứng:** client 108 (+2); analyze 0; lint 0; ảnh chụp so với Figma.
+- **Tiếp theo:** 17-19, 22-23 (cần thêm chức năng), C34 (native).
+
 ## 2026-11-25 · Figma 09-12: Tìm kiếm, Danh sách, list, Hôm nay trống · Claude Code
 - **Làm:** `ListSummary.overdue/today` (`watchLists(today:)`, SQL theo ranh giới ngày); màn Danh sách dạng thẻ (chạm giữ → sheet đổi tên/xóa),
   chi tiết list theo nhóm + nút "Thêm vào <list>" (`showQuickAdd(listId:)`), Tìm kiếm (ô tròn, gợi ý, đếm, lọc theo list, nhóm), Hôm nay trống

@@ -3045,5 +3045,113 @@
         "example": "Meet a client tomorrow at 8am"
       }
     }
+  },
+  "importHeadline": "Less typing. Every leg remembered.",
+  "@importHeadline": {
+    "description": "Import intro headline (Figma 13)"
+  },
+  "importHeadlineBody": "Add tickets, bookings or task lists. You always review before saving.",
+  "@importHeadlineBody": {
+    "description": "Import intro body"
+  },
+  "importFromWhere": "WHERE FROM?",
+  "@importFromWhere": {
+    "description": "Section header"
+  },
+  "importCamera": "Scan a document",
+  "@importCamera": {
+    "description": "Source option (coming soon)"
+  },
+  "importCameraHint": "Tickets, appointment slips, task boards",
+  "@importCameraHint": {
+    "description": "Source subtitle"
+  },
+  "importPhotos": "Choose from photos",
+  "@importPhotos": {
+    "description": "Source option (coming soon)"
+  },
+  "importPhotosHint": "One or more photos on this device",
+  "@importPhotosHint": {
+    "description": "Source subtitle"
+  },
+  "importFileRow": "Choose a file",
+  "@importFileRow": {
+    "description": "Source option"
+  },
+  "importSheetHint": "Excel or CSV · You can pick the date order",
+  "@importSheetHint": {
+    "description": "Source subtitle"
+  },
+  "importOnDevice": "Read on your device",
+  "@importOnDevice": {
+    "description": "Info card title"
+  },
+  "importOnDeviceBody": "No internet needed to read documents.",
+  "@importOnDeviceBody": {
+    "description": "Info card body"
+  },
+  "importReadingTitle": "Reading document",
+  "@importReadingTitle": {
+    "description": "Title while decoding (Figma 14)"
+  },
+  "importReadingBody": "Looking for dates, times and booking codes…",
+  "@importReadingBody": {
+    "description": "Under the progress bar"
+  },
+  "importOnDeviceReview": "Your document stays on this device. You confirm the results before saving.",
+  "@importOnDeviceReview": {
+    "description": "Info card while decoding"
+  },
+  "importCancel": "Cancel",
+  "@importCancel": {
+    "description": "Stops reading"
+  },
+  "importUnreadTitle": "Couldn’t read the document",
+  "@importUnreadTitle": {
+    "description": "Title (Figma 25)"
+  },
+  "importUnreadHeadline": "Nothing clear enough to create from.",
+  "@importUnreadHeadline": {
+    "description": "Headline"
+  },
+  "importNotCounted": "Nothing created · Doesn’t count toward imports",
+  "@importNotCounted": {
+    "description": "Under the file name"
+  },
+  "importTips": "TRY THIS",
+  "@importTips": {
+    "description": "Section header"
+  },
+  "importTip1": "Choose the original file (email, calendar file, wallet pass) rather than a screenshot.",
+  "@importTip1": {
+    "description": "Tip"
+  },
+  "importTip2": "Check that the file has the dates, times and booking codes.",
+  "@importTip2": {
+    "description": "Tip"
+  },
+  "importManual": "Enter it yourself",
+  "@importManual": {
+    "description": "Opens Quick Add"
+  },
+  "importSavedTitle": "Saved",
+  "@importSavedTitle": {
+    "description": "Title after saving (Figma 26)"
+  },
+  "importSavedBody": "You can edit them anytime.",
+  "@importSavedBody": {
+    "description": "Under the saved headline"
+  },
+  "importOpenTrip": "View trip",
+  "@importOpenTrip": {
+    "description": "Button after saving bookings into a trip"
+  },
+  "importSpreadsheet": "Import a spreadsheet",
+  "@importSpreadsheet": {
+    "description": "Source option"
+  },
+  "importPendingQuotaNote": "Some items wait until your plan has room. They’re saved on this device.",
+  "@importPendingQuotaNote": {
+    "description": "Saved screen warning when items are pending quota"
   }
 }

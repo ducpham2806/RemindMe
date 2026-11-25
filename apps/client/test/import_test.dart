@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -69,6 +70,9 @@ void main() {
     await tester.tap(find.byKey(const Key('importAdd')));
     await settleReminders(tester);
     expect(find.text('Đã thêm 2 mục'), findsOneWidget);
+    expect(find.byKey(const Key('importSaved')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('importDone')));
+    await tester.pumpAndSettle();
     expect(find.text('Nhập từ tệp'), findsOneWidget, reason: 'quay về Tôi');
 
     final db = c.read(appDatabaseProvider);
@@ -205,6 +209,9 @@ void main() {
         (await tester.runAsync(() async => (await db.select(db.items).get(), await db.select(db.trips).get(), await db.select(db.reminders).get())))!;
     expect((items.single.kind, items.single.tripId, trips.single.title), ('booking', trips.single.id, 'Chuyến đi ngày 21 thg 12'));
     expect(reminders.map((r) => r.triggerKind).toSet(), {'absolute'}, reason: 'khách sạn: 18:00 hôm trước + 1h trước trả phòng');
+    expect(find.byKey(const Key('importOpenTrip')), findsOneWidget, reason: 'màn Đã lưu có nút mở chuyến vừa tạo');
+    await tester.tap(find.byKey(const Key('importDone')));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Chuyến đi').last);
     await tester.pumpAndSettle();
@@ -294,7 +301,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('me-file')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('importPick')));
+    await tester.scrollUntilVisible(find.byKey(const Key('importPick')), 100, scrollable: find.byType(Scrollable).last);
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('importPick')));
     await tester.pumpAndSettle();
     expect(appIcon(AppIcons.hotel), findsOneWidget);
@@ -308,5 +316,40 @@ void main() {
     expect(find.byKey(const Key('importEdit-check_in-date')), findsOneWidget);
     expect(find.byKey(const Key('importEdit-check_out-time')), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('màn nhập: chụp/thư viện "Sắp có"; tệp không đọc được → màn 25 (không tạo gì), chọn tệp khác', (tester) async {
+    await pumpApp(tester, size: const Size(390, 1000), locale: const Locale('vi'), region: 'VN', overrides: [
+      syncDecoder,
+      filePickerProvider.overrideWithValue(picker([(name: 'scan.pdf', bytes: Uint8List.fromList(utf8.encode('%PDF-1.4')))])),
+    ]);
+    await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
+    expect(find.text('Bớt nhập tay. Nhớ đủ mọi chặng.'), findsOneWidget);
+    expect(find.textContaining('Sắp có · Vé, giấy hẹn'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('importPick')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('importUnread')), findsOneWidget);
+    expect(find.text('scan.pdf'), findsOneWidget);
+    expect(find.text('Chưa tạo mục nào · Không tính lượt nhập'), findsOneWidget);
+    expect(find.byKey(const Key('importPick')), findsOneWidget, reason: 'chọn tệp khác');
+  });
+
+  testWidgets('đang đọc: hiện tên tệp, Hủy thì bỏ kết quả và về màn chọn nguồn', (tester) async {
+    final gate = Completer<ImportPreview>();
+    await pumpApp(tester, size: const Size(390, 1000), locale: const Locale('vi'), region: 'VN', overrides: [
+      importDecoderProvider.overrideWithValue((req) => gate.future),
+      filePickerProvider.overrideWithValue(picker([fixture('synthetic-csv-todo-0001', 'input.csv')])),
+    ]);
+    await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
+    await tester.tap(find.byKey(const Key('importPick')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('importReading')), findsOneWidget);
+    expect(find.text('input.csv'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('importCancel')));
+    await tester.pump();
+    gate.completeError(StateError('giải mã xong sau khi đã hủy'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bớt nhập tay. Nhớ đủ mọi chặng.'), findsOneWidget);
   });
 }

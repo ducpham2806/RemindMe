@@ -11,6 +11,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
+import '../quick_add/quick_add_sheet.dart';
 import 'candidate_editor.dart';
 import 'import_decode.dart';
 import 'import_mapper.dart';
@@ -30,6 +31,12 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   ImportPreview? _preview;
   bool _busy = false;
   bool _failed = false;
+  /// Tên tệp đang đọc (màn 14/25).
+  String? _fileName;
+  /// Người dùng bấm Hủy khi đang đọc: bỏ kết quả giải mã.
+  bool _cancelled = false;
+  /// Kết quả sau khi lưu (màn 26).
+  ({List<String> titles, String? tripId, bool pending})? _saved;
   List<bool> _selected = const [];
   /// Đề xuất người dùng đã sửa ở form (E5.1), theo vị trí trong danh sách.
   final Map<int, Candidate> _edits = {};
@@ -59,6 +66,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     setState(() {
       _busy = true;
       _failed = false;
+      _cancelled = false;
+      _fileName = file.name;
+      _preview = null;
     });
     try {
       final packs = await ref.read(nluPackSourcesProvider(lang).future);
@@ -73,7 +83,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       );
       await _decode(req);
     } on Object {
-      if (mounted) setState(() => _failed = true);
+      if (mounted && !_cancelled) setState(() => _failed = true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -83,6 +93,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     setState(() => _busy = true);
     try {
       final preview = await ref.read(importDecoderProvider)(req);
+      if (_cancelled) return;
       final trips = ref.read(tripsRepositoryProvider);
       final existing = await trips.bookingsWithCodes({for (final c in preview.candidates) ?c.fields.confirmationCode});
       final today = CivilDate.of(ref.read(nowProvider)()).toIso();
@@ -197,7 +208,17 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           quota: _quota,
         );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.importAdded(result.itemIds.length + result.updatedItemIds.length))));
+    setState(() {
+      _busy = false;
+      _saved = (
+        titles: [for (var i = 0; i < preview.candidates.length; i++) if (_selected[i] && _titleOf(i) != null) _titleOf(i)!],
+        tripId: result.tripIds.firstOrNull,
+        pending: result.pendingQuota,
+      );
+    });
+  }
+
+  void _close() {
     if (context.canPop()) {
       context.pop();
     } else {
@@ -228,8 +249,20 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     final missingTitle = reviewing && [for (var i = 0; i < _selected.length; i++) if (_selected[i]) i].any((i) => _titleOf(i) == null);
     final toCheck = reviewing ? _firstToCheck : null;
     return Scaffold(
-      appBar: AppBar(title: Text(reviewing ? l.importReviewTitle : l.importTitle)),
-      bottomNavigationBar: !reviewing
+      appBar: AppBar(
+        title: Text(_saved != null
+            ? l.importSavedTitle
+            : reviewing
+                ? l.importReviewTitle
+                : _busy && preview == null
+                    ? l.importReadingTitle
+                    : _failed || preview != null
+                        ? l.importUnreadTitle
+                        : l.importTitle),
+      ),
+      bottomNavigationBar: _saved != null
+          ? _savedButtons(context)
+          : !reviewing
           ? null
           : SafeArea(
               child: Padding(
@@ -255,42 +288,328 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                 ),
               ),
             ),
-      body: _busy
-          ? const Center(child: CircularProgressIndicator())
-          : reviewing
-              ? _review(context, preview)
-              : _message(context, preview),
+      body: _saved != null
+          ? _savedView(context)
+          : _busy && preview == null
+              ? _reading(context)
+              : _busy
+                  ? const Center(child: CircularProgressIndicator())
+                  : reviewing
+                      ? _review(context, preview)
+                      : preview == null && !_failed
+                          ? _intro(context)
+                          : _unread(context, preview),
     );
   }
 
-  Widget _message(BuildContext context, ImportPreview? preview) {
+  TextStyle? _small(BuildContext context) =>
+      Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: Theme.of(context).colorScheme.onSurfaceVariant);
+
+  Widget _box(BuildContext context, {required Widget child, Color? color, EdgeInsetsGeometry? padding, Key? key}) => Container(
+        key: key,
+        padding: padding ?? const EdgeInsetsDirectional.all(Tokens.space4),
+        decoration: BoxDecoration(color: color ?? Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(Tokens.radiusXl)),
+        child: child,
+      );
+
+  Widget _infoCard(BuildContext context, AppIcons icon, String title, String body, Color fg, Color bg) => _box(
+        context,
+        color: bg,
+        child: Row(
+          children: [
+            AppIcon(icon, size: 22, color: fg),
+            const SizedBox(width: Tokens.space3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: fg)),
+                  Text(body, style: _small(context)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
+  /// Màn 13: chọn nguồn. Chụp / thư viện ảnh chờ OCR trên máy (Sắp có); tệp và bảng tính mở bộ chọn tệp.
+  Widget _intro(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final (icon, text) = switch (preview) {
-      _ when _failed => (Icons.error_outline, l.importFailed),
-      null => (Icons.upload_file_outlined, l.importIntro),
-      ImportPreview(format: ImportFormat.unsupported) => (Icons.hourglass_empty, l.importUnsupported),
-      _ => (Icons.search_off, l.importNothingFound),
+    final scheme = theme.colorScheme;
+    final colors = RemindColors.of(context);
+    Widget source(Key key, AppIcons? icon, IconData? material, String title, String hint, {VoidCallback? onTap}) => Padding(
+          padding: const EdgeInsetsDirectional.only(top: Tokens.space3),
+          child: Material(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(Tokens.radiusXl),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              key: key,
+              onTap: onTap,
+              child: Opacity(
+                opacity: onTap == null ? 0.55 : 1,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(Tokens.space4, 14, Tokens.space3, 14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(12)),
+                        child: icon != null ? AppIcon(icon, size: 20, color: scheme.primary) : Icon(material, size: 20, color: scheme.primary),
+                      ),
+                      const SizedBox(width: Tokens.space3),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                            Text(onTap == null ? [l.meComingSoon, hint].join(' · ') : hint, style: _small(context)),
+                          ],
+                        ),
+                      ),
+                      if (onTap != null) AppIcon(AppIcons.chevronSmall, size: 17, color: scheme.onSurfaceVariant),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+    return ListView(
+      padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space6),
+      children: [
+        _box(
+          context,
+          color: scheme.primaryContainer,
+          padding: const EdgeInsetsDirectional.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l.importHeadline, style: theme.textTheme.titleLarge?.copyWith(fontSize: 24, height: 1.3)),
+              const SizedBox(height: Tokens.space2),
+              Text(l.importHeadlineBody, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+        const SizedBox(height: Tokens.space5),
+        Text(l.importFromWhere, style: theme.textTheme.labelLarge?.copyWith(color: scheme.onSurfaceVariant)),
+        source(const Key('importCamera'), AppIcons.camera, null, l.importCamera, l.importCameraHint),
+        source(const Key('importPhotos'), AppIcons.image, null, l.importPhotos, l.importPhotosHint),
+        source(const Key('importPick'), AppIcons.file, null, l.importFileRow, l.importFormats, onTap: _pick),
+        source(const Key('importPickSheet'), null, Icons.table_chart_outlined, l.importSpreadsheet, l.importSheetHint, onTap: _pick),
+        const SizedBox(height: Tokens.space4),
+        _infoCard(context, AppIcons.shield, l.importOnDevice, l.importOnDeviceBody, colors.travel, colors.travelContainer),
+      ],
+    );
+  }
+
+  /// Màn 14: đang giải mã trên máy, có thể hủy.
+  Widget _reading(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return ListView(
+      padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space6),
+      children: [
+        _box(
+          context,
+          key: const Key('importReading'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  AppIcon(AppIcons.file, size: 22, color: scheme.primary),
+                  const SizedBox(width: Tokens.space3),
+                  Expanded(child: Text(_fileName ?? '', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600))),
+                ],
+              ),
+              const SizedBox(height: Tokens.space4),
+              ClipRRect(borderRadius: BorderRadius.circular(4), child: const LinearProgressIndicator(minHeight: 6)),
+              const SizedBox(height: Tokens.space2),
+              Text(l.importReadingBody, style: _small(context)),
+            ],
+          ),
+        ),
+        const SizedBox(height: Tokens.space4),
+        _infoCard(context, AppIcons.shield, l.importOnDevice, l.importOnDeviceReview, scheme.primary, scheme.primaryContainer),
+        const SizedBox(height: Tokens.space5),
+        OutlinedButton.icon(
+          key: const Key('importCancel'),
+          onPressed: () => setState(() {
+            _cancelled = true;
+            _busy = false;
+          }),
+          icon: AppIcon(AppIcons.close, size: 18, color: scheme.primary),
+          label: Text(l.importCancel),
+        ),
+      ],
+    );
+  }
+
+  /// Màn 25: không đọc được / không tìm thấy gì / định dạng chưa hỗ trợ. Không tạo gì, không tính lượt.
+  Widget _unread(BuildContext context, ImportPreview? preview) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final colors = RemindColors.of(context);
+    final reason = switch (preview) {
+      _ when _failed => l.importFailed,
+      ImportPreview(format: ImportFormat.unsupported) => l.importUnsupported,
+      _ => l.importNothingFound,
     };
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsetsDirectional.all(Tokens.screenMargin),
+    return ListView(
+      padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space6),
+      children: [
+        _box(
+          context,
+          key: const Key('importUnread'),
+          padding: const EdgeInsetsDirectional.all(Tokens.space5),
+          child: Column(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: colors.warningContainer, borderRadius: BorderRadius.circular(18)),
+                child: AppIcon(AppIcons.alert, size: 30, color: colors.onWarningContainer),
+              ),
+              const SizedBox(height: Tokens.space4),
+              Text(l.importUnreadHeadline, textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
+              const SizedBox(height: Tokens.space2),
+              Text(reason, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+        if (_fileName != null) ...[
+          const SizedBox(height: Tokens.space4),
+          _box(
+            context,
+            child: Row(
+              children: [
+                AppIcon(AppIcons.file, size: 22, color: scheme.onSurfaceVariant),
+                const SizedBox(width: Tokens.space3),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_fileName!, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                      Text(l.importNotCounted, style: _small(context)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: Tokens.space5),
+        Text(l.importTips, style: theme.textTheme.labelLarge?.copyWith(color: scheme.onSurfaceVariant)),
+        const SizedBox(height: Tokens.space2),
+        for (final t in [l.importTip1, l.importTip2])
+          Padding(
+            padding: const EdgeInsetsDirectional.only(bottom: Tokens.space1),
+            child: Text('• $t', style: theme.textTheme.bodySmall),
+          ),
+        const SizedBox(height: Tokens.space5),
+        FilledButton.icon(
+          key: const Key('importPick'),
+          icon: AppIcon(AppIcons.file, size: 20, color: scheme.onPrimary),
+          label: Text(l.importPickAnother),
+          onPressed: _pick,
+        ),
+        const SizedBox(height: Tokens.space3),
+        FilledButton.tonalIcon(
+          key: const Key('importManual'),
+          style: FilledButton.styleFrom(backgroundColor: scheme.primaryContainer, foregroundColor: scheme.primary),
+          icon: AppIcon(AppIcons.edit, size: 20, color: scheme.primary),
+          label: Text(l.importManual),
+          onPressed: () => showQuickAdd(context),
+        ),
+      ],
+    );
+  }
+
+  /// Màn 26: đã lưu.
+  Widget _savedView(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = RemindColors.of(context);
+    final saved = _saved!;
+    return ListView(
+      padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space6),
+      children: [
+        _box(
+          context,
+          key: const Key('importSaved'),
+          padding: const EdgeInsetsDirectional.all(Tokens.space5),
+          child: Column(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: colors.travelContainer, shape: BoxShape.circle),
+                child: AppIcon(AppIcons.tick, size: 30, color: colors.travel),
+              ),
+              const SizedBox(height: Tokens.space4),
+              Text(l.importAdded(saved.titles.length), textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
+              const SizedBox(height: Tokens.space2),
+              Text(l.importSavedBody, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+        const SizedBox(height: Tokens.space4),
+        _box(
+          context,
+          child: Column(
+            children: [
+              for (final (i, t) in saved.titles.indexed) ...[
+                if (i > 0) const Divider(height: Tokens.space5),
+                Row(
+                  children: [
+                    Expanded(child: Text(t, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600))),
+                    AppIcon(AppIcons.tick, size: 18, color: colors.travel),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+        if (saved.pending) ...[
+          const SizedBox(height: Tokens.space4),
+          _infoCard(context, AppIcons.alert, l.mePlanUsage, l.importPendingQuotaNote, colors.onWarningContainer, colors.warningContainer),
+        ],
+      ],
+    );
+  }
+
+  Widget _savedButtons(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final trip = _saved!.tripId;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space3, Tokens.screenMargin, Tokens.space4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(icon, size: 48, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(height: Tokens.space4),
-            Text(text, textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
-            if (preview == null && !_failed) ...[
-              const SizedBox(height: Tokens.space2),
-              Text(l.importFormats, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+            if (trip != null) ...[
+              FilledButton.icon(
+                key: const Key('importOpenTrip'),
+                icon: AppIcon(AppIcons.trip, size: 20, color: scheme.onPrimary),
+                label: Text(l.importOpenTrip),
+                onPressed: () => context.go('/trips/$trip'),
+              ),
+              const SizedBox(height: Tokens.space3),
             ],
-            const SizedBox(height: Tokens.space6),
-            FilledButton.icon(
-              key: const Key('importPick'),
-              icon: const Icon(Icons.folder_open),
-              label: Text(preview == null && !_failed ? l.importPickFile : l.importPickAnother),
-              onPressed: _pick,
+            (trip == null ? FilledButton.new : OutlinedButton.new)(
+              key: const Key('importDone'),
+              onPressed: _close,
+              child: Text(l.settingsDone),
             ),
           ],
         ),
