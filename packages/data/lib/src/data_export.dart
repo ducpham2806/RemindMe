@@ -21,7 +21,7 @@ class DataExporter {
       column.endsWith('_at') || const {'at', 'dtstart', 'until', 'snoozed_until'}.contains(column);
 
   /// Cột chữ chứa JSON (mảng/đối tượng) ở máy.
-  static const _jsonColumns = {'tags', 'checklist', 'calendar', 'exdates', 'location', 'passengers', 'segments', 'extra', 'geofence'};
+  static const _jsonColumns = {'tags', 'checklist', 'calendar', 'exdates', 'location', 'passengers', 'segments', 'extra', 'geofence', 'packing'};
 
   Future<List<Map<String, Object?>>> _rows(SyncTable t) async {
     final codec = RowCodec(db.allTables.firstWhere((x) => x.actualTableName == t.wire));

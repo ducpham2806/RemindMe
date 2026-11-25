@@ -29,7 +29,9 @@ GoRouter buildRouter({String initialLocation = '/today'}) => GoRouter(
             StatefulShellBranch(routes: [GoRoute(path: '/calendar', builder: (_, _) => const CalendarScreen())]),
             StatefulShellBranch(routes: [
               GoRoute(path: '/trips', builder: (_, _) => const TripsScreen(), routes: [
-                GoRoute(path: ':id', builder: (_, state) => TripDetailScreen(id: state.pathParameters['id']!)),
+                GoRoute(
+                    path: ':id',
+                    builder: (_, state) => TripDetailScreen(id: state.pathParameters['id']!, initialTab: state.uri.queryParameters['tab'] ?? 'itinerary')),
               ]),
             ]),
             StatefulShellBranch(routes: [

@@ -10,13 +10,15 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onUpgrade: (m, from, to) async {
           // v2 (S3): bảng scheduled_notifications cho rolling window.
           if (from < 2) await m.createTable(scheduledNotifications);
+          // v3: checklist hành lý trên trips.
+          if (from < 3) await m.addColumn(trips, trips.packing);
         },
       );
 }

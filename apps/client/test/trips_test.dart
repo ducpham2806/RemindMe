@@ -81,4 +81,64 @@ void main() {
     expect((created.kind, created.tripId, created.tz), ('task', trip, 'Asia/Ho_Chi_Minh'));
     expect(DateTime.fromMillisecondsSinceEpoch(created.startsAt!, isUtc: true), DateTime.utc(2099, 1, 2, 6), reason: 'đến 12:40 → 13:00 giờ Hà Nội');
   });
+
+  testWidgets('vi: tab Hành lý: danh sách gợi ý, đánh dấu, thêm món theo nhóm, sửa, bỏ + Hoàn tác (Figma 23)', (tester) async {
+    final c = await pumpApp(tester, size: const Size(390, 1100), locale: const Locale('vi'), region: 'VN');
+    final trip = (await tester.runAsync(() => c.read(tripsRepositoryProvider).create(title: 'Hà Nội', startsOn: '2099-01-02', endsOn: '2099-01-04')))!;
+    await tester.tap(find.text('Chuyến đi').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('trip-$trip')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hành lý'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tripTab-packing')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('packingEmpty')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('packingUseTemplate')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hành lý · 0/6'), findsOneWidget);
+    expect(find.text('Còn 6 món cần chuẩn bị.'), findsOneWidget);
+    expect(find.text('Giấy tờ'), findsOneWidget);
+    expect(find.text('Thiết bị'), findsOneWidget);
+
+    await tester.tap(find.text('CCCD / Hộ chiếu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hành lý · 1/6'), findsOneWidget);
+    expect(find.text('Còn 5 món cần chuẩn bị.'), findsOneWidget);
+    expect(tester.widget<Checkbox>(find.descendant(of: find.ancestor(of: find.text('CCCD / Hộ chiếu'), matching: find.byType(InkWell)).first, matching: find.byType(Checkbox))).value, isTrue);
+
+    // Thêm món vào nhóm Quần áo.
+    await tester.tap(find.byKey(const Key('packingAdd')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(find.byKey(const Key('packingSave'))).onPressed, isNull);
+    await tester.enterText(find.byKey(const Key('packingText')), ' Áo mưa ');
+    await tester.tap(find.byKey(const Key('packingGroup-clothes')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('packingSave')));
+    await tester.pumpAndSettle();
+    expect(find.text('Quần áo'), findsOneWidget);
+    expect(find.text('Áo mưa'), findsOneWidget);
+    expect(find.text('Hành lý · 1/7'), findsOneWidget);
+
+    // Sửa tên, rồi bỏ khỏi danh sách và hoàn tác.
+    await tester.longPress(find.text('Áo mưa'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('packingText')), 'Áo mưa mỏng');
+    await tester.tap(find.byKey(const Key('packingSave')));
+    await tester.pumpAndSettle();
+    expect(find.text('Áo mưa mỏng'), findsOneWidget);
+    await tester.longPress(find.text('Pin dự phòng'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('packingRemove')));
+    await tester.pumpAndSettle();
+    expect(find.text('Pin dự phòng'), findsNothing);
+    expect(find.text('Hành lý · 1/6'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('packingUndo')));
+    await tester.pumpAndSettle();
+    expect(find.text('Pin dự phòng'), findsOneWidget);
+
+    final db = c.read(appDatabaseProvider);
+    final row = (await tester.runAsync(() async => (await db.select(db.trips).get()).single))!;
+    expect(row.packing, contains('Áo mưa mỏng'));
+  });
 }

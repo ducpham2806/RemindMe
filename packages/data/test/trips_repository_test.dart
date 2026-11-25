@@ -115,4 +115,22 @@ void main() {
     expect(() => imports.commit(const ImportRecord(kind: 'email', tierUsed: 't2'), const [], deviceTz: 'Asia/Ho_Chi_Minh'), throwsArgumentError);
     expect(() => imports.commit(const ImportRecord(kind: 'csv'), const [], deviceTz: 'Asia/Ho_Chi_Minh'), throwsArgumentError);
   });
+
+  test('checklist hành lý: chưa có = null; thêm, đánh dấu, bỏ món rỗng; outbox gửi mảng JSON', () async {
+    final id = await trips.create(title: 'Hà Nội');
+    expect((await trips.trip(id))!.packing, isNull);
+    final a = await trips.addPacking(id, '  Hộ chiếu ', group: 'documents');
+    await trips.addPacking(id, 'Sạc', group: 'devices');
+    var list = (await trips.trip(id))!.packing!;
+    expect([for (final p in list) (p.text, p.group, p.done)], [('Hộ chiếu', 'documents', false), ('Sạc', 'devices', false)]);
+    await trips.setPacking(id, [for (final p in list) p.id == a ? p.copyWith(done: true) : p, const PackingItem(id: 'x', text: '  ')]);
+    list = (await trips.trip(id))!.packing!;
+    expect([for (final p in list) p.done], [true, false]);
+    expect(() => trips.addPacking(id, ' '), throwsArgumentError);
+    final last = (await db.select(db.outbox).get()).last;
+    final payload = (jsonDecode(last.mutation) as Map)['payload'] as Map;
+    expect(payload['packing'], isA<List<Object?>>());
+    expect(PackingItem.decode('{bad'), isNull);
+    expect(PackingItem.decode('[{"id":"1","text":"A","group":"zzz"}]')!.single.group, 'other');
+  });
 }

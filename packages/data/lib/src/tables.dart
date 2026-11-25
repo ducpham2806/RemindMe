@@ -31,6 +31,8 @@ class Trips extends Table with SyncCols {
   TextColumn get startsOn => text().nullable()();
   TextColumn get endsOn => text().nullable()();
   TextColumn get coverUrl => text().nullable()();
+  /// Checklist hành lý: JSON `[{id, text, done, group}]` (migration 10).
+  TextColumn get packing => text().nullable()();
   @override
   Set<Column> get primaryKey => {id};
 }

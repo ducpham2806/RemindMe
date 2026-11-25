@@ -128,6 +128,7 @@ create table reminders (
 create table trips (
   id uuid primary key, user_id uuid not null references profiles on delete cascade,
   title text not null, destination text, starts_on date, ends_on date, cover_url text,
+  packing jsonb,                              -- checklist hành lý [{id, text, done, group}], LWW cả mảng (migration 10)
   SYNC_COLS
 );
 

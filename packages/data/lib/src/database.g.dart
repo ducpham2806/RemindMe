@@ -779,6 +779,17 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _packingMeta = const VerificationMeta(
+    'packing',
+  );
+  @override
+  late final GeneratedColumn<String> packing = GeneratedColumn<String>(
+    'packing',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     version,
@@ -792,6 +803,7 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
     startsOn,
     endsOn,
     coverUrl,
+    packing,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -873,6 +885,12 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
         coverUrl.isAcceptableOrUnknown(data['cover_url']!, _coverUrlMeta),
       );
     }
+    if (data.containsKey('packing')) {
+      context.handle(
+        _packingMeta,
+        packing.isAcceptableOrUnknown(data['packing']!, _packingMeta),
+      );
+    }
     return context;
   }
 
@@ -926,6 +944,10 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
         DriftSqlType.string,
         data['${effectivePrefix}cover_url'],
       ),
+      packing: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}packing'],
+      ),
     );
   }
 
@@ -947,6 +969,9 @@ class Trip extends DataClass implements Insertable<Trip> {
   final String? startsOn;
   final String? endsOn;
   final String? coverUrl;
+
+  /// Checklist hành lý: JSON `[{id, text, done, group}]` (migration 10).
+  final String? packing;
   const Trip({
     required this.version,
     this.updatedAt,
@@ -959,6 +984,7 @@ class Trip extends DataClass implements Insertable<Trip> {
     this.startsOn,
     this.endsOn,
     this.coverUrl,
+    this.packing,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -989,6 +1015,9 @@ class Trip extends DataClass implements Insertable<Trip> {
     }
     if (!nullToAbsent || coverUrl != null) {
       map['cover_url'] = Variable<String>(coverUrl);
+    }
+    if (!nullToAbsent || packing != null) {
+      map['packing'] = Variable<String>(packing);
     }
     return map;
   }
@@ -1022,6 +1051,9 @@ class Trip extends DataClass implements Insertable<Trip> {
       coverUrl: coverUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(coverUrl),
+      packing: packing == null && nullToAbsent
+          ? const Value.absent()
+          : Value(packing),
     );
   }
 
@@ -1042,6 +1074,7 @@ class Trip extends DataClass implements Insertable<Trip> {
       startsOn: serializer.fromJson<String?>(json['startsOn']),
       endsOn: serializer.fromJson<String?>(json['endsOn']),
       coverUrl: serializer.fromJson<String?>(json['coverUrl']),
+      packing: serializer.fromJson<String?>(json['packing']),
     );
   }
   @override
@@ -1059,6 +1092,7 @@ class Trip extends DataClass implements Insertable<Trip> {
       'startsOn': serializer.toJson<String?>(startsOn),
       'endsOn': serializer.toJson<String?>(endsOn),
       'coverUrl': serializer.toJson<String?>(coverUrl),
+      'packing': serializer.toJson<String?>(packing),
     };
   }
 
@@ -1074,6 +1108,7 @@ class Trip extends DataClass implements Insertable<Trip> {
     Value<String?> startsOn = const Value.absent(),
     Value<String?> endsOn = const Value.absent(),
     Value<String?> coverUrl = const Value.absent(),
+    Value<String?> packing = const Value.absent(),
   }) => Trip(
     version: version ?? this.version,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
@@ -1086,6 +1121,7 @@ class Trip extends DataClass implements Insertable<Trip> {
     startsOn: startsOn.present ? startsOn.value : this.startsOn,
     endsOn: endsOn.present ? endsOn.value : this.endsOn,
     coverUrl: coverUrl.present ? coverUrl.value : this.coverUrl,
+    packing: packing.present ? packing.value : this.packing,
   );
   Trip copyWithCompanion(TripsCompanion data) {
     return Trip(
@@ -1104,6 +1140,7 @@ class Trip extends DataClass implements Insertable<Trip> {
       startsOn: data.startsOn.present ? data.startsOn.value : this.startsOn,
       endsOn: data.endsOn.present ? data.endsOn.value : this.endsOn,
       coverUrl: data.coverUrl.present ? data.coverUrl.value : this.coverUrl,
+      packing: data.packing.present ? data.packing.value : this.packing,
     );
   }
 
@@ -1120,7 +1157,8 @@ class Trip extends DataClass implements Insertable<Trip> {
           ..write('destination: $destination, ')
           ..write('startsOn: $startsOn, ')
           ..write('endsOn: $endsOn, ')
-          ..write('coverUrl: $coverUrl')
+          ..write('coverUrl: $coverUrl, ')
+          ..write('packing: $packing')
           ..write(')'))
         .toString();
   }
@@ -1138,6 +1176,7 @@ class Trip extends DataClass implements Insertable<Trip> {
     startsOn,
     endsOn,
     coverUrl,
+    packing,
   );
   @override
   bool operator ==(Object other) =>
@@ -1153,7 +1192,8 @@ class Trip extends DataClass implements Insertable<Trip> {
           other.destination == this.destination &&
           other.startsOn == this.startsOn &&
           other.endsOn == this.endsOn &&
-          other.coverUrl == this.coverUrl);
+          other.coverUrl == this.coverUrl &&
+          other.packing == this.packing);
 }
 
 class TripsCompanion extends UpdateCompanion<Trip> {
@@ -1168,6 +1208,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
   final Value<String?> startsOn;
   final Value<String?> endsOn;
   final Value<String?> coverUrl;
+  final Value<String?> packing;
   final Value<int> rowid;
   const TripsCompanion({
     this.version = const Value.absent(),
@@ -1181,6 +1222,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     this.startsOn = const Value.absent(),
     this.endsOn = const Value.absent(),
     this.coverUrl = const Value.absent(),
+    this.packing = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TripsCompanion.insert({
@@ -1195,6 +1237,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     this.startsOn = const Value.absent(),
     this.endsOn = const Value.absent(),
     this.coverUrl = const Value.absent(),
+    this.packing = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id);
   static Insertable<Trip> custom({
@@ -1209,6 +1252,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     Expression<String>? startsOn,
     Expression<String>? endsOn,
     Expression<String>? coverUrl,
+    Expression<String>? packing,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1223,6 +1267,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
       if (startsOn != null) 'starts_on': startsOn,
       if (endsOn != null) 'ends_on': endsOn,
       if (coverUrl != null) 'cover_url': coverUrl,
+      if (packing != null) 'packing': packing,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1239,6 +1284,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     Value<String?>? startsOn,
     Value<String?>? endsOn,
     Value<String?>? coverUrl,
+    Value<String?>? packing,
     Value<int>? rowid,
   }) {
     return TripsCompanion(
@@ -1253,6 +1299,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
       startsOn: startsOn ?? this.startsOn,
       endsOn: endsOn ?? this.endsOn,
       coverUrl: coverUrl ?? this.coverUrl,
+      packing: packing ?? this.packing,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1293,6 +1340,9 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     if (coverUrl.present) {
       map['cover_url'] = Variable<String>(coverUrl.value);
     }
+    if (packing.present) {
+      map['packing'] = Variable<String>(packing.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1313,6 +1363,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
           ..write('startsOn: $startsOn, ')
           ..write('endsOn: $endsOn, ')
           ..write('coverUrl: $coverUrl, ')
+          ..write('packing: $packing, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -8945,6 +8996,7 @@ typedef $$TripsTableCreateCompanionBuilder =
       Value<String?> startsOn,
       Value<String?> endsOn,
       Value<String?> coverUrl,
+      Value<String?> packing,
       Value<int> rowid,
     });
 typedef $$TripsTableUpdateCompanionBuilder =
@@ -8960,6 +9012,7 @@ typedef $$TripsTableUpdateCompanionBuilder =
       Value<String?> startsOn,
       Value<String?> endsOn,
       Value<String?> coverUrl,
+      Value<String?> packing,
       Value<int> rowid,
     });
 
@@ -9023,6 +9076,11 @@ class $$TripsTableFilterComposer extends Composer<_$AppDatabase, $TripsTable> {
 
   ColumnFilters<String> get coverUrl => $composableBuilder(
     column: $table.coverUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get packing => $composableBuilder(
+    column: $table.packing,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9090,6 +9148,11 @@ class $$TripsTableOrderingComposer
     column: $table.coverUrl,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get packing => $composableBuilder(
+    column: $table.packing,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TripsTableAnnotationComposer
@@ -9137,6 +9200,9 @@ class $$TripsTableAnnotationComposer
 
   GeneratedColumn<String> get coverUrl =>
       $composableBuilder(column: $table.coverUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get packing =>
+      $composableBuilder(column: $table.packing, builder: (column) => column);
 }
 
 class $$TripsTableTableManager
@@ -9178,6 +9244,7 @@ class $$TripsTableTableManager
                 Value<String?> startsOn = const Value.absent(),
                 Value<String?> endsOn = const Value.absent(),
                 Value<String?> coverUrl = const Value.absent(),
+                Value<String?> packing = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TripsCompanion(
                 version: version,
@@ -9191,6 +9258,7 @@ class $$TripsTableTableManager
                 startsOn: startsOn,
                 endsOn: endsOn,
                 coverUrl: coverUrl,
+                packing: packing,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -9206,6 +9274,7 @@ class $$TripsTableTableManager
                 Value<String?> startsOn = const Value.absent(),
                 Value<String?> endsOn = const Value.absent(),
                 Value<String?> coverUrl = const Value.absent(),
+                Value<String?> packing = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TripsCompanion.insert(
                 version: version,
@@ -9219,6 +9288,7 @@ class $$TripsTableTableManager
                 startsOn: startsOn,
                 endsOn: endsOn,
                 coverUrl: coverUrl,
+                packing: packing,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

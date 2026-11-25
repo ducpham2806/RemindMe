@@ -9,7 +9,7 @@ import 'sync_engine.dart';
 
 /// Chuyến đi + số đặt chỗ trong đó.
 class TripSummary {
-  const TripSummary({required this.id, this.title, this.destination, this.startsOn, this.endsOn, this.itemCount = 0});
+  const TripSummary({required this.id, this.title, this.destination, this.startsOn, this.endsOn, this.itemCount = 0, this.packing});
   final String id;
   final String? title;
   final String? destination;
@@ -17,6 +17,8 @@ class TripSummary {
   final String? startsOn;
   final String? endsOn;
   final int itemCount;
+  /// Checklist hành lý; null = chưa bắt đầu (app gợi ý danh sách mẫu).
+  final List<PackingItem>? packing;
 
   /// Còn hoạt động (chưa qua) tính theo ngày [today]: như `max_active_trips` trên server.
   bool activeOn(String today) => endsOn == null || endsOn!.compareTo(today) >= 0;
@@ -27,6 +29,41 @@ class TripSummary {
     final s = CivilDate.parse(startsOn!).addDays(-slackDays).toIso();
     final e = CivilDate.parse(endsOn ?? startsOn!).addDays(slackDays).toIso();
     return from.compareTo(e) <= 0 && to.compareTo(s) >= 0;
+  }
+}
+
+/// 1 món trong checklist hành lý (Figma 23). [group]: 'documents'|'devices'|'personal'|'clothes'|'other'.
+class PackingItem {
+  const PackingItem({required this.id, required this.text, this.done = false, this.group = 'other'});
+  final String id;
+  final String text;
+  final bool done;
+  final String group;
+
+  static const groups = ['documents', 'devices', 'personal', 'clothes', 'other'];
+
+  PackingItem copyWith({String? text, bool? done, String? group}) =>
+      PackingItem(id: id, text: text ?? this.text, done: done ?? this.done, group: group ?? this.group);
+
+  Map<String, Object?> toJson() => {'id': id, 'text': text, 'done': done, 'group': group};
+
+  static PackingItem? fromJson(Object? j) {
+    if (j is! Map) return null;
+    final id = j['id'], text = j['text'];
+    if (id is! String || text is! String) return null;
+    final g = j['group'];
+    return PackingItem(id: id, text: text, done: j['done'] == true, group: g is String && groups.contains(g) ? g : 'other');
+  }
+
+  /// Đọc cột `packing` (chuỗi JSON ở máy); hỏng thì coi như chưa có.
+  static List<PackingItem>? decode(String? raw) {
+    if (raw == null) return null;
+    try {
+      final v = jsonDecode(raw);
+      return v is List ? [for (final e in v) ?fromJson(e)] : null;
+    } on FormatException {
+      return null;
+    }
   }
 }
 
@@ -98,6 +135,21 @@ class TripsRepository {
     return engine.edit(SyncTable.trips, id, {'title': t});
   }
 
+  /// Ghi cả checklist hành lý (LWW cả mảng khi đồng bộ, migration 10). Bỏ món có tên rỗng.
+  Future<void> setPacking(String id, List<PackingItem> items) => engine.edit(SyncTable.trips, id, {
+        'packing': [for (final i in items) if (i.text.trim().isNotEmpty) i.copyWith(text: i.text.trim()).toJson()],
+      });
+
+  /// Thêm món vào checklist hành lý, trả id món mới.
+  Future<String> addPacking(String id, String text, {String group = 'other'}) async {
+    final t = text.trim();
+    if (t.isEmpty) throw ArgumentError.value(text, 'text', 'không được rỗng');
+    final current = (await trip(id))?.packing ?? const <PackingItem>[];
+    final itemId = uuidV7(nowMillis: _now().millisecondsSinceEpoch);
+    await setPacking(id, [...current, PackingItem(id: itemId, text: t, group: group)]);
+    return itemId;
+  }
+
   /// Xóa chuyến: đặt chỗ vẫn giữ, chỉ bỏ khỏi chuyến.
   Future<void> delete(String id) async {
     final members = await (_db.select(_db.items)..where((t) => t.tripId.equals(id) & t.deletedAt.isNull())).get();
@@ -118,7 +170,15 @@ class TripsRepository {
     }
     return [
       for (final r in rows)
-        TripSummary(id: r.id, title: r.title, destination: r.destination, startsOn: r.startsOn, endsOn: r.endsOn, itemCount: counts[r.id] ?? 0),
+        TripSummary(
+          id: r.id,
+          title: r.title,
+          destination: r.destination,
+          startsOn: r.startsOn,
+          endsOn: r.endsOn,
+          itemCount: counts[r.id] ?? 0,
+          packing: PackingItem.decode(r.packing),
+        ),
     ];
   }
 

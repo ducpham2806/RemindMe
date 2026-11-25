@@ -16,6 +16,7 @@ import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 import '../items/item_tile.dart';
 import '../common/text_prompt.dart';
+import 'trip_packing.dart';
 
 /// Tab Chuyến đi (US-20, Figma 20): lọc Sắp tới / Đã qua, thẻ chuyến (ngày, số ngày, nơi đến, tuyến, vài chặng đầu, "Xem lịch trình"),
 /// thẻ "Thêm vé hoặc đặt phòng" (→ Nhập từ tệp), dòng hạn mức chuyến đi từ cache `quota_status`.
@@ -363,9 +364,11 @@ Map<String, (DateTime, String)> freeGapsAfter(List<TripSegment> segments, {Durat
 /// Chi tiết chuyến đi (UX §2.5, Figma 21): theo từng ngày của chuyến, giờ theo nơi diễn ra (giờ đi theo nơi đi, giờ đến theo nơi đến).
 /// Chuyến bay: giờ đi/đến lớn + mã sân bay, thời lượng, mã đặt chỗ (sao chép), nhắc; khách sạn: thẻ nhận phòng và trả phòng.
 /// Ngày chưa có gì: dòng gợi ý; khoảng trống > 3h giữa 2 chặng: "Thêm hoạt động".
-class TripDetailScreen extends ConsumerWidget {
-  const TripDetailScreen({super.key, required this.id});
+class TripDetailScreen extends ConsumerStatefulWidget {
+  const TripDetailScreen({super.key, required this.id, this.initialTab = 'itinerary'});
   final String id;
+  /// 'itinerary' | 'packing'.
+  final String initialTab;
 
   static IconData iconFor(String? type) => switch (type) {
         'flight' => Icons.flight,
@@ -384,8 +387,29 @@ class TripDetailScreen extends ConsumerWidget {
     return tz != null && TimeZones.isValid(tz) ? tz : s.item.tz;
   }
 
+  static bool _onDay(TripSegment s, CivilDate d) {
+    final i = s.item;
+    final a = _wall(i.startsAt, i.tz)?.date ?? (i.startDate == null ? null : CivilDate.parse(i.startDate!));
+    if (a == null) return false;
+    final b = _wall(i.endsAt, _destTz(s) ?? i.tz)?.date ?? a;
+    // Khách sạn chiếm cả các đêm ở giữa (đang ở thì không coi là ngày trống).
+    return !d.isBefore(a) && !d.isAfter(s.bookingType == 'hotel' ? b : a);
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TripDetailScreen> createState() => _TripDetailScreenState();
+}
+
+class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
+  late String _tab = widget.initialTab;
+
+  String get id => widget.id;
+  static CivilDateTime? _wall(DateTime? utc, String? tz) => TripDetailScreen._wall(utc, tz);
+  static String? _destTz(TripSegment s) => TripDetailScreen._destTz(s);
+  static bool _onDay(TripSegment s, CivilDate d) => TripDetailScreen._onDay(s, d);
+
+  @override
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -422,7 +446,7 @@ class TripDetailScreen extends ConsumerWidget {
           contentPadding: EdgeInsetsDirectional.zero,
           leading: Icon(Icons.add, color: scheme.primary),
           title: Text(l.tripAddActivity, style: theme.textTheme.titleSmall?.copyWith(color: scheme.primary)),
-          onTap: () => _addActivity(context, ref, from, tz),
+          onTap: () => _addActivity(context, from, tz),
         ));
       }
     }
@@ -510,7 +534,30 @@ class TripDetailScreen extends ConsumerWidget {
                   if (trip?.destination != null && trip?.title != null)
                     Text(trip!.title!, key: const Key('tripTitle'), style: theme.textTheme.titleSmall),
                   Text([?range, if (days != null) l.tripDays(days)].join(' · '), style: theme.textTheme.bodySmall),
+                  const SizedBox(height: Tokens.space3),
+                  Wrap(
+                    spacing: Tokens.space2,
+                    runSpacing: Tokens.space2,
+                    children: [
+                      _FilterChip(
+                          key: const Key('tripTab-itinerary'),
+                          label: l.tripTabItinerary,
+                          selected: _tab == 'itinerary',
+                          onTap: () => setState(() => _tab = 'itinerary')),
+                      _FilterChip(
+                          key: const Key('tripTab-packing'),
+                          label: switch (trip?.packing) {
+                            final p? when p.isNotEmpty => l.tripTabPacking(p.where((x) => x.done).length, p.length),
+                            _ => l.tripTabPackingEmpty,
+                          },
+                          selected: _tab == 'packing',
+                          onTap: () => setState(() => _tab = 'packing')),
+                    ],
+                  ),
                   const SizedBox(height: Tokens.space4),
+                  if (_tab == 'packing')
+                    if (trip != null) PackingTab(trip: trip) else const SizedBox.shrink()
+                  else ...[
                   if (zones.isNotEmpty)
                     DecoratedBox(
                       decoration: BoxDecoration(color: colors.travelContainer, borderRadius: BorderRadius.circular(12)),
@@ -532,36 +579,30 @@ class TripDetailScreen extends ConsumerWidget {
                     ),
                   const SizedBox(height: Tokens.space4),
                   ...dayList,
+                  ],
                 ],
               ),
             ),
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space3, Tokens.screenMargin, Tokens.space3),
               child: FilledButton.icon(
-                key: const Key('tripAddToItinerary'),
+                key: Key(_tab == 'packing' ? 'packingAdd' : 'tripAddToItinerary'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsetsDirectional.all(14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.radiusMd)),
                   textStyle: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 icon: AppIcon(AppIcons.plus, size: 20, color: scheme.onPrimary),
-                label: Text(l.tripAddToItinerary),
-                onPressed: () => _addMenu(context, ref, start),
+                label: Text(_tab == 'packing' ? l.packingAdd : l.tripAddToItinerary),
+                onPressed: _tab == 'packing'
+                    ? (trip == null ? null : () => editPackingItem(context, ref, trip))
+                    : () => _addMenu(context, start),
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  static bool _onDay(TripSegment s, CivilDate d) {
-    final i = s.item;
-    final a = _wall(i.startsAt, i.tz)?.date ?? (i.startDate == null ? null : CivilDate.parse(i.startDate!));
-    if (a == null) return false;
-    final b = _wall(i.endsAt, _destTz(s) ?? i.tz)?.date ?? a;
-    // Khách sạn chiếm cả các đêm ở giữa (đang ở thì không coi là ngày trống).
-    return !d.isBefore(a) && !d.isAfter(s.bookingType == 'hotel' ? b : a);
   }
 
   Widget _dayHeader(BuildContext context, CivilDate d, String? dayN, String locale) {
@@ -583,7 +624,7 @@ class TripDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _addMenu(BuildContext context, WidgetRef ref, CivilDate? start) async {
+  Future<void> _addMenu(BuildContext context, CivilDate? start) async {
     final l = AppLocalizations.of(context);
     final choice = await showModalBottomSheet<String>(
       context: context,
@@ -614,7 +655,7 @@ class TripDetailScreen extends ConsumerWidget {
   }
 
   /// Tạo việc trong chuyến ở đầu khoảng trống (tròn lên giờ kế tiếp theo giờ nơi đó), nhắc đúng giờ như Quick Add; mở chi tiết để chỉnh giờ.
-  Future<void> _addActivity(BuildContext context, WidgetRef ref, DateTime from, String tz) async {
+  Future<void> _addActivity(BuildContext context, DateTime from, String tz) async {
     final l = AppLocalizations.of(context);
     final title = await askText(context, title: l.tripAddActivity, hint: l.tripActivityHint, fieldKey: const Key('tripActivityName'));
     if (title == null) return;
