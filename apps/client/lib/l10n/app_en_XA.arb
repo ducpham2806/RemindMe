@@ -719,5 +719,13 @@
   "calendarKindTask": "[Ţàšķš~~]",
   "calendarKindEvent": "[Éṽéñţš~~]",
   "calendarKindAppointment": "[Àþþöîñţɱéñţš~~~~~]",
-  "calendarKindBooking": "[Ɓööķîñĝš~~~]"
+  "calendarKindBooking": "[Ɓööķîñĝš~~~]",
+  "notifQuietSection": "[Ǫûîéţ ĥöûŕš~~~~]",
+  "notifQuietToggle": "[Ţûŕñ öñ ǫûîéţ ĥöûŕš~~~~~~]",
+  "notifQuietOff": "[Öƒƒ · Šûĝĝéšţéđ ~~~~~{start}–{end}]",
+  "notifQuietOn": "[{start}–{end} · Ŕéɱîñđéŕš šţîļļ šĥöŵ, ŵîţĥöûţ šöûñđ~~~~~~~~~~~~]",
+  "notifQuietStart": "[Šţàŕţš~~]",
+  "notifQuietEnd": "[Éñđš~~]",
+  "notifQuietAlarmNote": "[Àļàŕɱ-šţýļé ŕéɱîñđéŕš àļŵàýš ŕîñĝ.~~~~~~~~~~~~]",
+  "notifChannelQuiet": "[Ŕéɱîñđéŕš đûŕîñĝ ǫûîéţ ĥöûŕš~~~~~~~~~~]"
 }

@@ -719,5 +719,13 @@
   "calendarKindTask": "Việc",
   "calendarKindEvent": "Sự kiện",
   "calendarKindAppointment": "Lịch hẹn",
-  "calendarKindBooking": "Đặt chỗ"
+  "calendarKindBooking": "Đặt chỗ",
+  "notifQuietSection": "Giờ yên lặng",
+  "notifQuietToggle": "Bật giờ yên lặng",
+  "notifQuietOff": "Đang tắt · Khung gợi ý {start}–{end}",
+  "notifQuietOn": "{start}–{end} · Nhắc vẫn hiện nhưng không kêu",
+  "notifQuietStart": "Bắt đầu",
+  "notifQuietEnd": "Kết thúc",
+  "notifQuietAlarmNote": "Nhắc kiểu báo thức vẫn luôn kêu.",
+  "notifChannelQuiet": "Nhắc trong giờ yên lặng"
 }

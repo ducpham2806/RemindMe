@@ -3787,5 +3787,53 @@
   "calendarKindBooking": "Bookings",
   "@calendarKindBooking": {
     "description": "Calendar type filter option."
+  },
+  "notifQuietSection": "Quiet hours",
+  "@notifQuietSection": {
+    "description": "Notifications settings section header (Figma C51)."
+  },
+  "notifQuietToggle": "Turn on quiet hours",
+  "@notifQuietToggle": {
+    "description": "Switch: reminders during quiet hours show without sound or vibration."
+  },
+  "notifQuietOff": "Off · Suggested {start}–{end}",
+  "@notifQuietOff": {
+    "description": "Quiet hours subtitle when off.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notifQuietOn": "{start}–{end} · Reminders still show, without sound",
+  "@notifQuietOn": {
+    "description": "Quiet hours subtitle when on.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notifQuietStart": "Starts",
+  "@notifQuietStart": {
+    "description": "Quiet hours start time row."
+  },
+  "notifQuietEnd": "Ends",
+  "@notifQuietEnd": {
+    "description": "Quiet hours end time row."
+  },
+  "notifQuietAlarmNote": "Alarm-style reminders always ring.",
+  "@notifQuietAlarmNote": {
+    "description": "Note under quiet hours settings."
+  },
+  "notifChannelQuiet": "Reminders during quiet hours",
+  "@notifChannelQuiet": {
+    "description": "Android notification channel name for silent reminders."
   }
 }

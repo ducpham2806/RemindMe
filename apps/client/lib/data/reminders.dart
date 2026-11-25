@@ -43,6 +43,7 @@ class AppNotificationTexts implements NotificationTexts {
         snooze60: l.notifActionSnooze60,
         channelReminders: l.notifChannelReminders,
         channelAlarms: l.notifChannelAlarms,
+        channelQuiet: l.notifChannelQuiet,
       );
 }
 
@@ -66,6 +67,25 @@ const defaultReminderPref = 'default_reminder', allDayTimePref = 'all_day_time',
 
 /// Giờ kêu mặc định của việc cả ngày khi người dùng chưa chọn (reminder-engine.md §5).
 final defaultAllDayTime = CivilTime(9);
+
+/// Giờ yên lặng (reminder-engine.md §5b): [quietHoursPref] = 'HH:mm-HH:mm' (khung đã chọn, giữ cả khi tắt),
+/// [quietHoursOnPref] = '1' khi bật.
+const quietHoursPref = 'quiet_hours', quietHoursOnPref = 'quiet_hours_on';
+
+/// Khung gợi ý khi người dùng chưa chọn.
+final suggestedQuietHours = QuietHours(CivilTime(22), CivilTime(7));
+
+/// Cài đặt giờ yên lặng: bật hay không + khung (gợi ý nếu chưa chọn).
+Future<({bool on, QuietHours window})> quietHoursSettingOf(AppDatabase db) async {
+  final prefs = LocalPrefs(db);
+  return (on: await prefs.get(quietHoursOnPref) == '1', window: QuietHours.parse(await prefs.get(quietHoursPref)) ?? suggestedQuietHours);
+}
+
+/// Khung đang áp cho planner; null khi tắt.
+Future<QuietHours?> quietHoursOf(AppDatabase db) async {
+  final s = await quietHoursSettingOf(db);
+  return s.on ? s.window : null;
+}
 
 /// Đọc [allDayTimePref]; sai định dạng thì dùng mặc định.
 Future<CivilTime> allDayTimeOf(AppDatabase db) async {
@@ -93,7 +113,12 @@ Future<ScheduleReport> rescheduleReminders({
   return ReminderScheduler(
     db: db,
     os: os,
-    planner: ReminderPlanner(deviceTz: deviceTz, maxPending: os.maxPending, allDayTime: await allDayTimeOf(db)),
+    planner: ReminderPlanner(
+      deviceTz: deviceTz,
+      maxPending: os.maxPending,
+      allDayTime: await allDayTimeOf(db),
+      quietHours: await quietHoursOf(db),
+    ),
     texts: AppNotificationTexts(l, localeTag: tag, use24h: use24h),
     locale: tag,
     now: now,

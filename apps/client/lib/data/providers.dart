@@ -232,6 +232,9 @@ final defaultReminderProvider = FutureProvider<int?>((ref) async {
 
 final allDayTimeProvider = FutureProvider<CivilTime>((ref) => allDayTimeOf(ref.watch(appDatabaseProvider)));
 
+/// Giờ yên lặng (Tôi → Thông báo & nhắc).
+final quietHoursProvider = FutureProvider<({bool on, QuietHours window})>((ref) => quietHoursSettingOf(ref.watch(appDatabaseProvider)));
+
 /// Cài đặt chỉ trên máy ở màn Ngôn ngữ & vùng (UX §1), tới khi có đồng bộ `profiles.region`/`calendar_systems`.
 /// Giá trị: [prefAuto] (theo máy/ngôn ngữ, mặc định), [prefNone], hoặc mã vùng ('VN') / hệ lịch ('lunar_vi').
 const holidayRegionPref = 'holiday_region', calendarSystemPref = 'calendar_system';

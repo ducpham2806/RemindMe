@@ -9,17 +9,27 @@ import 'package:timezone/timezone.dart' as tz;
 
 /// Chuỗi đã dịch cho nút và kênh thông báo (từ ARB, đăng ký lúc khởi tạo).
 class NotificationLabels {
-  const NotificationLabels({required this.done, required this.snooze10, required this.snooze60, required this.channelReminders, required this.channelAlarms});
+  const NotificationLabels({
+    required this.done,
+    required this.snooze10,
+    required this.snooze60,
+    required this.channelReminders,
+    required this.channelAlarms,
+    required this.channelQuiet,
+  });
   final String done;
   final String snooze10;
   final String snooze60;
   final String channelReminders;
   final String channelAlarms;
+  final String channelQuiet;
 }
 
 const _category = 'reminder';
 const _channelDefault = 'reminders_default';
 const _channelAlarm = 'reminders_alarm';
+/// Giờ yên lặng: kênh riêng không âm thanh/rung (Android không đổi được âm thanh của 1 kênh sau khi tạo).
+const _channelQuiet = 'reminders_quiet';
 
 /// Adapter `NotificationScheduler` trên `flutter_local_notifications` (reminder-engine.md §2, §3).
 /// Android: exact alarm nếu được cấp (`setAlarmClock` cho nhắc kiểu báo thức), không thì inexact; iOS: category có Xong/Hoãn.
@@ -82,11 +92,14 @@ class LocalNotificationScheduler implements NotificationScheduler {
     if (l == null) throw StateError('init() trước khi lập lịch');
     final exact = await _android?.canScheduleExactNotifications() ?? true;
     for (final n in notifications) {
+      final quiet = n.silent && !n.isAlarm;
       final android = AndroidNotificationDetails(
-        n.isAlarm ? _channelAlarm : _channelDefault,
-        n.isAlarm ? l.channelAlarms : l.channelReminders,
-        importance: n.isAlarm ? Importance.max : Importance.high,
-        priority: n.isAlarm ? Priority.max : Priority.high,
+        n.isAlarm ? _channelAlarm : (quiet ? _channelQuiet : _channelDefault),
+        n.isAlarm ? l.channelAlarms : (quiet ? l.channelQuiet : l.channelReminders),
+        importance: n.isAlarm ? Importance.max : (quiet ? Importance.low : Importance.high),
+        priority: n.isAlarm ? Priority.max : (quiet ? Priority.low : Priority.high),
+        playSound: !quiet,
+        enableVibration: !quiet,
         category: n.isAlarm ? AndroidNotificationCategory.alarm : AndroidNotificationCategory.reminder,
         actions: n.payload == null
             ? null
@@ -98,7 +111,8 @@ class LocalNotificationScheduler implements NotificationScheduler {
       );
       final darwin = DarwinNotificationDetails(
         categoryIdentifier: n.payload == null ? null : _category,
-        interruptionLevel: n.isAlarm ? InterruptionLevel.timeSensitive : InterruptionLevel.active,
+        interruptionLevel: n.isAlarm ? InterruptionLevel.timeSensitive : (quiet ? InterruptionLevel.passive : InterruptionLevel.active),
+        presentSound: !quiet,
       );
       await _plugin.zonedSchedule(
         id: n.notificationId,

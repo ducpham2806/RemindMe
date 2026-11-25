@@ -12,6 +12,7 @@ class ScheduledNotification {
     required this.body,
     this.isAlarm = false,
     this.payload,
+    this.silent = false,
   });
   final int notificationId;
   final String reminderId;
@@ -20,6 +21,8 @@ class ScheduledNotification {
   final String body;
   final bool isAlarm;
   final String? payload;
+  /// Trong giờ yên lặng: hiện nhưng không kêu, không rung.
+  final bool silent;
 }
 
 /// Nhắc có kêu đúng giờ được không (UX §6b "Nhắc nhở có thể không kêu").

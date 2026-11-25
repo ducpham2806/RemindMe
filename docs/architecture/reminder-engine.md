@@ -96,6 +96,13 @@ Bảng IATA → tz: `packages/parsers/data/airports.tsv` (mwgg/Airports, MIT; m�
 | Khám bệnh | 1 ngày trước (nhắc mang giấy tờ/nhịn ăn nếu có trong ghi chú), 1h trước |
 | Việc/sự kiện có giờ hoặc ngày tạo từ Quick Add | Đúng giờ (chip 🔔 trong UX §2.2), sửa ở màn chi tiết; mốc có sẵn: đúng giờ, 10', 30', 1h, 1 ngày trước |
 
+### 5b. Giờ yên lặng
+Khung giờ tường theo múi giờ máy (gợi ý 22:00–07:00, được qua nửa đêm), cài ở Tôi → Thông báo & nhắc, lưu trên máy (`LocalPrefs`).
+Nhắc có giờ kêu trong khung **không bị dời hay bỏ**: vẫn hiện đúng giờ nhưng không âm thanh/rung (Android: kênh `reminders_quiet`
+importance low; iOS: `interruptionLevel = passive`, không âm thanh). Nhắc kiểu báo thức (`is_alarm`) vẫn kêu. Planner đánh dấu
+`silent` theo giờ tường lúc kêu nên đổi múi giờ thì tính lại; bật/tắt hoặc đổi khung thì `contentHash` đổi và thông báo được lập lại.
+Đồng bộ cài đặt lên `profiles.settings` để dùng chung giữa thiết bị: chưa làm.
+
 ## 6. Đồng hồ thông minh
 | Giai đoạn | Apple Watch | Wear OS | Đồng hồ khác (Xiaomi, Huawei, Garmin, Samsung Tizen cũ) |
 |---|---|---|---|

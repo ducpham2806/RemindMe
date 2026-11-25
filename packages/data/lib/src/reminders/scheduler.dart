@@ -60,6 +60,7 @@ class ReminderScheduler {
             title: n.title,
             body: n.body,
             isAlarm: n.isAlarm,
+            silent: n.silent,
             payload: n.kind == PlannedKind.fallback ? null : n.payload,
           ),
       ]);

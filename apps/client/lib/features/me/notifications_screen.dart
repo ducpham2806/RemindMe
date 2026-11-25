@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_core/remindme_core.dart';
+import 'package:remindme_data/remindme_data.dart' show QuietHours;
 
 import '../../core/l10n/formatters.dart';
 import '../../core/theme/app_icons.dart';
@@ -15,7 +16,8 @@ import '../../l10n/app_localizations.dart';
 
 /// Tôi → Thông báo & nhắc (Figma C51, reminder-engine.md §2, §5): quyền thông báo (và báo thức chính xác trên Android),
 /// mốc nhắc mặc định của việc mới, giờ kêu của việc cả ngày. Lưu trên máy; đổi giờ cả ngày thì lập lịch lại ngay.
-/// Chưa có: giờ yên lặng, âm thanh riêng, hướng dẫn pin theo hãng máy.
+/// Giờ yên lặng: nhắc trong khung vẫn hiện nhưng không kêu/rung, nhắc kiểu báo thức vẫn kêu (reminder-engine.md §5b).
+/// Chưa có: âm thanh riêng, thiết bị nhận nhắc, hướng dẫn pin theo hãng máy (C34).
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
@@ -50,6 +52,21 @@ class NotificationsScreen extends ConsumerWidget {
     ref.invalidate(allDayTimeProvider);
   }
 
+  Future<void> _setQuiet(WidgetRef ref, {bool? on, QuietHours? window}) async {
+    final prefs = ref.read(localPrefsProvider);
+    if (on != null) await prefs.set(quietHoursOnPref, on ? '1' : '0');
+    if (window != null) await prefs.set(quietHoursPref, window.encode());
+    ref.invalidate(quietHoursProvider);
+  }
+
+  Future<void> _pickQuietTime(BuildContext context, WidgetRef ref, QuietHours w, {required bool start}) async {
+    final t = start ? w.start : w.end;
+    final picked = await showTimePicker(context: context, initialTime: TimeOfDay(hour: t.hour, minute: t.minute));
+    if (picked == null) return;
+    final v = CivilTime(picked.hour, picked.minute);
+    await _setQuiet(ref, window: start ? QuietHours(v, w.end) : QuietHours(w.start, v));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
@@ -60,6 +77,8 @@ class NotificationsScreen extends ConsumerWidget {
     final health = ref.watch(notificationHealthProvider).value;
     final offset = ref.watch(defaultReminderProvider);
     final allDay = ref.watch(allDayTimeProvider).value ?? defaultAllDayTime;
+    final quiet = ref.watch(quietHoursProvider).value ?? (on: false, window: suggestedQuietHours);
+    final qStart = fmt.clock(quiet.window.start), qEnd = fmt.clock(quiet.window.end);
     final os = ref.read(notificationSchedulerProvider);
     final small = theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w400, color: scheme.onSurfaceVariant);
     final allowed = health?.notificationsAllowed ?? true;
@@ -158,6 +177,36 @@ class NotificationsScreen extends ConsumerWidget {
             value: fmt.clock(allDay),
             onTap: () => _pickAllDayTime(context, ref, allDay),
           )),
+          section(l.notifQuietSection),
+          card(Column(
+            children: [
+              SwitchListTile(
+                key: const Key('notifQuiet'),
+                value: quiet.on,
+                onChanged: (v) => _setQuiet(ref, on: v),
+                title: Text(l.notifQuietToggle, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
+                subtitle: Text(quiet.on ? l.notifQuietOn(qStart, qEnd) : l.notifQuietOff(qStart, qEnd), key: const Key('notifQuietSummary'), style: small),
+              ),
+              if (quiet.on) ...[
+                SettingRow(
+                  key: const Key('notifQuietStart'),
+                  icon: AppIcons.moon,
+                  label: l.notifQuietStart,
+                  value: qStart,
+                  onTap: () => _pickQuietTime(context, ref, quiet.window, start: true),
+                ),
+                SettingRow(
+                  key: const Key('notifQuietEnd'),
+                  icon: AppIcons.clock,
+                  label: l.notifQuietEnd,
+                  value: qEnd,
+                  onTap: () => _pickQuietTime(context, ref, quiet.window, start: false),
+                ),
+              ],
+            ],
+          )),
+          const SizedBox(height: Tokens.space2),
+          Text(l.notifQuietAlarmNote, style: small),
           const SizedBox(height: Tokens.space5),
           Text(l.notifSystemNote, style: small),
         ],

@@ -63,7 +63,8 @@
   Kết thúc vào ngày/sau N lần), Lặp âm lịch (07: mùng 1/rằm/ngày riêng, tháng nhuận, lần tới; item dời về lần tới), Hoãn nhắc (08: nút ở chi tiết
   khi mở từ thông báo hoặc việc đang tới giờ, vuốt trái ở danh sách; việc chưa có nhắc thì thêm nhắc tuyệt đối).
   Tôi: Gói & mức sử dụng (C46, từng hạn mức từ cache `quota_status`, số thiết bị; nút Nâng cấp/Khôi phục mờ tới khi có RevenueCat),
-  Thông báo & nhắc (C51: quyền + báo thức chính xác, mốc nhắc mặc định cho Thêm nhanh, giờ nhắc việc cả ngày → lập lịch lại),
+  Thông báo & nhắc (C51: quyền + báo thức chính xác, mốc nhắc mặc định cho Thêm nhanh, giờ nhắc việc cả ngày → lập lịch lại,
+  giờ yên lặng: nhắc trong khung hiện không kêu, báo thức vẫn kêu, reminder-engine §5b),
   Dữ liệu & quyền riêng tư (C52), Xuất dữ liệu (C53: ZIP JSON + ICS tạo trên máy, lưu qua hộp thoại hệ điều hành), Xóa tài khoản (C54: gõ từ
   xác nhận, RPC `account_delete`) và Đã nhận yêu cầu xóa (C55).
   Onboarding (C30-C33, UX §3.1): Chào mừng, Mục tiêu (tạo list khởi đầu), Thử nhắc đầu tiên (câu mẫu + NLU), Bật thông báo (priming trước hộp
@@ -120,7 +121,7 @@
 - S3 còn thiếu (cần máy thật hoặc hạ tầng): chạy thử trên Android/iOS thật (chưa có SDK trong container; CI build APK sẽ kiểm biên dịch),
   method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
   onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
-  giờ yên lặng (C51 có trong Figma, planner chưa hỗ trợ).
+  giờ yên lặng chưa đồng bộ giữa thiết bị (lưu trên máy).
 - T2: chưa có tên thành phố → sân bay, ga → múi giờ, tàu/xe nhiều chặng, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
   nên không tính `smart_imports_per_month` (cần chủ dự án chốt: văn bản dán vào có tính là nhập thông minh không).
 - Chuyến đi: chưa có UI báo/paywall từ `SyncReport.rejectedTrips` (chờ luồng sync thật); dòng hạn mức ở màn Xem lại chưa có nút nâng cấp (chưa có paywall).

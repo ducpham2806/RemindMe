@@ -59,4 +59,33 @@ void main() {
     await settleReminders(tester);
     expect(testOs.pending.values.single.fireAtUtc, DateTime.utc(2026, 12, 3, 0, 30));
   });
+
+  testWidgets('vi: giờ yên lặng (C51): bật → nhắc 23:30 lập lịch im lặng, nhắc ban ngày vẫn kêu; đổi giờ kết thúc; tắt → kêu lại', (tester) async {
+    final c = await pumpApp(tester, size: const Size(390, 1200), locale: const Locale('vi'), region: 'VN', seed: (r) async {
+      const tz = 'Asia/Ho_Chi_Minh';
+      await r.create(title: 'Uống thuốc tối', startsAt: DateTime.utc(2026, 12, 2, 16, 30), tz: tz, reminderOffsets: const [0]); // 23:30
+      await r.create(title: 'Họp', startsAt: DateTime.utc(2026, 12, 2, 7), tz: tz, reminderOffsets: const [0]); // 14:00
+    });
+    await settleReminders(tester);
+    expect(testOs.pending.values.where((n) => n.silent), isEmpty);
+    await _open(tester);
+    expect(tester.widget<Text>(find.byKey(const Key('notifQuietSummary'))).data, 'Đang tắt · Khung gợi ý 22:00–07:00');
+    await tester.ensureVisible(find.byKey(const Key('notifQuiet')));
+    await tester.tap(find.byKey(const Key('notifQuiet')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('notifQuietSummary'))).data, '22:00–07:00 · Nhắc vẫn hiện nhưng không kêu');
+    expect(find.byKey(const Key('notifQuietStart')), findsOneWidget);
+    await settleReminders(tester);
+    final silent = {for (final n in testOs.pending.values) n.title: n.silent};
+    expect(silent, {'Uống thuốc tối': true, 'Họp': false});
+
+    // Đổi giờ bắt đầu sang 23:45 (lưu trực tiếp như sau khi chọn giờ): 23:30 không còn trong khung.
+    await tester.runAsync(() => c.read(localPrefsProvider).set(quietHoursPref, '23:45-07:00'));
+    await settleReminders(tester);
+    expect(testOs.pending.values.where((n) => n.silent), isEmpty);
+
+    await tester.tap(find.byKey(const Key('notifQuiet')));
+    await tester.pumpAndSettle();
+    expect(await tester.runAsync(() => c.read(localPrefsProvider).get(quietHoursOnPref)), '0');
+  });
 }

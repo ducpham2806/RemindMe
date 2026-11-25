@@ -12,6 +12,16 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Checklist chi tiết việc, Lịch Tuần/Ngày + bộ lọc, giờ yên lặng · Claude Code
+- **Làm:** `ItemView.checklist` + `setChecklist`; khối Việc chuẩn bị ở chi tiết (Figma 04: x/y, chạm đánh dấu, chạm giữ sửa/xóa + Hoàn tác,
+  ô thêm dòng). Lịch (Figma 24): chip Tháng/Tuần/Ngày/Hôm nay, tới/lui theo chế độ, ngày âm ở chế độ Ngày, bộ lọc danh sách (Hộp thư gồm
+  item chưa có list) và loại; `ItemFilter` áp cho cả `countsByDay` (chấm trên lưới) và danh sách ngày. Giờ yên lặng (C51, reminder-engine §5b):
+  `QuietHours` trong planner, `silent` qua `ScheduledNotification`, kênh Android `reminders_quiet` không âm thanh, iOS `passive`;
+  báo thức vẫn kêu; cài đặt bật/tắt + giờ bắt đầu/kết thúc ở Thông báo & nhắc. 30 key ARB.
+- **Quyết định:** giờ yên lặng không dời giờ nhắc, chỉ tắt tiếng (không lỡ nhắc, không đổi giờ người dùng đặt); lưu trên máy.
+- **Kiểm chứng:** client 113 (+3), data 58 (+2 nhóm kiểm), platform 2; analyze 0; lint 0; ảnh chụp Lịch so với Figma.
+- **Tiếp theo:** đồng bộ giờ yên lặng lên `profiles.settings`; tiến độ checklist trên thẻ việc.
+
 ## 2026-11-25 · Figma 28-29: Tài liệu gốc, Đã nhập bảng tính · Claude Code
 - **Làm:** `OriginalsStore.read`; màn Tài liệu gốc `/document/:importId` (giải mã lại bản gốc trên máy bằng cùng decoder lúc nhập,
   thẻ vé điện tử: mã sân bay lớn + giờ đi/đến theo giờ in trên vé; thẻ khách sạn: khoảng ngày, số đêm, nhận/trả phòng, mã; mục khác: tên, giờ, mã),

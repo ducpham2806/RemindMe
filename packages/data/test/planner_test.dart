@@ -29,6 +29,30 @@ void main() {
     expect(r.truncated, isFalse);
   });
 
+  test('giờ yên lặng 22:00–07:00 (qua nửa đêm, theo giờ máy): nhắc vẫn lập nhưng im lặng; báo thức vẫn kêu; đổi khung đổi contentHash', () {
+    final q = QuietHours(CivilTime(22), CivilTime(7));
+    expect([for (final h in [21, 22, 23, 0, 6, 7]) q.covers(CivilTime(h))], [false, true, true, true, true, false]);
+    expect(QuietHours(CivilTime(13), CivilTime(14)).covers(CivilTime(13, 30)), isTrue);
+    expect(QuietHours(CivilTime(8), CivilTime(8)).covers(CivilTime(8)), isFalse, reason: 'bắt đầu = kết thúc là tắt');
+    expect(QuietHours.parse('22:00-07:00')!.encode(), '22:00-07:00');
+    expect(QuietHours.parse('x'), isNull);
+
+    const tz = 'Asia/Ho_Chi_Minh';
+    final now = DateTime.utc(2026, 12, 1, 3);
+    final items = [
+      PlannerItem(id: 'late', title: 'Late', startsAt: DateTime.utc(2026, 12, 1, 16, 30), tz: tz), // 23:30 VN
+      PlannerItem(id: 'day', title: 'Day', startsAt: DateTime.utc(2026, 12, 1, 8), tz: tz), // 15:00 VN
+      PlannerItem(id: 'wake', title: 'Wake', startsAt: DateTime.utc(2026, 12, 1, 22), tz: tz), // 05:00 VN, kiểu báo thức
+    ];
+    final reminders = [at0('late'), at0('day'), PlannerReminder(id: 'r-wake', itemId: 'wake', triggerKind: 'offset', offsetMinutes: 0, isAlarm: true)];
+    final quiet = ReminderPlanner(deviceTz: tz, maxPending: 500, quietHours: q).plan(items: items, reminders: reminders, now: now, texts: texts);
+    expect({for (final n in quiet.notifications) n.itemId: n.silent}, {'day': false, 'late': true, 'wake': false});
+    final loud = ReminderPlanner(deviceTz: tz, maxPending: 500).plan(items: items, reminders: reminders, now: now, texts: texts);
+    final late = (quiet.notifications.firstWhere((n) => n.itemId == 'late'), loud.notifications.firstWhere((n) => n.itemId == 'late'));
+    expect(late.$1.fireAt, late.$2.fireAt, reason: 'không dời giờ');
+    expect(late.$1.contentHash, isNot(late.$2.contentHash), reason: 'bật/tắt giờ yên lặng thì lập lại thông báo đó');
+  });
+
   test('lặp hằng ngày 08:00 floating qua ngày DST New York: vẫn 08:00 giờ tường', () {
     final p = ReminderPlanner(deviceTz: 'America/New_York', maxPending: 500, horizon: const Duration(days: 3));
     final item = PlannerItem(

@@ -66,6 +66,7 @@ class PlannedNotification {
     this.isAlarm = false,
     this.dstAdjusted = false,
     this.kind = PlannedKind.occurrence,
+    this.silent = false,
   });
 
   final int notificationId;
@@ -78,8 +79,26 @@ class PlannedNotification {
   final bool isAlarm;
   final bool dstAdjusted;
   final PlannedKind kind;
+  /// Kêu trong giờ yên lặng: vẫn hiện nhưng không âm thanh/rung (nhắc kiểu báo thức không bao giờ im).
+  final bool silent;
 
-  String get contentHash => '$title|$body|$isAlarm|${fireAt.millisecondsSinceEpoch}';
+  PlannedNotification _withSilent(bool v) => v == silent
+      ? this
+      : PlannedNotification(
+          notificationId: notificationId,
+          reminderId: reminderId,
+          itemId: itemId,
+          occurrenceAt: occurrenceAt,
+          fireAt: fireAt,
+          title: title,
+          body: body,
+          isAlarm: isAlarm,
+          dstAdjusted: dstAdjusted,
+          kind: kind,
+          silent: v,
+        );
+
+  String get contentHash => '$title|$body|$isAlarm|${fireAt.millisecondsSinceEpoch}${silent ? '|q' : ''}';
 
   /// Payload gắn vào thông báo để xử lý action Xong/Hoãn (không chứa nội dung item).
   String get payload => jsonEncode({'i': itemId, 'r': reminderId, 'o': occurrenceAt.millisecondsSinceEpoch});
@@ -106,6 +125,37 @@ abstract interface class NotificationTexts {
   ({String title, String body}) fallback();
 }
 
+/// Giờ yên lặng (cài đặt trên máy, Figma C51, reminder-engine.md §5b): khung giờ tường theo múi giờ máy, được qua nửa đêm
+/// (22:00–07:00). [start] == [end] coi như tắt.
+class QuietHours {
+  const QuietHours(this.start, this.end);
+  final CivilTime start;
+  final CivilTime end;
+
+  static int _m(CivilTime t) => t.hour * 60 + t.minute;
+
+  /// Giờ tường [t] có trong khung [start, end) không.
+  bool covers(CivilTime t) {
+    final s = _m(start), e = _m(end), x = _m(t);
+    if (s == e) return false;
+    return s < e ? x >= s && x < e : x >= s || x < e;
+  }
+
+  /// 'HH:mm-HH:mm'.
+  String encode() => '$start-$end';
+
+  static QuietHours? parse(String? v) {
+    if (v == null) return null;
+    final parts = v.split('-');
+    if (parts.length != 2) return null;
+    try {
+      return QuietHours(CivilTime.parse(parts[0]), CivilTime.parse(parts[1]));
+    } on FormatException {
+      return null;
+    }
+  }
+}
+
 /// Rolling window (reminder-engine.md §1): trải mọi nhắc trong [horizon], sắp theo giờ kêu, giữ [maxPending] cái đầu.
 /// Hàm thuần: không đọc DB, không gọi OS (dễ test DST, múi giờ, giới hạn).
 class ReminderPlanner {
@@ -114,7 +164,11 @@ class ReminderPlanner {
     required this.maxPending,
     this.horizon = const Duration(days: 14),
     CivilTime? allDayTime,
+    this.quietHours,
   }) : allDayTime = allDayTime ?? CivilTime(9);
+
+  /// null = tắt giờ yên lặng.
+  final QuietHours? quietHours;
 
   /// Múi giờ IANA nơi máy đang ở (dùng cho item `floating` và item cả ngày).
   final String deviceTz;
@@ -140,6 +194,8 @@ class ReminderPlanner {
 
     void add(PlannedNotification n) {
       if (!n.fireAt.isAfter(now) || n.fireAt.isAfter(end)) return;
+      final q = quietHours;
+      if (q != null && !n.isAlarm && q.covers(TimeZones.toWall(n.fireAt, deviceTz).time!)) n = n._withSilent(true);
       final prev = out[n.notificationId];
       if (prev == null || n.fireAt.isBefore(prev.fireAt)) out[n.notificationId] = n;
     }
