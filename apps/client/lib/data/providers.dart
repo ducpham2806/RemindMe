@@ -135,6 +135,33 @@ final todaySectionsProvider =
         .watch(itemsRepositoryProvider)
         .watchToday(ref.watch(todayWindowProvider), deviceTz: ref.watch(deviceTimeZoneProvider)));
 
+/// Gói ngày lễ có sẵn trong app (packages/core/data/holidays, ADR-017).
+const bundledHolidayRegions = {'VN', 'US', 'GB'};
+
+/// Ngày lễ theo vùng của máy; null = vùng chưa có gói hoặc không biết vùng.
+final holidayCalendarProvider = FutureProvider<HolidayCalendar?>((ref) async {
+  final region = ref.watch(deviceRegionProvider)?.toUpperCase();
+  if (region == null || !bundledHolidayRegions.contains(region)) return null;
+  final data = await rootBundle.load('packages/remindme_core/data/holidays/$region.json');
+  return HolidayCalendar.parse(utf8.decode(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)));
+});
+
+/// Số item theo ngày của lưới tháng (khóa: ngày đầu và cuối lưới 'YYYY-MM-DD|YYYY-MM-DD').
+final calendarCountsProvider = StreamProvider.family<Map<String, int>, String>((ref, range) {
+  final [from, to] = range.split('|');
+  return ref
+      .watch(itemsRepositoryProvider)
+      .watchCountsByDay(CivilDate.parse(from), CivilDate.parse(to), deviceTz: ref.watch(deviceTimeZoneProvider));
+});
+
+/// Item của 1 ngày bất kỳ ('YYYY-MM-DD', theo giờ máy) cho màn Lịch.
+final daySectionsProvider = StreamProvider.family<TodaySections, String>((ref, iso) {
+  final d = CivilDate.parse(iso);
+  return ref
+      .watch(itemsRepositoryProvider)
+      .watchToday(DayWindow.ofLocal(DateTime(d.year, d.month, d.day)), deviceTz: ref.watch(deviceTimeZoneProvider));
+});
+
 final itemProvider = StreamProvider.family<ItemView?, String>((ref, id) => ref.watch(itemsRepositoryProvider).watchItem(id));
 
 /// SyncApi khi chưa có server: báo lỗi mạng, SyncEngine giữ nguyên outbox.

@@ -3,7 +3,7 @@
 **Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (code chạy offline; chờ tài khoản Supabase/Firebase) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
 
 ## Đã có
-- Bộ docs v2 (`docs/INDEX.md`) + 16 ADR (ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
+- Bộ docs v2 (`docs/INDEX.md`) + 17 ADR (ADR-017: ngày lễ là gói luật tự viết, tính trên máy; ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
 - DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
   + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói, chặn/kẹp `field_clock` sai) + 109 test pgTAP.
 - Khung repo: CI `.github/workflows/ci.yml` (3 job docs-and-lint, db + contract test, flutter đều pass trên GitHub, run #10), kiểm tham chiếu docs, lint chuỗi hard-code, hook commit-msg, bộ mẫu `packages/parsers/fixtures/` (schema + quy trình ẩn danh, 1 mẫu tổng hợp).
@@ -41,6 +41,8 @@
   Contract test Postgres: trips + booking_details + nhắc tuyệt đối + cập nhật qua `sync_push` thật.
 - Hạn mức chuyến đi: `SyncEngine` cache `quota_status` sau mỗi lần sync; màn Xem lại đếm chuyến đang hoạt động trên máy, hết lượt thì khóa "Chuyến mới"
   + dòng giải thích (số lấy từ gói). Chuyến mới vẫn bị server từ chối thì máy bỏ chuyến, gỡ `trip_id` khỏi đặt chỗ và gửi lại (không mất item, data-model §4).
+- US-12b phần đầu: ngày lễ VN/US/GB từ gói luật tự viết (ADR-017, `HolidayCalendar` trong `packages/core`); tab Lịch dạng tháng (UX §2.6): chấm ở ngày
+  có item (gồm từng lần của chuỗi lặp), ngày âm dưới ngày dương khi ngôn ngữ có âm lịch, ngày nghỉ lễ tô màu, chạm ngày → ngày lễ (nghỉ lễ/nghỉ bù) + item.
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.
@@ -77,7 +79,10 @@
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
   Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).
 - Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
-- Hệ âm lịch trong lựa chọn lặp đang suy theo ngôn ngữ giao diện (vi/zh/ko); chuyển sang cài đặt `profiles.calendar_systems` khi có màn Cài đặt.
+- Hệ âm lịch trong lựa chọn lặp và trên tab Lịch đang suy theo ngôn ngữ giao diện (vi/zh/ko), vùng ngày lễ theo vùng máy; chuyển sang cài đặt
+  `profiles.calendar_systems`/`region` (+ bật/tắt ngày âm) khi có màn Cài đặt.
+- Ngày lễ còn thiếu: gợi ý "Ngày lễ: dời nhắc công việc?", lặp "ngày làm việc" (cần cuối tuần theo CLDR weekData + `workdays_region`), gói ngày lễ
+  cho các nước khác (AU, CA, IN, đợt locale cấp B), màu loại item trên chấm lịch.
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.
 
 ## Blocker

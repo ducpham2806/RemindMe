@@ -232,6 +232,58 @@ class ItemsRepository {
     return TodaySections.partition(views, day);
   }
 
+  /// Số item (mở hoặc đã xong) theo ngày địa phương 'YYYY-MM-DD' trong [from, to] (gồm 2 đầu), cho chấm trên lịch tháng (UX §2.6).
+  /// Item có giờ tính theo ngày ở [deviceTz]; chuỗi lặp trải từng lần (bỏ lần đã bỏ qua).
+  Future<Map<String, int>> countsByDay(CivilDate from, CivilDate to, {required String deviceTz}) async {
+    final out = <String, int>{};
+    void add(CivilDate d) {
+      if (d.isBefore(from) || d.isAfter(to)) return;
+      out.update(d.toIso(), (n) => n + 1, ifAbsent: () => 1);
+    }
+
+    final rows = await (_db.select(_db.items)
+          ..where((t) => t.deletedAt.isNull() & t.status.isIn(const ['open', 'pending_quota', 'done'])))
+        .get();
+    final recs = {for (final r in await (_db.select(_db.recurrences)..where((t) => t.deletedAt.isNull())).get()) r.itemId: r};
+    final fromUtc = TimeZones.toUtc(CivilDateTime(from.addDays(-1), CivilTime(0)), deviceTz).utc;
+    final toUtc = TimeZones.toUtc(CivilDateTime(to.addDays(2), CivilTime(0)), deviceTz).utc;
+    final recurring = rows.where((r) => recs.containsKey(r.id) && r.status != 'done').toList();
+    final skipped = recurring.isEmpty
+        ? const <(String, int)>{}
+        : {
+            for (final o in await (_db.select(_db.occurrenceLog)
+                  ..where((t) =>
+                      t.deletedAt.isNull() &
+                      t.status.equals('skipped') &
+                      t.itemId.isIn(recurring.map((r) => r.id)) &
+                      t.occurrenceAt.isBetweenValues(fromUtc.millisecondsSinceEpoch, toUtc.millisecondsSinceEpoch)))
+                .get())
+              (o.itemId, o.occurrenceAt),
+          };
+    for (final r in rows) {
+      if (recs.containsKey(r.id)) {
+        if (r.status == 'done') continue;
+        final pi = plannerItemOf(r, recs[r.id], deviceTz: deviceTz);
+        for (final o in expandOccurrences(pi, fromUtc, toUtc, deviceTz: deviceTz, allDayTime: CivilTime(0))) {
+          if (skipped.contains((r.id, o.at.millisecondsSinceEpoch))) continue;
+          add(o.allDay ? o.date : TimeZones.toWall(o.at, deviceTz).date);
+        }
+      } else if (r.startDate != null && ((r.allDay ?? false) || r.startsAt == null)) {
+        add(CivilDate.parse(r.startDate!));
+      } else if (r.startsAt != null) {
+        add(TimeZones.toWall(DateTime.fromMillisecondsSinceEpoch(r.startsAt!, isUtc: true), deviceTz).date);
+      }
+    }
+    return out;
+  }
+
+  Stream<Map<String, int>> watchCountsByDay(CivilDate from, CivilDate to, {required String deviceTz}) async* {
+    yield await countsByDay(from, to, deviceTz: deviceTz);
+    await for (final _ in _db.tableUpdates(TableUpdateQuery.onAllTables([_db.items, _db.recurrences, _db.occurrenceLog]))) {
+      yield await countsByDay(from, to, deviceTz: deviceTz);
+    }
+  }
+
   /// id các item có lặp (để hiện biểu tượng 🔁).
   Stream<Set<String>> watchRecurringIds() {
     final q = _db.select(_db.recurrences)..where((t) => t.deletedAt.isNull());

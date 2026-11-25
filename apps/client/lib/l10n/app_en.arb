@@ -56,9 +56,63 @@
   "@todayEmptyBody": {
     "description": "Empty state body on Today. Max 90 chars."
   },
-  "calendarEmptyTitle": "No events this month",
-  "@calendarEmptyTitle": {
-    "description": "Empty state on Calendar."
+  "calendarPrevMonth": "Previous month",
+  "@calendarPrevMonth": {
+    "description": "Tooltip of the month navigation button on Calendar."
+  },
+  "calendarNextMonth": "Next month",
+  "@calendarNextMonth": {
+    "description": "Tooltip of the month navigation button on Calendar."
+  },
+  "calendarLunarShort": "{day}/{month}",
+  "@calendarLunarShort": {
+    "description": "Lunar date under the day number on the first day of a lunar month (UX 2.6). Shown only in languages with a lunar calendar; order day and month as your locale writes them.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "1"
+      },
+      "month": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "calendarLunarDate": "Lunar month {month}, day {day}",
+  "@calendarLunarDate": {
+    "description": "Screen reader label for the lunar date of a calendar day.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "15"
+      },
+      "month": {
+        "type": "String",
+        "example": "8"
+      }
+    }
+  },
+  "calendarItemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@calendarItemCount": {
+    "description": "Screen reader label: number of tasks and events on a calendar day.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "calendarDayOff": "Public holiday",
+  "@calendarDayOff": {
+    "description": "Calendar day details: under a holiday that is an official day off in the user's country."
+  },
+  "calendarSubstituteDay": "Substitute day off",
+  "@calendarSubstituteDay": {
+    "description": "Calendar day details: the holiday fell on a weekend, so this weekday is the day off instead."
+  },
+  "calendarDayEmpty": "Nothing planned for this day",
+  "@calendarDayEmpty": {
+    "description": "Calendar: the selected day has no holidays, tasks or events."
   },
   "tripsEmptyTitle": "No trips yet",
   "@tripsEmptyTitle": {

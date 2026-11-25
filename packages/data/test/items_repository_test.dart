@@ -78,6 +78,20 @@ void main() {
       expect(await repo.engine.pendingCount(), 3);
     });
 
+    test('countsByDay: item có giờ theo ngày ở múi giờ máy, cả ngày theo ngày, chuỗi lặp trải từng lần, bỏ đã xóa và lần bỏ qua', () async {
+      const tz = 'Asia/Ho_Chi_Minh';
+      await repo.create(title: 'late night', startsAt: DateTime.utc(2026, 12, 1, 18), tz: tz); // 01:00 ngày 2/12 giờ VN
+      await repo.create(title: 'all day', startDate: '2026-12-02');
+      await repo.create(title: 'outside', startDate: '2026-12-09');
+      final gone = await repo.create(title: 'gone', startDate: '2026-12-03');
+      await repo.delete(gone);
+      final daily = await repo.create(title: 'pills', startsAt: DateTime.utc(2026, 12, 1, 1), tz: tz,
+          recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY'}, recurrenceStart: DateTime.utc(2026, 12, 1, 1));
+      await repo.skipOccurrence(daily, DateTime.utc(2026, 12, 3, 1));
+      final counts = await repo.countsByDay(CivilDate(2026, 12, 1), CivilDate(2026, 12, 4), deviceTz: tz);
+      expect(counts, {'2026-12-01': 1, '2026-12-02': 3, '2026-12-04': 1});
+    });
+
     test('đổi tên, ghi chú, ưu tiên, xóa', () async {
       final id = await repo.create(title: 'Mua quà');
       await repo.rename(id, 'Mua quà sinh nhật');
