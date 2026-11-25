@@ -10,6 +10,7 @@ import '../../core/theme/app_icons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
+import '../../data/remote/remote_sync.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 import '../items/item_tile.dart';
@@ -30,6 +31,7 @@ class TodayScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const _Header(),
+            const _OfflineBanner(),
             Expanded(
               child: switch (sections) {
                 AsyncData(:final value) when value.isEmpty => ListView(
@@ -225,6 +227,30 @@ class _HolidayHintCard extends ConsumerWidget {
 }
 
 /// UX §6b: thiếu quyền thông báo / báo thức chính xác thì nhắc có thể không kêu. Chỉ hiện khi đã có nhắc.
+/// Banner nhỏ khi mất mạng (UX §6b): không chặn thao tác, chỉ hiện khi app có server.
+class _OfflineBanner extends ConsumerWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (ref.watch(remoteSyncStatusProvider).value?.state != RemoteSyncState.offline) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    return Container(
+      key: const Key('offlineBanner'),
+      margin: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space2),
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.space3, vertical: Tokens.space2),
+      decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(Tokens.radiusSm)),
+      child: Row(
+        children: [
+          Icon(Icons.cloud_off_outlined, size: 18, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(width: Tokens.space2),
+          Expanded(child: Text(AppLocalizations.of(context).syncOfflineBanner, style: theme.textTheme.bodySmall)),
+        ],
+      ),
+    );
+  }
+}
+
 class _ReminderHealthCard extends ConsumerWidget {
   const _ReminderHealthCard();
 

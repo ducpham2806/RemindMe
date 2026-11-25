@@ -21,6 +21,9 @@ enum RemoteSyncState {
   error,
 }
 
+/// Trạng thái + lần đồng bộ thành công gần nhất (giờ máy).
+typedef RemoteSyncStatus = ({RemoteSyncState state, DateTime? lastOk});
+
 /// Thông tin máy gửi lên `profile_init` / `session_claim`. [region] null thì chưa tạo được profile.
 typedef DeviceProfile = ({String uiLocale, String? region, String homeTz, String platform, String deviceClass, String? appVersion});
 
@@ -34,17 +37,20 @@ class RemoteSync {
   final String deviceId;
   final Future<DeviceProfile> Function() profile;
 
-  final _state = StreamController<RemoteSyncState>.broadcast();
+  final _state = StreamController<RemoteSyncStatus>.broadcast();
   RemoteSyncState _current = RemoteSyncState.idle;
+  DateTime? _lastOk;
   Future<SyncReport?>? _running;
   String? _claimedSession;
 
   RemoteSyncState get state => _current;
-  Stream<RemoteSyncState> get states => _state.stream;
+  RemoteSyncStatus get status => (state: _current, lastOk: _lastOk);
+  Stream<RemoteSyncStatus> get statuses => _state.stream;
 
   void _set(RemoteSyncState s) {
     _current = s;
-    _state.add(s);
+    if (s == RemoteSyncState.ok) _lastOk = DateTime.now();
+    if (!_state.isClosed) _state.add(status);
   }
 
   /// Một lượt đồng bộ; gọi lúc mở app, khi app trở lại, sau khi sửa (đã gom).

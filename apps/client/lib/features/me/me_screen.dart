@@ -2,10 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/l10n/formatters.dart';
 import '../../core/theme/app_icons.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/choice_buttons.dart';
 import '../../data/providers.dart';
+import '../../data/remote/remote_sync.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Tôi (UX §1 IA, Figma 27): lối tắt, tài khoản & cài đặt, ngôn ngữ & giao diện. Mục chưa làm hiện "Sắp có" và không chạm được.
@@ -38,6 +41,7 @@ class MeScreen extends ConsumerWidget {
               ],
             ),
             gap,
+            const _SyncCard(),
             Text(l.meAccountSettings, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
             const SizedBox(height: 10),
             _Group(
@@ -190,6 +194,65 @@ class _Choice extends StatelessWidget {
           const SizedBox(height: Tokens.space3),
           ChoiceButtons(keyPrefix: keyPrefix, value: value, options: options, onChanged: onChanged),
         ],
+      ),
+    );
+  }
+}
+
+/// Trạng thái đồng bộ (UX §6b "Tôi → Đồng bộ"): chỉ hiện khi app có server.
+class _SyncCard extends ConsumerWidget {
+  const _SyncCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(remoteSyncStatusProvider).value;
+    if (status == null) return const SizedBox.shrink();
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final pending = ref.watch(pendingChangesProvider).value ?? 0;
+    final text = switch (status.state) {
+      RemoteSyncState.ok => l.syncStateOk(status.lastOk == null ? '' : Fmt.of(context).time(status.lastOk!.toUtc())),
+      RemoteSyncState.syncing => l.syncStateSyncing,
+      RemoteSyncState.idle => l.syncStateIdle,
+      RemoteSyncState.offline => l.syncStateOffline,
+      RemoteSyncState.signedOut => l.syncStateSignedOut,
+      RemoteSyncState.regionMissing => l.syncStateRegionMissing,
+      RemoteSyncState.revoked => l.syncStateRevoked,
+      RemoteSyncState.error => l.syncStateError,
+    };
+    final warn = const {RemoteSyncState.error, RemoteSyncState.signedOut, RemoteSyncState.revoked}.contains(status.state);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(bottom: Tokens.space4),
+      child: Container(
+        key: const Key('meSync'),
+        padding: const EdgeInsetsDirectional.fromSTEB(14, Tokens.space3, Tokens.space2, Tokens.space3),
+        decoration: BoxDecoration(color: scheme.surface, borderRadius: BorderRadius.circular(16)),
+        child: Row(
+          children: [
+            Icon(warn ? Icons.sync_problem_outlined : Icons.cloud_done_outlined, size: 21,
+                color: warn ? RemindColors.of(context).warning : scheme.primary),
+            const SizedBox(width: Tokens.space3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.syncTitle, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  Text(text, key: const Key('meSyncState'), style: theme.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w400, color: scheme.onSurfaceVariant)),
+                  if (pending > 0)
+                    Text(l.syncPending(pending), style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w400, color: scheme.onSurfaceVariant)),
+                ],
+              ),
+            ),
+            TextButton(
+              key: const Key('meSyncNow'),
+              onPressed: status.state == RemoteSyncState.syncing ? null : () => ref.read(remoteSyncProvider)?.run(),
+              child: Text(l.syncNow),
+            ),
+          ],
+        ),
       ),
     );
   }

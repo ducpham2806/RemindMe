@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart' show TableUpdateQuery;
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -116,6 +117,27 @@ final syncApiProvider = Provider<SyncApi>((ref) => const OfflineSyncApi());
 
 /// Luồng đăng nhập + đồng bộ với server; null = offline (test, build không cấu hình). main() override.
 final remoteSyncProvider = Provider<RemoteSync?>((ref) => null);
+
+/// Trạng thái đồng bộ cho UI (banner offline, thẻ Đồng bộ ở Tôi); null = app không có server.
+final remoteSyncStatusProvider = StreamProvider<RemoteSyncStatus?>((ref) async* {
+  final sync = ref.watch(remoteSyncProvider);
+  if (sync == null) {
+    yield null;
+    return;
+  }
+  yield sync.status;
+  yield* sync.statuses;
+});
+
+/// Số thay đổi trên máy chưa gửi lên server (outbox).
+final pendingChangesProvider = StreamProvider<int>((ref) async* {
+  final engine = ref.watch(syncEngineProvider);
+  final db = ref.watch(appDatabaseProvider);
+  yield await engine.pendingCount();
+  await for (final _ in db.tableUpdates(TableUpdateQuery.onTable(db.outbox))) {
+    yield await engine.pendingCount();
+  }
+});
 
 final syncEngineProvider = Provider<SyncEngine>((ref) {
   final deviceId = ref.watch(deviceIdProvider);

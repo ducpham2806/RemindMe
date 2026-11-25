@@ -12,6 +12,15 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Đồng bộ thật với Supabase dev, trạng thái đồng bộ trong app · Claude Code
+- **Làm:** chủ dự án bật anonymous sign-ins; test live pass (đăng nhập ẩn danh → profile_init → session_claim → push → máy thứ 2 pull; server có
+  1 việc + Inbox + 1 phiên), đã xóa user test. Xác nhận `postgres` (owner `app.end_sessions`) xóa được `auth.sessions`. App: `RemoteSyncStatus`,
+  `remoteSyncStatusProvider`, `pendingChangesProvider`; banner offline dưới tiêu đề Hôm nay; thẻ Đồng bộ ở Tôi (trạng thái, giờ đồng bộ gần nhất,
+  số thay đổi chờ, Đồng bộ ngay). 12 key ARB.
+- **Quyết định:** màn "phiên bị kết thúc" (UX §3.7) để tới khi có đăng nhập tài khoản: user ẩn danh không thể bị máy khác đăng nhập chiếm phiên.
+- **Kiểm chứng:** client 83 (+3 trạng thái đồng bộ); live 1 pass; analyze 0; lint 0; ARB 303 key.
+- **Tiếp theo:** đăng nhập email OTP/Google/Apple liên kết user ẩn danh + màn §3.7; đẩy cài đặt Ngôn ngữ & vùng lên `profiles`.
+
 ## 2026-11-25 · Server Supabase dev: áp migrations, nối app (SupabaseSyncApi, RemoteSync) · Claude Code
 - **Làm:** áp 8 migration lên project `msgamxrlohgszgpvvyfd` (ap-southeast-1) qua Supabase MCP; chạy thử luồng chính bằng SQL trong transaction
   rollback (profile_init, session_claim, sync_push, sync_pull, quota_status đều đúng; DB vẫn trống). App: `supabase_flutter`, `SupabaseSyncApi`,

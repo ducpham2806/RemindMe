@@ -1,6 +1,6 @@
 # STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 
-**Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (có server Supabase dev; chờ bật auth ẩn danh, Firebase) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
+**Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (đồng bộ với Supabase dev chạy thật; chờ Firebase, đăng nhập có tài khoản) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
 
 ## Đã có
 - Bộ docs v2 (`docs/INDEX.md`) + 17 ADR (ADR-017: ngày lễ là gói luật tự viết, tính trên máy; ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
@@ -66,9 +66,11 @@
   App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →
   sync, thử lại 1 lần khi thiếu profile/phiên), `RemoteSyncBinding` (đồng bộ lúc mở app, khi trở lại, 3 giây sau sửa, 15 phút/lần);
   build có server bằng `--dart-define-from-file=env/dev.json`, không có thì offline như cũ. Test live `test/live_supabase_test.dart` (REMINDME_LIVE=1).
+  Đăng nhập ẩn danh đã bật; test live pass (đăng nhập → profile → phiên → push → máy thứ 2 pull về đúng). Banner offline trên Hôm nay,
+  thẻ Đồng bộ ở Tôi (trạng thái, giờ đồng bộ gần nhất, số thay đổi chờ, Đồng bộ ngay).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
-  tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.
+  tab Tài liệu + checklist hành lý của chuyến, đăng nhập có tài khoản (Google/Apple/email), flavors staging/prod.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
@@ -78,8 +80,8 @@
 4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
 5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
    Bộ câu NLU thật ≥ 300 câu/gói (vi chia đều Bắc/Trung/Nam) thay bộ tổng hợp trong `packages/parsers/fixtures/nlu/`.
-6. Sprint S1 phần còn lại: **chủ dự án bật "Allow anonymous sign-ins"** ở project dev rồi chạy test live; UI trạng thái đồng bộ + màn
-   phiên bị kết thúc (UX §3.7); đăng nhập Google/Apple/email OTP liên kết vào user ẩn danh; Firebase (FCM); flavors staging/prod; golden test.
+6. Sprint S1 phần còn lại: đăng nhập email OTP / Google / Apple liên kết vào user ẩn danh (giữ dữ liệu) + màn phiên bị kết thúc (UX §3.7,
+   chỉ cần khi có tài khoản thật); Firebase (FCM); flavors staging/prod; golden test.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
 - Tên thương mại/domain (docs dùng giả định `RemindMe`, `remindme.app`, bundle `app.remindme`).
@@ -92,25 +94,23 @@
 - S3 còn thiếu (cần máy thật hoặc hạ tầng): chạy thử trên Android/iOS thật (chưa có SDK trong container; CI build APK sẽ kiểm biên dịch),
   method channel `setAlarmClock`/nghe `TIMEZONE_CHANGED`·`TIME_SET` native (hiện lập lại khi mở app), BGAppRefreshTask + silent push `reschedule` (iOS),
   onboarding OEM (Xiaomi/Oppo/Vivo/Samsung/Huawei), màn priming trước khi hỏi quyền (hiện gọi thẳng hộp thoại OS), telemetry `reminder.*` (chưa có SDK analytics),
-  hủy thông báo khi `session_revoked` (chờ luồng sync thật), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
+  hủy thông báo khi `session_revoked` (cần đăng nhập có tài khoản), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
 - T2: chưa có tên thành phố → sân bay, ga → múi giờ, tàu/xe nhiều chặng, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
   nên không tính `smart_imports_per_month` (cần chủ dự án chốt: văn bản dán vào có tính là nhập thông minh không).
 - Chuyến đi: chưa có UI báo/paywall từ `SyncReport.rejectedTrips` (chờ luồng sync thật); dòng hạn mức ở màn Xem lại chưa có nút nâng cấp (chưa có paywall).
-- Nhập từ tệp: chưa thử `file_picker` trên máy thật; `quota_status` được cache sau mỗi lần sync (`SyncEngine.cachedQuota`) nhưng app còn offline
-  nên cache rỗng tới khi có server; lặp âm lịch từ dòng chữ trong tệp .txt chưa giữ (chỉ RRULE).
+- Nhập từ tệp: chưa thử `file_picker` trên máy thật; `quota_status` được cache sau mỗi lần sync (`SyncEngine.cachedQuota`) (build có server thì cache có sau lần đồng bộ đầu); lặp âm lịch từ dòng chữ trong tệp .txt chưa giữ (chỉ RRULE).
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.
   Kiểm trước Phase 4 (desktop): chính sách thanh toán Microsoft Store, giờ kêu thông báo Windows.
-  Cần xác nhận trên Supabase thật: role `postgres` có quyền `delete from auth.sessions` (nếu không, refresh token cũ sống tới khi hết hạn nhưng vẫn bị RLS chặn).
 - Rate limit `sync_push` (30/phút/thiết bị) chưa có trong DB/PostgREST; mã hóa cột `booking_details.passengers` chưa làm.
 - Tôi → Ngôn ngữ & vùng (quốc gia ngày lễ, hệ lịch phụ; mặc định theo máy/ngôn ngữ) lưu ở `LocalPrefs` trên máy: chuyển sang
-  `profiles.region`/`calendar_systems` khi có `SupabaseSyncApi`. Ngôn ngữ giao diện + sáng/tối chọn ở Tôi cũng chỉ trên máy
+  `profiles.region`/`calendar_systems` (đã có `SupabaseSyncApi`, chưa làm). Ngôn ngữ giao diện + sáng/tối chọn ở Tôi cũng chỉ trên máy
   (chưa gọi per-app language của OS); chưa có chọn định dạng, giọng nói.
 - Ngày lễ còn thiếu: server `app.rrule_fires_on` chưa trừ ngày lễ khi đếm quota (đếm dư, an toàn), gói ngày lễ
   cho các nước khác (AU, CA, IN, đợt locale cấp B), màu loại item trên chấm lịch.
 - UX copy: wireframe "KHÔNG GIỜ" dễ đọc thành 0:00 (đề xuất "Chưa đặt giờ"); "Hoãn 10'" dùng dấu phẩy trên. `intl` không có formatter khoảng thời gian/tương đối: chọn ở L1.
 
 ## Blocker
-- Đồng bộ thật chờ bật đăng nhập ẩn danh ở project Supabase dev (Authentication → Sign In / Providers).
+- Không có.
 
 ## Chưa xác minh (kiểm tra ở spike)
 Vision iOS với tiếng Việt và các hệ chữ khác; locale STT on-device thực tế trên máy; chất lượng Foundation Models/Gemini Nano theo ngôn ngữ;

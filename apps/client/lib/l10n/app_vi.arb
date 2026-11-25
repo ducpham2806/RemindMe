@@ -290,5 +290,17 @@
   "itemDetailTitle": "Chi tiết",
   "itemStatusOpen": "Chưa hoàn thành",
   "itemStatusDone": "Đã hoàn thành",
-  "itemDateTimeLabel": "Ngày & giờ"
+  "itemDateTimeLabel": "Ngày & giờ",
+  "syncOfflineBanner": "Đang offline. Nhắc vẫn kêu đúng giờ, dữ liệu sẽ đồng bộ khi có mạng.",
+  "syncTitle": "Đồng bộ",
+  "syncNow": "Đồng bộ ngay",
+  "syncStateOk": "Đã đồng bộ lúc {time}",
+  "syncStateSyncing": "Đang đồng bộ…",
+  "syncStateIdle": "Chưa đồng bộ",
+  "syncStateOffline": "Đang offline. Thay đổi sẽ đồng bộ khi có mạng.",
+  "syncStateSignedOut": "Chưa đăng nhập được, đang dùng offline.",
+  "syncStateRegionMissing": "Chọn quốc gia ngày lễ ở Ngôn ngữ & vùng để bật đồng bộ.",
+  "syncStateError": "Đồng bộ chưa thành công. Thử lại sau.",
+  "syncStateRevoked": "Tài khoản đã đăng nhập ở thiết bị khác.",
+  "syncPending": "{count, plural, other{{count} thay đổi chờ đồng bộ}}"
 }

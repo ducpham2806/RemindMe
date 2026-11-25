@@ -1667,5 +1667,63 @@
   "itemDateTimeLabel": "Date & time",
   "@itemDateTimeLabel": {
     "description": "Item details (Figma 04)"
+  },
+  "syncOfflineBanner": "You're offline. Reminders still ring on time, and your changes sync when you're back online.",
+  "@syncOfflineBanner": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncTitle": "Sync",
+  "@syncTitle": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncNow": "Sync now",
+  "@syncNow": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncStateOk": "Synced at {time}",
+  "@syncStateOk": {
+    "description": "Sync status (UX §6b)",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStateSyncing": "Syncing…",
+  "@syncStateSyncing": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncStateIdle": "Not synced yet",
+  "@syncStateIdle": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncStateOffline": "Offline. Changes sync when you're back online.",
+  "@syncStateOffline": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncStateSignedOut": "Couldn't sign in, so you're using the app offline.",
+  "@syncStateSignedOut": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncStateRegionMissing": "Choose a holiday country in Language & region to turn on sync.",
+  "@syncStateRegionMissing": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncStateError": "Sync didn't finish. Try again later.",
+  "@syncStateError": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncStateRevoked": "This account is now signed in on another device.",
+  "@syncStateRevoked": {
+    "description": "Sync status (UX §6b)"
+  },
+  "syncPending": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
+  "@syncPending": {
+    "description": "Sync status (UX §6b)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }
