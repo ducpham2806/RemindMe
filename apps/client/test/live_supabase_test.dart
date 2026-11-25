@@ -39,7 +39,16 @@ void main() {
     expect(await (db2.select(db2.lists)..where((t) => t.isInbox.equals(true))).get(), hasLength(1));
     expect((await engine.cachedQuota())!.plan, 'free');
 
-    await client.auth.signOut();
+    // Cài đặt vùng đã được ghi lên profiles sau lượt đồng bộ.
+    final prof = await client.from('profiles').select('ui_locale, region, calendar_systems').single();
+    expect(prof, {'ui_locale': 'vi-VN', 'region': 'VN', 'calendar_systems': ['lunar_vi']});
+
+    // Xóa tài khoản (migration 09): cascade sạch, đồng thời dọn user test khỏi server.
+    final del = await client.rpc<Object?>('account_delete');
+    expect((del! as Map)['deleted'], true);
+    // User đã bị xóa: refresh token cũ không dùng được nữa.
+    await expectLater(client.auth.refreshSession(), throwsA(isA<AuthException>()));
+    await client.auth.signOut(scope: SignOutScope.local);
     await db.close();
     await db2.close();
   }, skip: live ? false : 'cần REMINDME_LIVE=1 và --dart-define-from-file=env/dev.json');

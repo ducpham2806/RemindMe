@@ -23,8 +23,8 @@
   Từ xác nhận xóa dịch theo ngôn ngữ ("XÓA"/"DELETE"). Hoãn việc chưa có nhắc thì thêm nhắc tuyệt đối vào giờ hoãn.
 - **Kiểm chứng:** client 100 pass (+14), data 54 (+2 xuất dữ liệu), pgTAP 116 (+7) trên Postgres 16 cục bộ; analyze 0; lint chuỗi/nền tảng 0;
   check-arb 0; ảnh chụp các màn mới so với Figma.
-- **Dở dang / tiếp theo:** migration 09 chưa áp lên dev (Supabase MCP báo không có quyền sau khi phiên khởi động lại); test live chưa chạy lại
-  (không dọn được user ẩn danh khi không có SQL). Onboarding C30-C34, màn 09-14.
+- **Sau đó:** chủ dự án chạy migration 09 trong SQL Editor; test live (thêm bước kiểm `profiles` + `account_delete`, user test tự xóa) pass.
+- **Dở dang / tiếp theo:** Onboarding C30-C34, màn 09-14.
 
 ## 2026-11-25 · Đăng nhập email (OTP), Tài khoản & thiết bị, màn bị đăng xuất · Claude Code
 - **Làm:** `AccountApi` + `SupabaseAccount` (gửi mã: user ẩn danh thử `updateUser(email)`, email đã có thì `signInWithOtp`; xác nhận mã; đổi tài khoản

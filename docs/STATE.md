@@ -68,7 +68,7 @@
   xác nhận, RPC `account_delete`) và Đã nhận yêu cầu xóa (C55).
   Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, onboarding (C30-C34),
   tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 09-14, 17-19, 25-26.
-- Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-08, chạy thử
+- Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09, chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
   App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →
   sync, thử lại 1 lần khi thiếu profile/phiên), `RemoteSyncBinding` (đồng bộ lúc mở app, khi trở lại, 3 giây sau sửa, 15 phút/lần);
@@ -79,8 +79,8 @@
   trên máy, nêu máy bị đăng xuất), Tài khoản & thiết bị (email, gói, lịch sử đăng nhập, Đăng xuất), màn "Bạn đã được đăng xuất" khi phiên bị
   máy khác thay (hủy mọi thông báo, số thay đổi chưa đồng bộ, Đăng nhập lại). `SyncEngine.resetLocalData`. Chờ chủ dự án thêm `{{ .Token }}`
   vào email template để mã gửi tới email (guides/backend-setup.md §3). Sau mỗi lần đồng bộ, RemoteSync ghi ngôn ngữ, quốc gia ngày lễ,
-  hệ lịch phụ vào `profiles` (không đổi `home_tz`). Migration 09 `account_delete` (pgTAP 116 pass ở Postgres cục bộ) **chưa áp lên dev**:
-  Supabase MCP của phiên mất quyền giữa chừng.
+  hệ lịch phụ vào `profiles` (không đổi `home_tz`). Migration 09 `account_delete` đã áp; test live kiểm cả ghi profile và xóa tài khoản
+  (user test tự xóa qua `account_delete`, không cần SQL dọn).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, đăng nhập Google/Apple, flavors staging/prod.
@@ -93,8 +93,7 @@
 4. Thu mẫu tài liệu theo `packages/parsers/fixtures/README.md` (≥ 300, ≥ 3 thị trường); phỏng vấn 15-20 người; bộ câu nói theo vùng (V4).
 5. Spike cần máy thật: E0 (OCR theo hệ chữ), V0 (STT/NLU). Prototype 6 luồng P0.
    Bộ câu NLU thật ≥ 300 câu/gói (vi chia đều Bắc/Trung/Nam) thay bộ tổng hợp trong `packages/parsers/fixtures/nlu/`.
-6. Áp migration 09 (`account_delete`) lên Supabase dev khi MCP có quyền lại (hoặc chủ dự án chạy tệp trong SQL Editor).
-7. Sprint S1 phần còn lại: chủ dự án sửa email template (thêm `{{ .Token }}`) rồi thử đăng nhập email trên máy thật; Google/Apple
+6. Sprint S1 phần còn lại: chủ dự án sửa email template (thêm `{{ .Token }}`) rồi thử đăng nhập email trên máy thật; Google/Apple
    (`linkIdentity`, cần OAuth client); SMTP riêng trước khi ra mắt; Firebase (FCM); flavors staging/prod; golden test.
 
 ## Câu hỏi mở (cần chủ dự án quyết)
