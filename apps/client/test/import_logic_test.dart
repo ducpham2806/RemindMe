@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:remindme_client/features/import/candidate_editor.dart';
 import 'package:remindme_client/features/import/import_decode.dart';
 import 'package:remindme_client/features/import/import_mapper.dart';
 import 'package:remindme_core/remindme_core.dart';
@@ -135,6 +136,17 @@ void main() {
 
       final hotel = decodeImport(req('$docs/synthetic-hotel-text-0001/input.txt'));
       expect((hotel.docType, hotel.candidates.single.fields.title), (DocType.hotel, 'Khách sạn Hoa Sen Hội An'));
+    });
+
+    test('cần kiểm tra chỉ tính trường form sửa được; T0 có cấu trúc thì không', () {
+      final t2 = decodeImport(req('$docs/synthetic-flight-0001/input.txt')).candidates.single;
+      expect(needsCheck(t2), isTrue);
+      expect(t2.fieldConfidence['passenger_count'], lessThan(lowConfidence), reason: 'số khách thấp nhưng không lưu vào item');
+      final confirmed = t2.copyWith(fieldConfidence: {...t2.fieldConfidence, for (final k in reviewKeys(t2)) k: 1.0});
+      expect(needsCheck(confirmed), isFalse);
+      expect(needsCheck(decodeImport(req('$docs/synthetic-jsonld-flight-0001/input.eml')).candidates.single), isFalse);
+      final slip = decodeImport(req('$docs/synthetic-medical-text-0001/input.txt')).candidates.single;
+      expect(reviewKeys(slip), containsAll(['department', 'queue_number', 'preparation', 'location_text']));
     });
 
     test('T2 tàu + lịch khám: ga theo tên làm địa điểm, chi tiết vào ghi chú, dặn dò lên đầu, giờ tường theo máy', () {

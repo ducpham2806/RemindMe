@@ -53,7 +53,10 @@ Tên hành khách trong BCBP/JSON-LD không được lấy ra. `EmailDecoder` ch
 → `decodeImport` trong `Isolate.run` → màn Xem lại (chọn/bỏ, sửa tên, chọn thứ tự ngày và trang tính của bảng) → `ImportsRepository.commit`
 (1 hàng `imports` + item có `import_id`; list theo tên khớp không dấu hoặc tạo mới; checklist, địa điểm, đã xong, lặp, nhắc đúng giờ hoặc theo VALARM).
 Đặt chỗ lưu thành sự kiện (tên mặc định `ZZ 245 · SGN → HAN`, mã đặt chỗ vào ghi chú) tới khi có chuyến đi. Giờ chỉ có offset: dùng múi giờ máy nếu trùng,
-không thì `Etc/GMT∓h`. `.csv` tính là `xlsx` trong `imports.kind`/`items.source`. Chưa có: chia sẻ vào app (share intent/extension), đổi cột ở màn xem trước
+không thì `Etc/GMT∓h`. `.csv` tính là `xlsx` trong `imports.kind`/`items.source`. Chạm 1 mục mở form sửa (E5.1, `candidate_editor.dart`): tên, bắt đầu/kết thúc
+(giữ múi giờ của nguồn), địa điểm, mã đặt chỗ, số chuyến/số hiệu tàu, ghế, toa, khoa, số thứ tự, dặn dò; trường < 0,7 viền `warning` + ⓘ, sửa hoặc xác nhận
+(mở bộ chọn giờ rồi OK) thì thành 1,0. Dấu "cần kiểm tra" trên thẻ chỉ tính trường form sửa được. Chưa có: evidence (đoạn chữ gốc) khi chạm ⓘ, sửa tuyến bay,
+chia sẻ vào app (share intent/extension), đổi cột ở màn xem trước
 và nhớ mapping (E5.3), hiển thị hạn mức (chưa có `quota_status` khi offline; `commit` đã nhận `QuotaStatus` để đánh `pending_quota`).
 
 ## 3. T1: OCR trên thiết bị

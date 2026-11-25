@@ -117,6 +117,46 @@ void main() {
     expect(find.byIcon(Icons.flight), findsOneWidget);
   });
 
+  testWidgets('en: sửa từng trường ở form (E5.1): trường độ tin cậy thấp có dấu, xác nhận giờ thì hết dấu, giá trị mới vào DB', (tester) async {
+    final c = await pumpApp(tester, size: phone, overrides: [
+      syncDecoder,
+      filePickerProvider.overrideWithValue(picker([fixture('synthetic-flight-0001', 'input.txt')])),
+    ]);
+    await openImport(tester, me: 'Me', row: 'Import from file');
+    await tester.tap(find.byKey(const Key('importPick')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('importWarn-0')), findsOneWidget);
+
+    await tester.tap(find.text('ZZ 245 · SGN → HAN'));
+    await tester.pumpAndSettle();
+    expect(find.text('Edit item'), findsOneWidget);
+    expect(find.byTooltip('Read automatically, please check'), findsNWidgets(3), reason: 'bắt đầu, kết thúc, số chuyến 0,6; mã, ghế 0,8 thì không');
+    expect(find.byKey(const Key('importField-location_text')), findsNothing, reason: 'chuyến bay: địa điểm là sân bay đi');
+
+    await tester.enterText(find.byKey(const Key('importField-seat')), '15A');
+    await tester.enterText(find.byKey(const Key('importField-number')), 'zz246');
+    for (final slot in ['starts_at', 'ends_at']) {
+      await tester.tap(find.byKey(Key('importEdit-$slot-time')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.byTooltip('Read automatically, please check'), findsNothing);
+    await tester.tap(find.byKey(const Key('importEditSave')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('importWarn-0')), findsNothing, reason: 'người dùng đã xác nhận mọi trường cần kiểm tra');
+    expect(find.text('ZZ 245 · SGN → HAN'), findsOneWidget);
+    expect(find.textContaining('Read from the text'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('importAdd')));
+    await settleReminders(tester);
+    final db = c.read(appDatabaseProvider);
+    final items = (await tester.runAsync(() => db.select(db.items).get()))!;
+    expect((items.single.notes, items.single.tz, items.single.startsAt),
+        ('Booking code: XQ7K2M\nSeat: 15A', 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 21, 3, 30).millisecondsSinceEpoch));
+    expect(items.single.title, 'ZZ 245 · SGN → HAN', reason: 'tên đã hiện giữ nguyên dù sửa số chuyến');
+  });
+
   testWidgets('bảng mơ hồ 03/04 khi không biết vùng: hỏi thứ tự ngày, chọn lại thì đọc lại tệp', (tester) async {
     await pumpApp(tester, size: phone, region: null, overrides: [
       syncDecoder,
@@ -150,6 +190,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.hotel), findsOneWidget);
     expect(find.byIcon(Icons.attach_file), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    // Form sửa (E5.1): khách sạn có nhận/trả phòng, địa điểm, mã.
+    await tester.tap(find.byKey(const Key('importItem-0')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('importEdit-check_in-date')), findsOneWidget);
+    expect(find.byKey(const Key('importEdit-check_out-time')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

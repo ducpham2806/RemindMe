@@ -6,10 +6,11 @@ import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_parsers/remindme_parsers.dart';
 
 import '../../core/l10n/formatters.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
-import '../common/text_prompt.dart';
+import 'candidate_editor.dart';
 import 'import_decode.dart';
 import 'import_mapper.dart';
 import 'import_providers.dart';
@@ -29,7 +30,10 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   bool _busy = false;
   bool _failed = false;
   List<bool> _selected = const [];
-  final Map<int, String> _titles = {};
+  /// Đề xuất người dùng đã sửa ở form (E5.1), theo vị trí trong danh sách.
+  final Map<int, Candidate> _edits = {};
+
+  Candidate _candidate(int i) => _edits[i] ?? _preview!.candidates[i];
 
   Future<void> _pick() async {
     final file = await ref.read(filePickerProvider)();
@@ -66,7 +70,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       setState(() {
         _request = req;
         _preview = preview;
-        _titles.clear();
+        _edits.clear();
         _selected = [for (final c in preview.candidates) !c.done || preview.candidates.every((x) => x.done)];
       });
     } finally {
@@ -74,7 +78,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     }
   }
 
-  String? _titleOf(int i) => _titles[i] ?? _preview!.candidates[i].fields.title ?? fallbackTitle(_preview!.candidates[i]);
+  String? _titleOf(int i) => _candidate(i).fields.title ?? fallbackTitle(_candidate(i));
 
   Future<void> _save() async {
     final l = AppLocalizations.of(context);
@@ -90,7 +94,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     final drafts = [
       for (var i = 0; i < preview.candidates.length; i++)
         if (_selected[i] && _titleOf(i) != null)
-          toImportedItem(preview.candidates[i], title: _titleOf(i)!, deviceTz: tz, labels: labels),
+          toImportedItem(_candidate(i), title: _titleOf(i)!, deviceTz: tz, labels: labels),
     ];
     setState(() => _busy = true);
     final result = await ref.read(importsRepositoryProvider).commit(
@@ -231,7 +235,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             ),
           ),
         const Divider(),
-        for (var i = 0; i < preview.candidates.length; i++) _tile(context, i, preview.candidates[i]),
+        for (var i = 0; i < preview.candidates.length; i++) _tile(context, i, _candidate(i)),
       ],
     );
   }
@@ -250,8 +254,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       if (c.checklist.isNotEmpty) l.importChecklistCount(c.checklist.length),
       if (f.confirmationCode != null && c.kind != CandidateKind.task) l.importBookingCode(f.confirmationCode!),
       for (final issue in c.issues) ?_issueText(l, issue),
-      // Tầng luật T2: trường đọc theo nhãn/mẫu chung (độ tin cậy < 0,7) cần người dùng xem lại (E5.1).
-      if (c.fieldConfidence.values.any((v) => v < 0.7)) l.importCheckFields,
+      // Tầng luật T2: trường đọc theo nhãn/mẫu chung (độ tin cậy thấp) cần người dùng xem lại; sửa ở form thì hết (E5.1).
+      if (needsCheck(c)) l.importCheckFields,
     ];
     return ListTile(
       key: Key('importItem-$i'),
@@ -271,12 +275,13 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         children: [
           if (c.done) Chip(label: Text(l.importDoneTag), visualDensity: VisualDensity.compact),
           if (c.rrule != null) Icon(Icons.repeat, size: 18, color: theme.colorScheme.onSurfaceVariant),
+          if (needsCheck(c)) Icon(Icons.info_outline, key: Key('importWarn-$i'), size: 18, color: RemindColors.of(context).warning),
           Icon(_icon(c), color: theme.colorScheme.onSurfaceVariant),
         ],
       ),
       onTap: () async {
-        final t = await askText(context, title: l.importItemName, initial: title, fieldKey: const Key('importName'));
-        if (t != null) setState(() => _titles[i] = t);
+        final edited = await editCandidate(context, c, today: today, title: title);
+        if (edited != null) setState(() => _edits[i] = edited);
       },
     );
   }

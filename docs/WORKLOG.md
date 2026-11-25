@@ -12,6 +12,17 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Màn Xem lại: sửa từng trường, tô `warning` (E5.1) · Claude Code
+- **Làm:** `parsers`: `CandidateFields.copyWith` (phân biệt "giữ" với "xóa"), `Candidate.copyWith`. App: `features/import/candidate_editor.dart`
+  (`editCandidate` mở form toàn màn hình; `reviewKeys`/`needsCheck`; ô ngày/giờ sửa giờ tường của nguồn, giữ tz/offset; số chuyến "ZZ 245" tách lại mã hãng + số),
+  màn Xem lại giữ bản sửa theo vị trí, thẻ có ⓘ `warning` khi còn trường cần kiểm tra. 14 key ARB mới, bỏ `importItemName` (không còn dùng).
+- **Quyết định:** trường người dùng sửa hoặc xác nhận có độ tin cậy 1,0; dấu trên thẻ chỉ tính trường form sửa được (số khách 0,6 không lưu vào item nên không tính);
+  sửa ngày bắt đầu thì tính lại `past_date`, bỏ `date_order_ambiguous`; sửa ngày kết thúc thì bỏ `arrival_next_day`/`check_out_before_check_in`.
+- **Lỗi bắt được nhờ test:** thẻ vé bay T2 không bao giờ hết dấu vì số chuyến/số khách 0,6 không có ô sửa → thêm ô số chuyến, giới hạn dấu theo form.
+- **Kiểm chứng:** app 57 test (+1 widget sửa trường → DB, +1 logic `needsCheck`, pseudo-locale 320dp chữ 1,3× mở form khách sạn); parsers 70, core 40, platform 2, data 40;
+  analyze 0; docs/ARB/lint 0 lỗi; unslop 0 thay đổi.
+- **Tiếp theo:** evidence khi chạm ⓘ (cần giữ vị trí dòng nguồn trong `Slot`), dedupe + gom trip (S6), hiển thị hạn mức ở màn Xem lại khi có `quota_status`.
+
 ## 2026-11-24 · T2: tàu/xe, lịch khám, vé sự kiện · Claude Code
 - **Làm:** `GenericExtractor` thêm `_ground` (tàu/xe: ga/điểm đón theo nhãn hoặc dòng có mũi tên, giờ + "(+1)" cùng vùng, số hiệu tàu, toa, chỗ, nhà xe),
   `_medical` (nơi khám không nhãn: dòng ngắn hoặc cụm viết hoa quanh từ trong `facility_words`; khoa, số thứ tự, dặn dò), `_event`; `AnchorReader.hitsFor`,

@@ -1,6 +1,6 @@
 # STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 
-**Cập nhật:** 2026-11-24 · **Phase:** 0 → S1-S3 (code chạy offline; chờ tài khoản Supabase/Firebase) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
+**Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (code chạy offline; chờ tài khoản Supabase/Firebase) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
 
 ## Đã có
 - Bộ docs v2 (`docs/INDEX.md`) + 16 ADR (ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
@@ -32,8 +32,10 @@
   `ValueReader` (ngày/giờ qua mẫu gói NLU, tiền ISO 4217, số chuyến, mã sân bay), phân loại theo mục `document:` của gói, extractor chung bay (nhiều chặng, "+1",
   qua đêm theo UTC), khách sạn, tàu/xe, lịch khám (bỏ ngày sinh, không trả tên bệnh nhân), vé sự kiện; validator (`fieldConfidence`, `issues`), mẫu nhà cung cấp JSON + schema (CI kiểm), `RuleEngine`. Dữ liệu IATA → tz
   `data/airports.tsv` (ADR-016). App: email không JSON-LD và `.txt` dạng vé đi qua T2, màn Xem lại có cảnh báo + "hãy kiểm tra lại"; ghi chú item có mã đặt chỗ, toa, ghế, khoa, số thứ tự, dặn dò. Eval 15 mẫu: 100%, 0 điền sai.
+- Màn Xem lại E5.1: chạm 1 mục mở form sửa từng trường (ngày/giờ đi-đến giữ múi giờ nguồn, địa điểm, mã, số chuyến, ghế, toa, khoa, số thứ tự, dặn dò);
+  trường độ tin cậy thấp viền `warning` + ⓘ, xác nhận/sửa thì hết dấu trên thẻ.
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
-  mẫu nhà cung cấp thật (cần mẫu thật), màn Xem lại đầy đủ (E5.1: sửa từng trường, tô vàng), auth/flavors, `SupabaseSyncApi`.
+  mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + gộp trip + hạn mức ở màn Xem lại, auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;

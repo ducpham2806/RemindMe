@@ -118,7 +118,6 @@
   "importFailed": "[Çöûļđñ’ţ ŕéàđ ţĥîš ƒîļé.~~~~~~~~]",
   "importReviewTitle": "[Ŕéṽîéŵ~~]",
   "importNoTitle": "[Ûñţîţļéđ, ţàþ ţö ñàɱé~~~~~~~]",
-  "importItemName": "[Ñàɱé~~]",
   "importDateOrderQuestion": "[Ĥöŵ àŕé đàţéš ŵŕîţţéñ îñ ţĥîš ƒîļé?~~~~~~~~~~~]",
   "importDateOrderDmy": "[Đàý ƒîŕšţ (31/12)~~~]",
   "importDateOrderMdy": "[Ṁöñţĥ ƒîŕšţ (12/31)~~~~]",
@@ -139,5 +138,19 @@
   "importSeat": "[Šéàţ: ~~{seat}]",
   "importCarriage": "[Çöàçĥ: ~~{carriage}]",
   "importDepartment": "[Đéþàŕţɱéñţ: ~~~~{name}]",
-  "importQueueNumber": "[Ǫûéûé ñûɱƀéŕ: ~~~~{number}]"
+  "importQueueNumber": "[Ǫûéûé ñûɱƀéŕ: ~~~~{number}]",
+  "importEditTitle": "[Éđîţ îţéɱ~~~]",
+  "importFieldStart": "[Šţàŕţš~~]",
+  "importFieldDue": "[Đûé~]",
+  "importFieldEnd": "[Éñđš~~]",
+  "importFieldLocation": "[Ļöçàţîöñ~~~]",
+  "importFieldCode": "[Ɓööķîñĝ çöđé~~~~]",
+  "importFieldSeat": "[Šéàţ~~]",
+  "importFieldCarriage": "[Çöàçĥ~~]",
+  "importFieldDepartment": "[Đéþàŕţɱéñţ~~~~]",
+  "importFieldQueue": "[Ǫûéûé ñûɱƀéŕ~~~~]",
+  "importFieldPreparation": "[Îñšţŕûçţîöñš~~~~~]",
+  "importFieldCheck": "[Ŕéàđ àûţöɱàţîçàļļý, þļéàšé çĥéçķ~~~~~~~~~~~]",
+  "importFieldFlightNumber": "[Ƒļîĝĥţ ñûɱƀéŕ~~~~~]",
+  "importFieldTrainNumber": "[Ţŕàîñ ñûɱƀéŕ~~~~]"
 }

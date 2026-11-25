@@ -118,7 +118,6 @@
   "importFailed": "Không đọc được tệp này.",
   "importReviewTitle": "Xem lại",
   "importNoTitle": "Chưa có tên, chạm để đặt",
-  "importItemName": "Tên",
   "importDateOrderQuestion": "Ngày trong tệp này viết theo kiểu nào?",
   "importDateOrderDmy": "Ngày trước (31/12)",
   "importDateOrderMdy": "Tháng trước (12/31)",
@@ -139,5 +138,19 @@
   "importSeat": "Ghế: {seat}",
   "importCarriage": "Toa: {carriage}",
   "importDepartment": "Khoa: {name}",
-  "importQueueNumber": "Số thứ tự: {number}"
+  "importQueueNumber": "Số thứ tự: {number}",
+  "importEditTitle": "Sửa mục",
+  "importFieldStart": "Bắt đầu",
+  "importFieldDue": "Hạn",
+  "importFieldEnd": "Kết thúc",
+  "importFieldLocation": "Địa điểm",
+  "importFieldCode": "Mã đặt chỗ",
+  "importFieldSeat": "Ghế",
+  "importFieldCarriage": "Toa",
+  "importFieldDepartment": "Khoa",
+  "importFieldQueue": "Số thứ tự",
+  "importFieldPreparation": "Dặn dò",
+  "importFieldCheck": "Đọc tự động, hãy kiểm tra lại",
+  "importFieldFlightNumber": "Số hiệu chuyến bay",
+  "importFieldTrainNumber": "Số hiệu tàu"
 }

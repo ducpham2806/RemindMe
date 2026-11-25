@@ -638,10 +638,6 @@
   "@importNoTitle": {
     "description": "Placeholder for a found item without a title."
   },
-  "importItemName": "Name",
-  "@importItemName": {
-    "description": "Title of the dialog that renames a found item."
-  },
   "importDateOrderQuestion": "How are dates written in this file?",
   "@importDateOrderQuestion": {
     "description": "Asked when dates like 03/04 could be read either way."
@@ -795,5 +791,61 @@
         "example": "015"
       }
     }
+  },
+  "importEditTitle": "Edit item",
+  "@importEditTitle": {
+    "description": "Title of the screen where the user fixes one found item before adding it."
+  },
+  "importFieldStart": "Starts",
+  "@importFieldStart": {
+    "description": "Review form label: start date and time (departure, check-in, appointment)."
+  },
+  "importFieldDue": "Due",
+  "@importFieldDue": {
+    "description": "Review form label: due date and time of a task."
+  },
+  "importFieldEnd": "Ends",
+  "@importFieldEnd": {
+    "description": "Review form label: end date and time (arrival, check-out)."
+  },
+  "importFieldLocation": "Location",
+  "@importFieldLocation": {
+    "description": "Review form label: place or address."
+  },
+  "importFieldCode": "Booking code",
+  "@importFieldCode": {
+    "description": "Review form label. Glossary trip_booking_code."
+  },
+  "importFieldSeat": "Seat",
+  "@importFieldSeat": {
+    "description": "Review form label. Glossary trip_seat."
+  },
+  "importFieldCarriage": "Coach",
+  "@importFieldCarriage": {
+    "description": "Review form label for a train ticket. Glossary trip_carriage."
+  },
+  "importFieldDepartment": "Department",
+  "@importFieldDepartment": {
+    "description": "Review form label for a medical appointment. Glossary med_department."
+  },
+  "importFieldQueue": "Queue number",
+  "@importFieldQueue": {
+    "description": "Review form label for a medical appointment. Glossary med_queue_number."
+  },
+  "importFieldPreparation": "Instructions",
+  "@importFieldPreparation": {
+    "description": "Review form label: preparation printed on the appointment slip, copied as is (never medical advice)."
+  },
+  "importFieldCheck": "Read automatically, please check",
+  "@importFieldCheck": {
+    "description": "Tooltip on a review field that on-device rules filled with low confidence."
+  },
+  "importFieldFlightNumber": "Flight number",
+  "@importFieldFlightNumber": {
+    "description": "Review form label: airline code and number, e.g. VN 245."
+  },
+  "importFieldTrainNumber": "Train number",
+  "@importFieldTrainNumber": {
+    "description": "Review form label: train number printed on the ticket, e.g. SE3."
   }
 }
