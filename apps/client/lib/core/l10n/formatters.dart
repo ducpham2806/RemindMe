@@ -19,6 +19,12 @@ class Fmt {
         alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(_context),
       );
 
+  /// Ngày dạng số đầy đủ: en-US "11/25/2026", vi "25/11/2026".
+  String numericDate(DateTime local) => DateFormat.yMd(_locale).format(local);
+
+  /// Tên thứ ([weekday] theo `DateTime.monday` = 1 … `sunday` = 7).
+  String weekdayName(int weekday) => DateFormat.EEEE(_locale).format(DateTime(2024, 1, weekday));
+
   /// Ví dụ en: "Tue, Dec 1"; vi: "Th 3, 1 thg 12".
   String dayHeader(DateTime local) => DateFormat.MMMEd(_locale).format(local);
 
@@ -51,4 +57,15 @@ class Fmt {
         alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(_context));
     return isToday ? t : l.itemDateTime(date(d), t);
   }
+}
+
+/// "UTC+07", "UTC-03:30": độ lệch của [tz] tại [now] (ký hiệu chuẩn, giống nhau ở mọi ngôn ngữ).
+String utcOffsetLabel(DateTime now, String tz) {
+  final u = now.toUtc();
+  final w = TimeZones.toWall(u, tz);
+  final asUtc = DateTime.utc(w.date.year, w.date.month, w.date.day, w.time!.hour, w.time!.minute);
+  final m = asUtc.difference(DateTime.utc(u.year, u.month, u.day, u.hour, u.minute)).inMinutes;
+  final sign = m < 0 ? '-' : '+';
+  final h = (m.abs() ~/ 60).toString().padLeft(2, '0'), mm = (m.abs() % 60).toString().padLeft(2, '0');
+  return 'UTC$sign$h${mm == '00' ? '' : ':$mm'}';
 }

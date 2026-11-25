@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_icons.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/choice_buttons.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -187,54 +188,8 @@ class _Choice extends StatelessWidget {
         children: [
           Text(label, style: theme.textTheme.titleSmall?.copyWith(color: scheme.onSurfaceVariant)),
           const SizedBox(height: Tokens.space3),
-          // Cao bằng nhau khi 1 lựa chọn xuống dòng (chữ lớn, ngôn ngữ dài).
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var i = 0; i < options.length; i++) ...[
-                  if (i > 0) const SizedBox(width: Tokens.space2),
-                  Expanded(child: _option(context, options[i].$1, options[i].$2)),
-                ],
-              ],
-            ),
-          ),
+          ChoiceButtons(keyPrefix: keyPrefix, value: value, options: options, onChanged: onChanged),
         ],
-      ),
-    );
-  }
-
-  Widget _option(BuildContext context, String v, String text) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final selected = v == value;
-    final fg = selected ? scheme.onPrimary : scheme.onSurfaceVariant;
-    return Semantics(
-      selected: selected,
-      button: true,
-      child: Material(
-        color: selected ? scheme.primary : scheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(11),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          key: Key('$keyPrefix-$v'),
-          onTap: selected ? null : () => onChanged(v),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 42),
-            child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.space1, vertical: Tokens.space2),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (selected) ...[ExcludeSemantics(child: AppIcon(AppIcons.tick, size: 18, color: fg)), const SizedBox(width: Tokens.space1)],
-                  Flexible(
-                    child: Text(text, textAlign: TextAlign.center, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: fg)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

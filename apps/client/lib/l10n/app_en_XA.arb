@@ -266,5 +266,17 @@
   "meThemeLight": "[Ļîĝĥţ~~]",
   "meThemeDark": "[Đàŕķ~~]",
   "langNameVi": "[Ţîếñĝ Ṽîệţ~~~~]",
-  "langNameEn": "[Éñĝļîšĥ~~~]"
+  "langNameEn": "[Éñĝļîšĥ~~~]",
+  "langRegionHint": "[Šéţ éàçĥ öñé ţĥé ŵàý ýöû ûšé îţ.~~~~~~~~~~]",
+  "langRegionNote": "[Çĥàñĝîñĝ ţĥé àþþ ļàñĝûàĝé đöéšñ'ţ çĥàñĝé ýöûŕ ĥöļîđàý çöûñţŕý.~~~~~~~~~~~~~~~~~~~~~]",
+  "langRegionAppLanguage": "[Àþþ ļàñĝûàĝé~~~~]",
+  "langRegionFormats": "[Ƒöŕɱàţš & ţîɱé žöñé~~~~~~]",
+  "langRegionFormat": "[Ŕéĝîöñàļ ƒöŕɱàţ~~~~~~]",
+  "langRegionTimeZone": "[Ţîɱé žöñé~~~]",
+  "langRegionFromDevice": "[{value} · ƒŕöɱ ţĥîš đéṽîçé~~~~~~]",
+  "langRegionHolidays": "[Ĥöļîđàýš & çàļéñđàŕš~~~~~~~]",
+  "settingsWeekend": "[Ŵééķéñđ: ~~~{days}]",
+  "langRegionPreview": "[Þŕéṽîéŵ: ~~~{value}]",
+  "langRegionPreviewHint": "[Đàţéš àñđ ţîɱéš ûšé ţĥé šéţţîñĝš àƀöṽé.~~~~~~~~~~~~~]",
+  "langRegionDone": "[Đöñé~~]"
 }

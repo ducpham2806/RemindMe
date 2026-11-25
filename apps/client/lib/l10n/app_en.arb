@@ -1556,5 +1556,68 @@
   "langNameEn": "English",
   "@langNameEn": {
     "description": "Language name in its own language (endonym): same in every locale."
+  },
+  "langRegionHint": "Set each one the way you use it.",
+  "@langRegionHint": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionNote": "Changing the app language doesn't change your holiday country.",
+  "@langRegionNote": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionAppLanguage": "App language",
+  "@langRegionAppLanguage": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionFormats": "Formats & time zone",
+  "@langRegionFormats": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionFormat": "Regional format",
+  "@langRegionFormat": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionTimeZone": "Time zone",
+  "@langRegionTimeZone": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionFromDevice": "{value} · from this device",
+  "@langRegionFromDevice": {
+    "description": "Language & region (Figma C50)",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "langRegionHolidays": "Holidays & calendars",
+  "@langRegionHolidays": {
+    "description": "Language & region (Figma C50)"
+  },
+  "settingsWeekend": "Weekend: {days}",
+  "@settingsWeekend": {
+    "description": "Language & region (Figma C50)",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "langRegionPreview": "Preview: {value}",
+  "@langRegionPreview": {
+    "description": "Language & region (Figma C50)",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "langRegionPreviewHint": "Dates and times use the settings above.",
+  "@langRegionPreviewHint": {
+    "description": "Language & region (Figma C50)"
+  },
+  "langRegionDone": "Done",
+  "@langRegionDone": {
+    "description": "Language & region (Figma C50)"
   }
 }

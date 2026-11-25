@@ -427,14 +427,7 @@ class TripDetailScreen extends ConsumerWidget {
       }
     }
     final zones = {for (final s in segments) ?s.item.tz, for (final s in segments) ?_destTz(s)}.where(TimeZones.isValid).toSet();
-    String offsetOf(String tz) {
-      final w = TimeZones.toWall(now.toUtc(), tz);
-      final asUtc = DateTime.utc(w.date.year, w.date.month, w.date.day, w.time!.hour, w.time!.minute);
-      final m = asUtc.difference(DateTime.utc(now.toUtc().year, now.toUtc().month, now.toUtc().day, now.toUtc().hour, now.toUtc().minute)).inMinutes;
-      final sign = m < 0 ? '-' : '+';
-      final h = (m.abs() ~/ 60).toString().padLeft(2, '0'), mm = (m.abs() % 60).toString().padLeft(2, '0');
-      return 'UTC$sign$h${mm == '00' ? '' : ':$mm'}';
-    }
+    String offsetOf(String tz) => utcOffsetLabel(now, tz);
 
     final dayList = <Widget>[];
     if (start != null) {

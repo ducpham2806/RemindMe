@@ -266,5 +266,17 @@
   "meThemeLight": "Sáng",
   "meThemeDark": "Tối",
   "langNameVi": "Tiếng Việt",
-  "langNameEn": "English"
+  "langNameEn": "English",
+  "langRegionHint": "Chọn riêng từng thiết lập theo cách bạn dùng.",
+  "langRegionNote": "Đổi ngôn ngữ giao diện không đổi quốc gia ngày lễ.",
+  "langRegionAppLanguage": "Ngôn ngữ giao diện",
+  "langRegionFormats": "Định dạng & múi giờ",
+  "langRegionFormat": "Định dạng vùng",
+  "langRegionTimeZone": "Múi giờ",
+  "langRegionFromDevice": "{value} · theo máy",
+  "langRegionHolidays": "Ngày lễ & hệ lịch",
+  "settingsWeekend": "Nghỉ {days}",
+  "langRegionPreview": "Xem trước: {value}",
+  "langRegionPreviewHint": "Ngày giờ dùng thiết lập ở trên.",
+  "langRegionDone": "Hoàn tất"
 }
