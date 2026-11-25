@@ -50,6 +50,40 @@ class _Draft {
   }
 }
 
+/// Lưu 1 việc đã phân tích từ câu tự nhiên (Thêm nhanh, onboarding C32). Trả id item.
+/// [reminder]: độ lệch nhắc (phút); có thời điểm thì thêm nhắc, null = không nhắc.
+Future<String> saveParsedItem(WidgetRef ref,
+    {required String title, CivilDateTime? when, RecurrenceSpec? recurrence, List<String> tags = const [], int? priority, int? reminder}) async {
+  final repo = ref.read(itemsRepositoryProvider);
+  final tz = ref.read(deviceTimeZoneProvider);
+  final today = CivilDate.of(ref.read(nowProvider)());
+  // Âm lịch chưa có ngày ("đi chùa rằm"): lần đầu tiên từ hôm nay.
+  if (when == null && recurrence != null) {
+    when = Recurrence.fromRow(recurrence.toPayload()).nextAfter(CivilDateTime(today), CivilDateTime(today.addDays(-1)));
+  }
+  // Giờ tường theo múi giờ của máy → UTC (DateTime local của Dart dùng tzdata của OS).
+  final local = when == null ? null : DateTime(when.date.year, when.date.month, when.date.day, when.time?.hour ?? 0, when.time?.minute ?? 0);
+  // "#congviec" khớp list "Công việc" thì việc vào list đó (UX §2.2); tag vẫn giữ.
+  String? listId;
+  for (final t in tags) {
+    listId = await ref.read(listsRepositoryProvider).matchTag(t);
+    if (listId != null) break;
+  }
+  return repo.create(
+    listId: listId,
+    title: title,
+    startsAt: when?.time == null ? null : local!.toUtc(),
+    startDate: when != null && when.time == null ? when.date.toIso() : null,
+    tz: when == null ? null : tz,
+    priority: priority ?? 0,
+    tags: tags,
+    recurrence: recurrence?.toPayload(),
+    recurrenceStart: recurrence == null ? null : (local ?? DateTime(today.year, today.month, today.day)).toUtc(),
+    // Có thời điểm thì mặc định nhắc (chip 🔔 trong UX §2.2), đổi được ở chip.
+    reminderOffsets: when == null || reminder == null ? const [] : [reminder],
+  );
+}
+
 class QuickAddSheet extends ConsumerStatefulWidget {
   const QuickAddSheet({super.key});
 
@@ -88,39 +122,9 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
   Future<void> _save() async {
     if (!_canSave) return;
     setState(() => _saving = true);
-    final repo = ref.read(itemsRepositoryProvider);
-    final tz = ref.read(deviceTimeZoneProvider);
-    final today = CivilDate.of(ref.read(nowProvider)());
     for (final d in _drafts) {
-      var when = d.when;
-      final rec = d.result.recurrence;
-      // Âm lịch chưa có ngày ("đi chùa rằm"): lần đầu tiên từ hôm nay.
-      if (when == null && rec != null) {
-        when = Recurrence.fromRow(rec.toPayload()).nextAfter(CivilDateTime(today), CivilDateTime(today.addDays(-1)));
-      }
-      // Giờ tường theo múi giờ của máy → UTC (DateTime local của Dart dùng tzdata của OS).
-      final local = when == null
-          ? null
-          : DateTime(when.date.year, when.date.month, when.date.day, when.time?.hour ?? 0, when.time?.minute ?? 0);
-      // "#congviec" khớp list "Công việc" thì việc vào list đó (UX §2.2); tag vẫn giữ.
-      String? listId;
-      for (final t in d.result.tags) {
-        listId = await ref.read(listsRepositoryProvider).matchTag(t);
-        if (listId != null) break;
-      }
-      await repo.create(
-        listId: listId,
-        title: d.title,
-        startsAt: when?.time == null ? null : local!.toUtc(),
-        startDate: when != null && when.time == null ? when.date.toIso() : null,
-        tz: when == null ? null : tz,
-        priority: d.result.priority ?? 0,
-        tags: d.result.tags,
-        recurrence: rec?.toPayload(),
-        recurrenceStart: rec == null ? null : (local ?? DateTime(today.year, today.month, today.day)).toUtc(),
-        // Có thời điểm thì mặc định nhắc đúng giờ (chip 🔔 trong UX §2.2), đổi được ở chip.
-        reminderOffsets: when == null || d.reminder == null ? const [] : [d.reminder!],
-      );
+      await saveParsedItem(ref,
+          title: d.title, when: d.when, recurrence: d.result.recurrence, tags: d.result.tags, priority: d.result.priority, reminder: d.reminder);
     }
     if (mounted) Navigator.of(context).pop();
   }

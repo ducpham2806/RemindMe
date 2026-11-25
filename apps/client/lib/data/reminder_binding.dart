@@ -15,6 +15,10 @@ import 'reminders.dart';
 
 const _askedKey = 'notification_permission_asked';
 
+/// Ghi là đã hỏi quyền thông báo (màn onboarding C33 tự hỏi, hoặc người dùng chọn "Để sau"): binding không hỏi lại.
+Future<void> markNotificationPermissionAsked(AppDatabase db) =>
+    db.into(db.syncState).insertOnConflictUpdate(SyncStateCompanion.insert(key: _askedKey, value: '1'));
+
 /// Giữ thông báo đã lập lịch khớp dữ liệu (reminder-engine.md §1): lập lại khi DB đổi (gồm sau sync pull), khi app mở lại,
 /// khi đổi ngôn ngữ hoặc 12/24h. Xử lý bấm thông báo / nút Xong-Hoãn khi app đang chạy.
 class ReminderBinding extends ConsumerStatefulWidget {
@@ -110,8 +114,8 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
         use24h: MediaQuery.alwaysUse24HourFormatOf(context),
         now: ref.read(nowProvider),
       );
-      // Hỏi quyền thông báo 1 lần, khi đã có nhắc đầu tiên (reminder-engine.md §2).
-      if (report.total > 0 && !(await os.health()).notificationsAllowed) {
+      // Hỏi quyền thông báo 1 lần, khi đã có nhắc đầu tiên (reminder-engine.md §2). Đang onboarding thì để màn C33 giải thích rồi mới hỏi.
+      if (report.total > 0 && ref.read(onboardingDoneProvider) && !(await os.health()).notificationsAllowed) {
         final asked = await (db.select(db.syncState)..where((s) => s.key.equals(_askedKey))).getSingleOrNull();
         if (asked == null) {
           await db.into(db.syncState).insert(SyncStateCompanion.insert(key: _askedKey, value: '1'));

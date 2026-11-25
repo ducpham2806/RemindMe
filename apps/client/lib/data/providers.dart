@@ -200,6 +200,22 @@ Future<HolidayCalendar?> loadBundledHolidays(String? region) async {
   return c;
 }
 
+/// Đã xong onboarding (UX §3.1). Đọc trước `runApp`; test mặc định là đã xong.
+const onboardingDonePref = 'onboarding_done';
+final initialOnboardingDoneProvider = Provider<bool>((_) => true);
+
+class OnboardingDone extends Notifier<bool> {
+  @override
+  bool build() => ref.watch(initialOnboardingDoneProvider);
+  void set(bool v) => state = v;
+}
+
+final onboardingDoneProvider = NotifierProvider<OnboardingDone, bool>(OnboardingDone.new);
+
+/// Lần đầu mở app: chưa ghi [onboardingDonePref] và DB chưa có việc nào (máy đã dùng từ trước bản có onboarding thì bỏ qua).
+Future<bool> loadOnboardingDone(AppDatabase db) async =>
+    await LocalPrefs(db).get(onboardingDonePref) != null || (await (db.select(db.items)..limit(1)).get()).isNotEmpty;
+
 /// Mốc nhắc mặc định của việc mới (phút, âm = trước; null = không nhắc). Chưa chọn thì đúng giờ.
 final defaultReminderProvider = FutureProvider<int?>((ref) async {
   final v = await ref.watch(localPrefsProvider).get(defaultReminderPref);

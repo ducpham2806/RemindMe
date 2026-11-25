@@ -32,7 +32,7 @@ class RemindMeApp extends ConsumerStatefulWidget {
 }
 
 class _RemindMeAppState extends ConsumerState<RemindMeApp> {
-  late final GoRouter _router = buildRouter();
+  late final GoRouter _router = buildRouter(initialLocation: ref.read(initialOnboardingDoneProvider) ? '/today' : '/welcome');
 
   @override
   Widget build(BuildContext context) {

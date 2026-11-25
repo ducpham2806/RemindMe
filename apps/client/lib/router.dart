@@ -11,6 +11,7 @@ import 'features/me/me_screen.dart';
 import 'features/me/notifications_screen.dart';
 import 'features/me/plan_screen.dart';
 import 'features/me/privacy_screens.dart';
+import 'features/onboarding/onboarding_screens.dart';
 import 'features/search/search_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/trips/trips_screen.dart';
@@ -18,8 +19,8 @@ import 'shell/adaptive_shell.dart';
 
 /// Deep link theo UX §1: `remindme://item/<id>` (= `/item/<id>`), `trip/<id>` (= `/trips/<id>`), `import/<id>` (thêm ở các sprint sau).
 /// Chi tiết item, tìm kiếm và nhập từ tệp nằm ngoài shell để mở được từ mọi tab mà không đổi tab.
-GoRouter buildRouter() => GoRouter(
-      initialLocation: '/today',
+GoRouter buildRouter({String initialLocation = '/today'}) => GoRouter(
+      initialLocation: initialLocation,
       routes: [
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigation) => AdaptiveShell(navigation: navigation),
@@ -72,5 +73,9 @@ GoRouter buildRouter() => GoRouter(
         ]),
         GoRoute(path: '/revoked', builder: (_, _) => const RevokedScreen()),
         GoRoute(path: '/account-deleted', builder: (_, _) => const AccountDeletedScreen()),
+        GoRoute(path: '/welcome', builder: (_, _) => const WelcomeScreen()),
+        GoRoute(path: '/onboarding/goals', builder: (_, _) => const GoalsScreen()),
+        GoRoute(path: '/onboarding/first', builder: (_, _) => const FirstReminderScreen()),
+        GoRoute(path: '/onboarding/notify', builder: (_, _) => const NotifyPermissionScreen()),
       ],
     );

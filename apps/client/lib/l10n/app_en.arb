@@ -2675,5 +2675,239 @@
   "deletedHome": "Back to Today",
   "@deletedHome": {
     "description": "Button leaving the confirmation screen"
+  },
+  "welcomeTitle": "Welcome",
+  "@welcomeTitle": {
+    "description": "Onboarding C30 title"
+  },
+  "welcomeHeadline": "Snap a ticket, say one sentence. RemindMe takes care of the rest.",
+  "@welcomeHeadline": {
+    "description": "Onboarding headline"
+  },
+  "welcomeSampleTag": "Trip ticket · Sample",
+  "@welcomeSampleTag": {
+    "description": "Label on the illustrative sample card"
+  },
+  "welcomeSampleRoute": "Hanoi → Da Nang",
+  "@welcomeSampleRoute": {
+    "description": "Sample route on the illustrative card; use two well-known cities of the locale's market"
+  },
+  "welcomeSampleWhen": "Tomorrow · 9:30 AM",
+  "@welcomeSampleWhen": {
+    "description": "Sample departure time on the illustrative card"
+  },
+  "welcomeSampleReminder": "Head to the airport",
+  "@welcomeSampleReminder": {
+    "description": "Sample reminder title"
+  },
+  "welcomeSampleReminderHint": "7:00 AM · You review it before saving",
+  "@welcomeSampleReminderHint": {
+    "description": "Sample reminder subtitle"
+  },
+  "welcomeCapture": "Capture fast",
+  "@welcomeCapture": {
+    "description": "Benefit title"
+  },
+  "welcomeCaptureBody": "Snap a photo or say it the way you talk.",
+  "@welcomeCaptureBody": {
+    "description": "Benefit body"
+  },
+  "welcomeOffline": "Reminders work offline",
+  "@welcomeOffline": {
+    "description": "Benefit title"
+  },
+  "welcomeOfflineBody": "Notifications run on your device once allowed.",
+  "@welcomeOfflineBody": {
+    "description": "Benefit body"
+  },
+  "welcomeControl": "You always decide",
+  "@welcomeControl": {
+    "description": "Benefit title"
+  },
+  "welcomeControlBody": "Check the time before anything is saved.",
+  "@welcomeControlBody": {
+    "description": "Benefit body"
+  },
+  "welcomeContinue": "Continue",
+  "@welcomeContinue": {
+    "description": "Primary button"
+  },
+  "welcomeTryNow": "Try it now",
+  "@welcomeTryNow": {
+    "description": "Skips onboarding"
+  },
+  "welcomeSignIn": "Have an account? Sign in",
+  "@welcomeSignIn": {
+    "description": "Opens email sign-in"
+  },
+  "welcomeLanguage": "{language} · You can change the language in Me",
+  "@welcomeLanguage": {
+    "description": "Footer",
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "English"
+      }
+    }
+  },
+  "onboardingStep": "STEP {step} / {total}",
+  "@onboardingStep": {
+    "description": "Progress label above the step bars",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSkip": "Skip",
+  "@onboardingSkip": {
+    "description": "Skip this onboarding step"
+  },
+  "goalsTitle": "Goals",
+  "@goalsTitle": {
+    "description": "Onboarding C31 app bar title"
+  },
+  "goalsHeadline": "What do you want to remember?",
+  "@goalsHeadline": {
+    "description": "Headline"
+  },
+  "goalsHint": "Pick everything that fits.",
+  "@goalsHint": {
+    "description": "Hint"
+  },
+  "goalWork": "Work",
+  "@goalWork": {
+    "description": "Goal and starter list name"
+  },
+  "goalWorkHint": "Meetings, deadlines, to-dos",
+  "@goalWorkHint": {
+    "description": "Goal subtitle"
+  },
+  "goalTravel": "Travel",
+  "@goalTravel": {
+    "description": "Goal and starter list name"
+  },
+  "goalTravelHint": "Trips, bookings, documents",
+  "@goalTravelHint": {
+    "description": "Goal subtitle"
+  },
+  "goalHealth": "Health",
+  "@goalHealth": {
+    "description": "Goal and starter list name"
+  },
+  "goalHealthHint": "Medicine, vitamins and checkups",
+  "@goalHealthHint": {
+    "description": "Goal subtitle"
+  },
+  "goalFamily": "Family",
+  "@goalFamily": {
+    "description": "Goal and starter list name"
+  },
+  "goalFamilyHint": "Chores and special days",
+  "@goalFamilyHint": {
+    "description": "Goal subtitle"
+  },
+  "goalStudy": "Study",
+  "@goalStudy": {
+    "description": "Goal and starter list name"
+  },
+  "goalStudyHint": "Homework and revision",
+  "@goalStudyHint": {
+    "description": "Goal subtitle"
+  },
+  "goalsNote": "Only used to create your starter lists, never for ads. You can change them later.",
+  "@goalsNote": {
+    "description": "Note under the goals"
+  },
+  "firstTitle": "Your first reminder",
+  "@firstTitle": {
+    "description": "Onboarding C32 app bar title"
+  },
+  "firstHeadline": "One sentence is enough.",
+  "@firstHeadline": {
+    "description": "Headline"
+  },
+  "firstHint": "Type what you need to remember. Check the details before it’s created.",
+  "@firstHint": {
+    "description": "Hint"
+  },
+  "firstFieldLabel": "What do you need to remember?",
+  "@firstFieldLabel": {
+    "description": "Field label"
+  },
+  "firstExample": "Vitamins tomorrow at 8am",
+  "@firstExample": {
+    "description": "Prefilled example sentence; must parse with this locale's NLU pack (date + time)"
+  },
+  "firstFieldHint": "You can edit this sentence before saving.",
+  "@firstFieldHint": {
+    "description": "Under the field"
+  },
+  "firstUnderstood": "RemindMe understood",
+  "@firstUnderstood": {
+    "description": "Title of the parse preview card"
+  },
+  "firstWhen": "Time",
+  "@firstWhen": {
+    "description": "Preview row"
+  },
+  "firstRepeat": "Repeat",
+  "@firstRepeat": {
+    "description": "Preview row"
+  },
+  "firstList": "List",
+  "@firstList": {
+    "description": "Preview row"
+  },
+  "firstNoTime": "No time yet",
+  "@firstNoTime": {
+    "description": "Preview value when no date/time was found"
+  },
+  "firstNotifNote": "No need to turn on notifications yet. You’ll choose that next.",
+  "@firstNotifNote": {
+    "description": "Note"
+  },
+  "firstCreate": "Create reminder & continue",
+  "@firstCreate": {
+    "description": "Primary button"
+  },
+  "notifyTitle": "Turn on notifications",
+  "@notifyTitle": {
+    "description": "Onboarding C33 app bar title"
+  },
+  "notifyHeadline": "So important things ring on time.",
+  "@notifyHeadline": {
+    "description": "Headline"
+  },
+  "notifyCreated": "Reminder created",
+  "@notifyCreated": {
+    "description": "Label on the card of the reminder created in the previous step"
+  },
+  "notifyWhy1": "Allow notifications to be reminded when it’s time.",
+  "@notifyWhy1": {
+    "description": "Bullet"
+  },
+  "notifyWhy2": "Reminders on your device work offline once allowed.",
+  "@notifyWhy2": {
+    "description": "Bullet"
+  },
+  "notifyWhy3": "You can change this anytime in Settings.",
+  "@notifyWhy3": {
+    "description": "Bullet"
+  },
+  "notifyAllow": "Allow notifications",
+  "@notifyAllow": {
+    "description": "Primary button; next the OS permission dialog appears"
+  },
+  "notifyLater": "Later",
+  "@notifyLater": {
+    "description": "Secondary button"
+  },
+  "notifyNote": "Next, your device will ask for notification permission.",
+  "@notifyNote": {
+    "description": "Footer note"
   }
 }

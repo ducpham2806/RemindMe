@@ -66,7 +66,9 @@
   Thông báo & nhắc (C51: quyền + báo thức chính xác, mốc nhắc mặc định cho Thêm nhanh, giờ nhắc việc cả ngày → lập lịch lại),
   Dữ liệu & quyền riêng tư (C52), Xuất dữ liệu (C53: ZIP JSON + ICS tạo trên máy, lưu qua hộp thoại hệ điều hành), Xóa tài khoản (C54: gõ từ
   xác nhận, RPC `account_delete`) và Đã nhận yêu cầu xóa (C55).
-  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, onboarding (C30-C34),
+  Onboarding (C30-C33, UX §3.1): Chào mừng, Mục tiêu (tạo list khởi đầu), Thử nhắc đầu tiên (câu mẫu + NLU), Bật thông báo (priming trước hộp
+  thoại hệ điều hành); chỉ ở lần mở đầu. `saveParsedItem` dùng chung với Thêm nhanh.
+  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), tab Tài liệu/Hành lý của chuyến, C34 (pin theo hãng Android, cần native),
   tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 09-14, 17-19, 25-26.
 - Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09, chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).

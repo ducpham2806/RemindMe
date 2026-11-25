@@ -31,6 +31,7 @@ Future<void> main() async {
   final tz = await deviceTimeZone();
   await loadBundledHolidays(effectiveHolidayRegion(await LocalPrefs(db).get(holidayRegionPref) ?? prefAuto, deviceRegion()));
   final appearance = await loadAppearance(LocalPrefs(db));
+  final onboarded = await loadOnboardingDone(db);
   // Nút trên thông báo đăng ký theo ngôn ngữ máy lúc khởi động; ReminderBinding đăng ký lại khi ngôn ngữ app khác.
   final locale = appearance.language == prefAuto
       ? resolveLocale(WidgetsBinding.instance.platformDispatcher.locales, appSupportedLocales())
@@ -52,6 +53,7 @@ Future<void> main() async {
       notificationTapsProvider.overrideWithValue(local?.taps ?? const Stream.empty()),
       launchNotificationTapProvider.overrideWithValue(launchTap),
       initialAppearanceProvider.overrideWithValue(appearance),
+      initialOnboardingDoneProvider.overrideWithValue(onboarded),
       if (remote != null) ...[
         syncApiProvider.overrideWithValue(remote.api),
         remoteSyncProvider.overrideWith((ref) => remote.sync(ref.watch(syncEngineProvider))),

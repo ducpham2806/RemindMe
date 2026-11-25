@@ -118,6 +118,10 @@ Tháng: chấm màu theo loại, ngày âm nhỏ dưới ngày dương (bật/t�
 4. **Xin quyền đúng lúc** (priming screen trước dialog hệ thống): thông báo (sau khi tạo nhắc đầu tiên), exact alarm (Android, khi tạo nhắc có giờ),
    micro (khi bấm mic lần đầu), camera (khi bấm chụp), lịch (khi bật đồng bộ).
 5. Android OEM có nguy cơ kill: màn "Đảm bảo nhắc nhở luôn kêu" với hướng dẫn từng bước theo hãng + nút mở đúng trang cài đặt + nút "Gửi thông báo thử sau 1 phút".
+
+Đã làm (Figma C30-C33): bước 1-4, mục tiêu tạo list khởi đầu (bỏ list trùng tên), câu mẫu lấy từ ARB và phân tích bằng gói NLU,
+"Để sau" ghi là đã hỏi quyền nên app không tự bật hộp thoại hệ điều hành. Chỉ hiện ở lần mở đầu tiên (`onboarding_done`, máy đã có việc thì bỏ qua).
+Chưa làm: bước 5 (C34, cần đọc trạng thái pin/báo thức bằng code native), gợi ý bật hệ lịch phụ theo mục tiêu.
 Đăng nhập: đề xuất sau khi có ≥ 3 item ("Lưu lại để không mất khi đổi máy"), không bắt buộc lúc đầu.
 
 ### 3.2 Thông báo → hành động

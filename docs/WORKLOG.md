@@ -12,6 +12,13 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Onboarding C30-C33 · Claude Code
+- **Làm:** màn Chào mừng, Mục tiêu (tạo list khởi đầu theo mục đã chọn), Thử nhắc đầu tiên (câu mẫu trong ARB, xem trước thời gian/lặp/list
+  từ gói NLU, tạo việc với mốc nhắc mặc định), Bật thông báo (thẻ việc vừa tạo, Cho phép / Để sau). Router mở `/welcome` ở lần đầu
+  (`loadOnboardingDone`: chưa có pref và DB chưa có việc). ReminderBinding không tự hỏi quyền khi đang onboarding. Tách `saveParsedItem` từ Thêm nhanh. 55 key ARB.
+- **Kiểm chứng:** client 103 pass (+3 onboarding); analyze 0; lint 0; check-arb 550 key 0 lỗi; ảnh chụp C30-C33 so với Figma.
+- **Tiếp theo:** C34 (native), màn 09-14.
+
 ## 2026-11-25 · Figma 05-08, Gói & mức sử dụng, Thông báo & nhắc, quyền riêng tư, xuất dữ liệu, xóa tài khoản · Claude Code
 - **Làm:** `AppSheet`/`SheetOption`/`SheetChips`; sheet Ngày & giờ (05), Lặp lại + Tùy chỉnh + Kết thúc (06, `UNTIL`/`COUNT` trong RRULE),
   Lặp âm lịch (07), Hoãn nhắc (08, `snoozeItem`: nút ở chi tiết, vuốt trái ở danh sách, mở từ thông báo qua `?reminder=&at=`).
