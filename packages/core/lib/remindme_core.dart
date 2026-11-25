@@ -6,6 +6,7 @@ export 'src/civil.dart';
 export 'src/device.dart';
 export 'src/entitlements.dart';
 export 'src/hlc.dart';
+export 'src/holidays.dart';
 export 'src/ids.dart';
 export 'src/lunar.dart';
 export 'src/recurrence.dart';

@@ -217,3 +217,16 @@ nhập bảng và đọc tài liệu; ngày/giờ trong tài liệu dùng lại 
 
 **Hệ quả.** Thêm ~82 KB vào app; test kiểm mọi múi giờ có trong tzdata. Múi giờ của nước nhiều múi vẫn theo nguồn (cần soát khi có lỗi thật).
 Ghi công MIT ở `packages/parsers/data/README.md` (màn giấy phép trong app thêm khi có màn Giới thiệu). Thêm ngôn ngữ cho T2 = thêm mục `document:` vào gói, không sửa code.
+
+## ADR-017: Ngày lễ là gói luật tự viết theo văn bản luật, tính trên máy
+**Bối cảnh.** US-12b cần ngày lễ theo quốc gia cho lịch và lặp "ngày làm việc". `i18n-l10n.md` §5 dự kiến lấy dữ liệu của thư viện `date-holidays`,
+nhưng phần dữ liệu đó có giấy phép riêng phải soát (có thể có điều khoản chia sẻ tương tự), và gói theo từng ngày cụ thể phải cập nhật mỗi năm.
+
+**Quyết định.** Mỗi quốc gia 1 gói JSON tự viết `packages/core/data/holidays/<REGION>.json`: luật (`fixed`, `nth_weekday`, `lunar` qua `lunar.dart`,
+`easter`), ngày bù (`us`, `substitute`), ngày dời và ngày lễ 1 lần, ghi nguồn là văn bản luật hoặc trang chính phủ. `HolidayCalendar` (`packages/core`)
+tính cho năm bất kỳ trên máy. Tên ngày lễ là dữ liệu của gói theo ngôn ngữ (như gói NLU), không qua ARB. Ngày nghỉ do chính phủ quyết hằng năm
+(5 ngày Tết, ngày liền kề Quốc khánh VN) không đoán: gói chỉ đánh dấu ngày cố định theo luật, ghi rõ trong `notes`.
+
+**Hệ quả.** Không phụ thuộc giấy phép dữ liệu bên ngoài; mỗi gói vài KB. Bản đầu: VN, US (liên bang), GB (England và Wales); thêm nước = thêm 1 tệp
++ dòng assets (test kiểm). Lễ theo lịch khác (Hijri, lịch Ấn Độ) cần thêm loại luật. Ngày lễ 1 lần mới (quốc tang, đăng quang) cần cập nhật gói
+qua CDN (`api-spec.md` §5, `type: holiday`).
