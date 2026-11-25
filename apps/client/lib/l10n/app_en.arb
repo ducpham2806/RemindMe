@@ -56,6 +56,54 @@
   "@todayEmptyBody": {
     "description": "Empty state body on Today. Max 90 chars."
   },
+  "holidayHintTitle": "{date} is a public holiday: {holiday}",
+  "@holidayHintTitle": {
+    "description": "Today screen card (US-12b): an upcoming day off in the user's country has tasks planned. The holiday name comes from the holiday data pack.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Apr 30"
+      },
+      "holiday": {
+        "type": "String",
+        "example": "Reunification Day"
+      }
+    }
+  },
+  "holidayHintBody": "{count, plural, =1{You have 1 task planned for that day.} other{You have {count} tasks planned for that day.}}",
+  "@holidayHintBody": {
+    "description": "Second line of the holiday card on Today.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "holidayHintMove": "Move to {date}",
+  "@holidayHintMove": {
+    "description": "Button: move those tasks to the next working day, keeping their times.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "May 4"
+      }
+    }
+  },
+  "holidayHintKeep": "Keep",
+  "@holidayHintKeep": {
+    "description": "Button: leave the tasks on the holiday and stop suggesting for that date."
+  },
+  "holidayHintMoved": "{count, plural, =1{Moved 1 task} other{Moved {count} tasks}}",
+  "@holidayHintMoved": {
+    "description": "Snackbar after moving tasks off a holiday; has an Undo action.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "calendarPrevMonth": "Previous month",
   "@calendarPrevMonth": {
     "description": "Tooltip of the month navigation button on Calendar."

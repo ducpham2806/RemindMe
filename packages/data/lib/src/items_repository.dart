@@ -284,6 +284,50 @@ class ItemsRepository {
     }
   }
 
+  /// Việc 1 lần đang mở (kind `task`, không lặp) có ngày địa phương (theo [deviceTz], như màn Hôm nay) thuộc [dates] 'YYYY-MM-DD'.
+  /// Dùng cho gợi ý dời việc khỏi ngày nghỉ lễ (US-12b); sự kiện, lịch hẹn, đặt chỗ có giờ do người khác đặt nên không gợi ý dời.
+  Future<List<ItemView>> openTasksOn(Set<String> dates, {required String deviceTz}) async {
+    if (dates.isEmpty) return const [];
+    final recurring = {for (final r in await (_db.select(_db.recurrences)..where((t) => t.deletedAt.isNull())).get()) r.itemId};
+    final rows = await (_db.select(_db.items)
+          ..where((t) => t.deletedAt.isNull() & t.status.isIn(const ['open', 'pending_quota']) & t.kind.equals('task')))
+        .get();
+    final out = <ItemView>[];
+    for (final r in rows) {
+      if (recurring.contains(r.id)) continue;
+      final v = ItemView.fromRow(r);
+      if (dates.contains(_localDate(v, deviceTz))) out.add(v);
+    }
+    return out;
+  }
+
+  Stream<List<ItemView>> watchOpenTasksOn(Set<String> dates, {required String deviceTz}) async* {
+    yield await openTasksOn(dates, deviceTz: deviceTz);
+    await for (final _ in _db.tableUpdates(TableUpdateQuery.onAllTables([_db.items, _db.recurrences]))) {
+      yield await openTasksOn(dates, deviceTz: deviceTz);
+    }
+  }
+
+  static String? _localDate(ItemView i, String deviceTz) {
+    if (i.startDate != null && (i.allDay || i.startsAt == null)) return i.startDate;
+    if (i.startsAt != null) return TimeZones.toWall(i.startsAt!, deviceTz).date.toIso();
+    return null;
+  }
+
+  /// Dời item sang ngày [to] (ngày địa phương như [openTasksOn]), giữ giờ tường trong múi giờ của item.
+  Future<void> moveToDate(ItemView i, CivilDate to, {required String deviceTz}) async {
+    final from = _localDate(i, deviceTz);
+    if (from == null) return;
+    if (i.startDate != null && (i.allDay || i.startsAt == null)) {
+      await setSchedule(i.id, startDate: to.toIso());
+      return;
+    }
+    final shift = to.daysSince(CivilDate.parse(from));
+    final zone = i.tz ?? deviceTz;
+    final wall = TimeZones.toWall(i.startsAt!, zone);
+    await setSchedule(i.id, startsAt: TimeZones.toUtc(CivilDateTime(wall.date.addDays(shift), wall.time), zone).utc, tz: zone);
+  }
+
   /// id các item có lặp (để hiện biểu tượng 🔁).
   Stream<Set<String>> watchRecurringIds() {
     final q = _db.select(_db.recurrences)..where((t) => t.deletedAt.isNull());

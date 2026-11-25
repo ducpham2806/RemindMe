@@ -102,4 +102,13 @@ void main() {
       expect(Recurrence.fromRow(row).between(start, CivilDate(2026, 4, 27), CivilDate(2026, 5, 4)), hasLength(6));
     });
   });
+
+  test('ngày làm việc kế tiếp: bỏ cuối tuần và ngày nghỉ lễ của vùng', () {
+    HolidayCalendars.register(pack('VN'));
+    addTearDown(HolidayCalendars.clear);
+    expect(nextWorkday(CivilDate(2026, 4, 29), 'VN').toIso(), '2026-05-04', reason: '30/4, 1/5 nghỉ lễ; 2-3/5 cuối tuần');
+    expect(nextWorkday(CivilDate(2026, 4, 29), 'JP').toIso(), '2026-04-30', reason: 'chưa có gói: chỉ bỏ cuối tuần');
+    expect(nextWorkday(CivilDate(2026, 4, 29), 'SA').toIso(), '2026-04-30');
+    expect(nextWorkday(CivilDate(2026, 4, 29), 'SA').weekday, DateTime.thursday);
+  });
 }

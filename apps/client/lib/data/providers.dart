@@ -153,6 +153,46 @@ Future<HolidayCalendar?> loadBundledHolidays(String? region) async {
 /// Ngày lễ theo vùng của máy; null = vùng chưa có gói hoặc không biết vùng.
 final holidayCalendarProvider = FutureProvider<HolidayCalendar?>((ref) => loadBundledHolidays(ref.watch(deviceRegionProvider)));
 
+/// Gợi ý dời việc khỏi ngày nghỉ lễ (US-12b): ngày nghỉ lễ gần nhất trong 7 ngày tới (chưa bị "Để nguyên") có việc 1 lần đang hẹn.
+class HolidayHint {
+  const HolidayHint({required this.holiday, required this.tasks, required this.moveTo});
+  final Holiday holiday;
+  final List<ItemView> tasks;
+  /// Ngày làm việc kế tiếp (bỏ cuối tuần + ngày nghỉ lễ của vùng).
+  final CivilDate moveTo;
+}
+
+const holidayHintDismissedPref = 'holiday_hint_dismissed';
+
+final localPrefsProvider = Provider<LocalPrefs>((ref) => LocalPrefs(ref.watch(appDatabaseProvider)));
+
+final holidayHintProvider = StreamProvider<HolidayHint?>((ref) async* {
+  final cal = await ref.watch(holidayCalendarProvider.future);
+  if (cal == null) {
+    yield null;
+    return;
+  }
+  final today = CivilDate.of(ref.watch(nowProvider)());
+  final dismissed = await ref.watch(localPrefsProvider).getSet(holidayHintDismissedPref);
+  final byDate = <String, Holiday>{
+    for (final h in cal.between(today, today.addDays(7)).reversed)
+      if (h.dayOff && !dismissed.contains(h.date.toIso())) h.date.toIso(): h,
+  };
+  yield* ref.watch(itemsRepositoryProvider).watchOpenTasksOn(byDate.keys.toSet(), deviceTz: ref.watch(deviceTimeZoneProvider)).map((tasks) {
+    for (final d in byDate.keys.toList()..sort()) {
+      final hits = [for (final t in tasks) if (_dayOf(t, ref.read(deviceTimeZoneProvider)) == d) t];
+      if (hits.isNotEmpty) return HolidayHint(holiday: byDate[d]!, tasks: hits, moveTo: nextWorkday(CivilDate.parse(d), cal.region));
+    }
+    return null;
+  });
+});
+
+String? _dayOf(ItemView i, String deviceTz) {
+  if (i.startDate != null && (i.allDay || i.startsAt == null)) return i.startDate;
+  if (i.startsAt != null) return TimeZones.toWall(i.startsAt!, deviceTz).date.toIso();
+  return null;
+}
+
 /// Số item theo ngày của lưới tháng (khóa: ngày đầu và cuối lưới 'YYYY-MM-DD|YYYY-MM-DD').
 final calendarCountsProvider = StreamProvider.family<Map<String, int>, String>((ref, range) {
   final [from, to] = range.split('|');

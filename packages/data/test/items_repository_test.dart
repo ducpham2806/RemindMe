@@ -110,6 +110,34 @@ void main() {
       expect((await repo.recurrenceOf(id))!['workdays_region'], 'VN');
     });
 
+    test('openTasksOn + moveToDate: chỉ việc 1 lần đang mở; dời giữ giờ tường, việc cả ngày đổi ngày', () async {
+      const tz = 'Asia/Ho_Chi_Minh';
+      final timed = await repo.create(title: 'Báo cáo', startsAt: DateTime.utc(2026, 4, 30, 2), tz: tz); // 9:00 30/4
+      final allDay = await repo.create(title: 'Nộp thuế', startDate: '2026-04-30');
+      await repo.create(title: 'Họp', kind: 'event', startsAt: DateTime.utc(2026, 4, 30, 3), tz: tz);
+      await repo.create(title: 'Uống thuốc', startsAt: DateTime.utc(2026, 4, 30, 1), tz: tz,
+          recurrence: {'kind': 'rrule', 'rrule': 'FREQ=DAILY'}, recurrenceStart: DateTime.utc(2026, 4, 30, 1));
+      await repo.create(title: 'Late', startsAt: DateTime.utc(2026, 4, 30, 18), tz: tz); // 1:00 ngày 1/5 giờ VN
+      final hits = await repo.openTasksOn({'2026-04-30'}, deviceTz: tz);
+      expect(hits.map((i) => i.title).toSet(), {'Báo cáo', 'Nộp thuế'});
+      for (final i in hits) {
+        await repo.moveToDate(i, CivilDate(2026, 5, 4), deviceTz: tz);
+      }
+      expect((await repo.getItem(timed))!.startsAt, DateTime.utc(2026, 5, 4, 2));
+      expect((await repo.getItem(allDay))!.startDate, '2026-05-04');
+      expect(await repo.openTasksOn({'2026-04-30'}, deviceTz: tz), isEmpty);
+    });
+
+    test('LocalPrefs: tập giá trị chỉ ở máy này', () async {
+      final prefs = LocalPrefs(db);
+      expect(await prefs.getSet('x'), isEmpty);
+      await prefs.addToSet('x', 'b');
+      await prefs.addToSet('x', 'a');
+      await prefs.addToSet('x', 'a');
+      expect(await prefs.getSet('x'), {'a', 'b'});
+      expect(await repo.engine.pendingCount(), 0, reason: 'không vào outbox');
+    });
+
     test('đổi tên, ghi chú, ưu tiên, xóa', () async {
       final id = await repo.create(title: 'Mua quà');
       await repo.rename(id, 'Mua quà sinh nhật');

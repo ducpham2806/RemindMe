@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:remindme_core/remindme_core.dart';
 import 'package:remindme_data/remindme_data.dart';
 
 import '../../core/l10n/formatters.dart';
@@ -40,6 +41,7 @@ class TodayScreen extends ConsumerWidget {
       body: Column(
         children: [
           const _ReminderHealthCard(),
+          const _HolidayHintCard(),
           Expanded(child: _body(context, l, sections)),
         ],
       ),
@@ -54,6 +56,83 @@ class TodayScreen extends ConsumerWidget {
         AsyncError() => EmptyState(icon: Icons.error_outline, title: l.loadError),
         _ => const Center(child: CircularProgressIndicator()),
     };
+  }
+}
+
+/// US-12b: ngày nghỉ lễ sắp tới có việc đang hẹn → gợi ý dời sang ngày làm việc kế tiếp (giữ giờ), có Hoàn tác; "Để nguyên" thì không hỏi lại ngày đó.
+class _HolidayHintCard extends ConsumerWidget {
+  const _HolidayHintCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hint = ref.watch(holidayHintProvider).value;
+    if (hint == null) return const SizedBox.shrink();
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final fmt = Fmt.of(context);
+    final now = ref.read(nowProvider)();
+    String day(CivilDate d) => fmt.date(DateTime(d.year, d.month, d.day), now: now);
+    final lang = Localizations.localeOf(context).languageCode;
+    final onColor = theme.colorScheme.onSecondaryContainer;
+    return Card(
+      key: const Key('holidayHintCard'),
+      color: theme.colorScheme.secondaryContainer,
+      margin: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, Tokens.space2, Tokens.screenMargin, 0),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.all(Tokens.space4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.holidayHintTitle(day(hint.holiday.date), hint.holiday.name(lang)), style: theme.textTheme.titleSmall?.copyWith(color: onColor)),
+            const SizedBox(height: Tokens.space1),
+            Text(l.holidayHintBody(hint.tasks.length), style: theme.textTheme.bodyMedium?.copyWith(color: onColor)),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: Tokens.space2,
+              children: [
+                TextButton(
+                  key: const Key('holidayHintKeep'),
+                  onPressed: () async {
+                    await ref.read(localPrefsProvider).addToSet(holidayHintDismissedPref, hint.holiday.date.toIso());
+                    ref.invalidate(holidayHintProvider);
+                  },
+                  child: Text(l.holidayHintKeep),
+                ),
+                FilledButton.tonal(
+                  key: const Key('holidayHintMove'),
+                  onPressed: () => _move(context, ref, hint),
+                  child: Text(l.holidayHintMove(day(hint.moveTo))),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _move(BuildContext context, WidgetRef ref, HolidayHint hint) async {
+    final repo = ref.read(itemsRepositoryProvider);
+    final tz = ref.read(deviceTimeZoneProvider);
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    for (final t in hint.tasks) {
+      await repo.moveToDate(t, hint.moveTo, deviceTz: tz);
+    }
+    messenger
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(l.holidayHintMoved(hint.tasks.length)),
+        action: SnackBarAction(
+          label: l.undo,
+          onPressed: () async {
+            for (final t in hint.tasks) {
+              final allDay = t.startDate != null && (t.allDay || t.startsAt == null);
+              await repo.setSchedule(t.id, startDate: allDay ? t.startDate : null, startsAt: allDay ? null : t.startsAt, tz: allDay ? t.tz : t.tz ?? tz);
+            }
+          },
+        ),
+      ));
   }
 }
 

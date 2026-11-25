@@ -27,6 +27,17 @@ abstract final class HolidayCalendars {
   static void clear() => _loaded.clear();
 }
 
+/// Ngày làm việc đầu tiên sau [after]: không phải cuối tuần của [region], không phải ngày nghỉ lễ của gói đã nạp cho vùng đó.
+CivilDate nextWorkday(CivilDate after, String? region) {
+  final weekend = weekendDays(region);
+  final cal = region == null ? null : HolidayCalendars.of(region);
+  var d = after.addDays(1);
+  while (weekend.contains(d.weekday) || (cal?.isDayOff(d) ?? false)) {
+    d = d.addDays(1);
+  }
+  return d;
+}
+
 /// 1 ngày lễ đã tính ra cho 1 năm.
 class Holiday {
   const Holiday({required this.date, required this.id, required this.names, this.dayOff = true, this.substitute = false});
