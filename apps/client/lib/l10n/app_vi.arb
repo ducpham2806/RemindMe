@@ -286,5 +286,9 @@
   "quickAddVoice": "Nói",
   "quickAddCamera": "Chụp",
   "quickAddPhoto": "Ảnh",
-  "quickAddFile": "Tệp"
+  "quickAddFile": "Tệp",
+  "itemDetailTitle": "Chi tiết",
+  "itemStatusOpen": "Chưa hoàn thành",
+  "itemStatusDone": "Đã hoàn thành",
+  "itemDateTimeLabel": "Ngày & giờ"
 }

@@ -7,7 +7,9 @@ import 'package:remindme_data/remindme_data.dart';
 
 import '../../core/l10n/formatters.dart';
 import '../../core/l10n/recurrence_text.dart';
+import '../../core/theme/app_icons.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/setting_row.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -23,8 +25,10 @@ Map<String, Object?> workdaysRule(String? region) {
 
 /// Thời điểm (ngày, giờ) và lặp lại của item (UX §2.3). Sửa theo múi giờ của máy.
 class ScheduleEditor extends ConsumerWidget {
-  const ScheduleEditor({super.key, required this.item});
+  const ScheduleEditor({super.key, required this.item, this.between});
   final ItemView item;
+  /// Hàng chèn giữa Ngày & giờ và Lặp lại (Nhắc, theo thứ tự Figma 04).
+  final Widget? between;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,54 +76,57 @@ class ScheduleEditor extends ConsumerWidget {
     }
 
     final theme = Theme.of(context);
+    final iconColor = theme.colorScheme.onSurfaceVariant;
     return Column(
       key: const Key('scheduleEditor'),
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Wrap(
-          spacing: Tokens.space2,
-          runSpacing: Tokens.space2,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            ActionChip(
-              key: const Key('pickDate'),
-              avatar: const Icon(Icons.event, size: 18),
-              label: Text(wall == null ? l.itemAddDate : fmt.date(DateTime(wall.date.year, wall.date.month, wall.date.day))),
-              onPressed: pickDate,
-            ),
-            if (wall != null)
-              ActionChip(
-                key: const Key('pickTime'),
-                avatar: const Icon(Icons.schedule, size: 18),
-                label: Text(wall.time == null
-                    ? l.itemAddTime
-                    : MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay(hour: wall.time!.hour, minute: wall.time!.minute),
-                        alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context))),
-                onPressed: pickTime,
+        SettingRow(
+          icon: AppIcons.calendar,
+          label: l.itemDateTimeLabel,
+          child: Wrap(
+            spacing: Tokens.space2,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              SettingValueButton(
+                key: const Key('pickDate'),
+                label: wall == null ? l.itemAddDate : fmt.date(DateTime(wall.date.year, wall.date.month, wall.date.day)),
+                onTap: pickDate,
               ),
-            if (wall?.time != null)
-              IconButton(
-                key: const Key('removeTime'),
-                tooltip: l.itemRemoveTime,
-                icon: const Icon(Icons.timer_off_outlined),
-                onPressed: () => save(date: wall!.date),
-              ),
-            if (wall != null)
-              IconButton(
-                key: const Key('removeDate'),
-                tooltip: l.itemRemoveDate,
-                icon: const Icon(Icons.event_busy_outlined),
-                onPressed: () => save(clear: true),
-              ),
-          ],
+              if (wall != null)
+                SettingValueButton(
+                  key: const Key('pickTime'),
+                  label: wall.time == null
+                      ? l.itemAddTime
+                      : MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay(hour: wall.time!.hour, minute: wall.time!.minute),
+                          alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context)),
+                  onTap: pickTime,
+                ),
+              if (wall?.time != null)
+                IconButton(
+                  key: const Key('removeTime'),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: l.itemRemoveTime,
+                  icon: Icon(Icons.timer_off_outlined, size: 20, color: iconColor),
+                  onPressed: () => save(date: wall!.date),
+                ),
+              if (wall != null)
+                IconButton(
+                  key: const Key('removeDate'),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: l.itemRemoveDate,
+                  icon: Icon(Icons.event_busy_outlined, size: 20, color: iconColor),
+                  onPressed: () => save(clear: true),
+                ),
+            ],
+          ),
         ),
-        ListTile(
+        ?between,
+        SettingRow(
           key: const Key('repeatRow'),
-          contentPadding: EdgeInsetsDirectional.zero,
-          leading: const Icon(Icons.repeat),
-          title: Text(l.itemRepeatLabel),
-          subtitle: Text(wall == null ? l.recurNeedsDate : (rule == null ? l.recurNone : describeRecurrence(context, rule)),
-              style: theme.textTheme.bodySmall),
+          icon: AppIcons.repeat,
+          label: l.itemRepeatLabel,
+          value: wall == null ? l.recurNeedsDate : (rule == null ? l.recurNone : describeRecurrence(context, rule)),
           enabled: wall != null,
           onTap: wall == null
               ? null

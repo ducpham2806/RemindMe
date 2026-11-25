@@ -70,8 +70,17 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('itemTitle')), 'Buy a birthday gift');
     await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.tap(find.byKey(const Key('itemPriority')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('High'));
     await tester.pumpAndSettle();
+    expect(find.descendant(of: find.byKey(const Key('itemPriority')), matching: find.text('High')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('itemDone')));
+    await tester.pumpAndSettle();
+    expect(find.text('Completed'), findsOneWidget, reason: 'chip trạng thái chạm để xong');
+    await tester.tap(find.byKey(const Key('itemDone')));
+    await tester.pumpAndSettle();
+    expect(find.text('Not done'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('itemDelete')));
     await tester.pumpAndSettle();

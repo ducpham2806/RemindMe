@@ -286,5 +286,9 @@
   "quickAddVoice": "[Šþéàķ~~]",
   "quickAddCamera": "[Çàɱéŕà~~]",
   "quickAddPhoto": "[Þĥöţö~~]",
-  "quickAddFile": "[Ƒîļé~~]"
+  "quickAddFile": "[Ƒîļé~~]",
+  "itemDetailTitle": "[Đéţàîļš~~~]",
+  "itemStatusOpen": "[Ñöţ đöñé~~~]",
+  "itemStatusDone": "[Çöɱþļéţéđ~~~~]",
+  "itemDateTimeLabel": "[Đàţé & ţîɱé~~~]"
 }

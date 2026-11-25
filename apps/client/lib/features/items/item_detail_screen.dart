@@ -3,15 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_data/remindme_data.dart';
 
+import '../../core/theme/app_icons.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/setting_row.dart';
 import '../../data/providers.dart';
 import '../../data/reminders.dart';
 import '../../l10n/app_localizations.dart';
 import '../common/empty_state.dart';
 import 'schedule_editor.dart';
 
-/// Chi tiết item (UX §2.3), phần S2: tiêu đề, ghi chú, ưu tiên, xong/chưa xong, xóa.
-/// Thời gian, lặp, nhắc, list, tag, checklist thêm ở S3+ (cần engine nhắc và recurrence).
+/// Chi tiết item (UX §2.3, Figma 04): list + trạng thái (chạm để xong/mở lại), tên, ghi chú, thẻ Ngày & giờ / Nhắc / Lặp / Danh sách / Ưu tiên.
+/// Tự lưu khi rời trường (không có nút Lưu). Checklist, tag chưa có.
 class ItemDetailScreen extends ConsumerWidget {
   const ItemDetailScreen({super.key, required this.id});
   final String id;
@@ -114,65 +117,168 @@ class _EditorState extends ConsumerState<_Editor> {
     if (mounted && context.canPop()) context.pop();
   }
 
+  Future<void> _pickPriority() async {
+    final l = AppLocalizations.of(context);
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final p in const [0, 1, 2, 3])
+              ListTile(
+                key: Key('priority-$p'),
+                leading: Icon(p == widget.item.priority ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                title: Text(_priorityName(l, p)),
+                onTap: () => Navigator.pop(context, p),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) await _repo.setPriority(widget.item.id, picked);
+  }
+
+  static String _priorityName(AppLocalizations l, int p) => switch (p) {
+        1 => l.priorityLow,
+        2 => l.priorityMedium,
+        3 => l.priorityHigh,
+        _ => l.priorityNone,
+      };
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final item = widget.item;
+    final lists = ref.watch(listsProvider).value ?? const <ListSummary>[];
+    final list = lists.where((s) => item.listId == null ? s.isInbox : s.id == item.listId).firstOrNull;
+    final listName = list == null || list.isInbox ? l.listsInbox : list.name!;
+    Widget pill(String text, {required Color bg, required Color fg, Key? key, VoidCallback? onTap}) => Material(
+          key: key,
+          color: bg,
+          borderRadius: BorderRadius.circular(Tokens.radiusSm),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.all(Tokens.space2),
+              child: Text(text, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: fg)),
+            ),
+          ),
+        );
     return Scaffold(
       appBar: AppBar(
+        title: Text(l.itemDetailTitle),
         actions: [
-          IconButton(
-            key: const Key('itemDone'),
-            tooltip: item.isDone ? l.itemMarkOpen : l.itemMarkDone,
-            icon: Icon(item.isDone ? Icons.check_circle : Icons.check_circle_outline),
-            onPressed: () => _repo.setDone(item.id, done: !item.isDone),
-          ),
           IconButton(key: const Key('itemDelete'), tooltip: l.itemDelete, icon: const Icon(Icons.delete_outline), onPressed: _delete),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsetsDirectional.all(Tokens.screenMargin),
+        padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space5),
         children: [
+          Wrap(
+            spacing: 10,
+            runSpacing: Tokens.space2,
+            children: [
+              pill(listName, bg: scheme.primaryContainer, fg: scheme.primary),
+              Semantics(
+                button: true,
+                toggled: item.isDone,
+                label: item.isDone ? l.itemMarkOpen : l.itemMarkDone,
+                excludeSemantics: true,
+                child: pill(
+                  item.isDone ? l.itemStatusDone : l.itemStatusOpen,
+                  key: const Key('itemDone'),
+                  bg: item.isDone ? RemindColors.of(context).travelContainer : scheme.surface,
+                  fg: item.isDone ? RemindColors.of(context).success : scheme.onSurfaceVariant,
+                  onTap: () => _repo.setDone(item.id, done: !item.isDone),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Tokens.space4),
           TextField(
             key: const Key('itemTitle'),
             controller: _title,
             focusNode: _titleFocus,
-            style: Theme.of(context).textTheme.titleLarge,
-            decoration: InputDecoration(labelText: l.itemTitleLabel),
+            minLines: 1,
+            maxLines: 4,
+            style: theme.textTheme.headlineLarge?.copyWith(fontSize: 28, height: 41 / 28),
+            decoration: InputDecoration(hintText: l.itemTitleLabel, border: InputBorder.none, filled: false, isCollapsed: true),
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _saveTitle(),
           ),
-          const SizedBox(height: Tokens.space3),
-          ScheduleEditor(item: item),
-          _ListRow(item: item),
-          const SizedBox(height: Tokens.space2),
-          _RemindersSection(item: item),
-          const SizedBox(height: Tokens.space4),
-          Text(l.itemPriorityLabel, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: Tokens.space2),
-          SegmentedButton<int>(
-            key: const Key('itemPriority'),
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(value: 0, label: Text(l.priorityNone)),
-              ButtonSegment(value: 1, label: Text(l.priorityLow)),
-              ButtonSegment(value: 2, label: Text(l.priorityMedium)),
-              ButtonSegment(value: 3, label: Text(l.priorityHigh)),
-            ],
-            selected: {item.priority},
-            onSelectionChanged: (s) => _repo.setPriority(item.id, s.single),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsetsDirectional.all(Tokens.space4),
+            decoration: BoxDecoration(color: scheme.surface, borderRadius: BorderRadius.circular(Tokens.radiusMd)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.itemNotesLabel, style: theme.textTheme.labelSmall?.copyWith(fontSize: 10, height: 1.5, fontWeight: FontWeight.w600, color: scheme.onSurfaceVariant)),
+                const SizedBox(height: Tokens.space2),
+                TextField(
+                  key: const Key('itemNotes'),
+                  controller: _notes,
+                  focusNode: _notesFocus,
+                  minLines: 2,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13),
+                  decoration: const InputDecoration(border: InputBorder.none, filled: false, isCollapsed: true),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: Tokens.space4),
-          TextField(
-            key: const Key('itemNotes'),
-            controller: _notes,
-            focusNode: _notesFocus,
-            minLines: 3,
-            maxLines: null,
-            keyboardType: TextInputType.multiline,
-            decoration: InputDecoration(labelText: l.itemNotesLabel, alignLabelWithHint: true),
+          const SizedBox(height: 18),
+          Material(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ScheduleEditor(item: item, between: _RemindersSection(item: item)),
+                SettingRow(key: const Key('itemList'), icon: AppIcons.list, label: l.itemListLabel, value: listName, onTap: () => _pickList(lists, list)),
+                SettingRow(
+                  key: const Key('itemPriority'),
+                  icon: AppIcons.flag,
+                  label: l.itemPriorityLabel,
+                  value: _priorityName(l, item.priority),
+                  onTap: _pickPriority,
+                ),
+              ],
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _pickList(List<ListSummary> lists, ListSummary? current) {
+    final l = AppLocalizations.of(context);
+    String name(ListSummary s) => s.isInbox ? l.listsInbox : s.name!;
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            for (final s in lists)
+              ListTile(
+                leading: Icon(s == current ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                title: Text(name(s)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _repo.setList(widget.item.id, s.id);
+                },
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -190,81 +296,37 @@ class _RemindersSection extends ConsumerWidget {
     final repo = ref.read(itemsRepositoryProvider);
     final reminders = ref.watch(remindersProvider(item.id)).value ?? const [];
     final used = {for (final r in reminders) r.offsetMinutes ?? 0};
-    return Column(
+    return SettingRow(
       key: const Key('itemReminders'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(l.itemRemindersLabel, style: theme.textTheme.labelLarge),
-        const SizedBox(height: Tokens.space2),
-        if (!item.isScheduled)
-          Text(l.reminderNeedsDate, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant))
-        else
-          Wrap(
-            spacing: Tokens.space2,
-            runSpacing: Tokens.space2,
-            children: [
-              for (final r in reminders)
-                InputChip(
-                  key: Key('reminder-${r.offsetMinutes ?? 0}'),
-                  avatar: const Icon(Icons.notifications_outlined, size: 18),
-                  label: Text(describeReminderOffset(l, r.offsetMinutes ?? 0)),
-                  deleteButtonTooltipMessage: l.reminderRemove,
-                  onDeleted: () => repo.removeReminder(r.id),
+      icon: AppIcons.bell,
+      label: l.itemRemindersLabel,
+      enabled: item.isScheduled,
+      child: !item.isScheduled
+          ? Text(l.reminderNeedsDate, style: theme.textTheme.bodySmall)
+          : Wrap(
+              spacing: Tokens.space2,
+              runSpacing: Tokens.space2,
+              children: [
+                for (final r in reminders)
+                  InputChip(
+                    key: Key('reminder-${r.offsetMinutes ?? 0}'),
+                    label: Text(describeReminderOffset(l, r.offsetMinutes ?? 0)),
+                    deleteButtonTooltipMessage: l.reminderRemove,
+                    onDeleted: () => repo.removeReminder(r.id),
+                  ),
+                PopupMenuButton<int>(
+                  key: const Key('reminderAdd'),
+                  tooltip: l.reminderAdd,
+                  onSelected: (m) => repo.addReminder(item.id, offsetMinutes: m),
+                  itemBuilder: (context) => [
+                    for (final m in reminderPresets)
+                      if (!used.contains(m)) PopupMenuItem(value: m, child: Text(describeReminderOffset(l, m))),
+                  ],
+                  child: Chip(avatar: Icon(Icons.add, size: 18, color: theme.colorScheme.primary), label: Text(l.reminderAdd)),
                 ),
-              PopupMenuButton<int>(
-                key: const Key('reminderAdd'),
-                tooltip: l.reminderAdd,
-                onSelected: (m) => repo.addReminder(item.id, offsetMinutes: m),
-                itemBuilder: (context) => [
-                  for (final m in reminderPresets)
-                    if (!used.contains(m)) PopupMenuItem(value: m, child: Text(describeReminderOffset(l, m))),
-                ],
-                child: Chip(avatar: const Icon(Icons.add, size: 18), label: Text(l.reminderAdd)),
-              ),
-            ],
-          ),
-      ],
+              ],
+            ),
     );
   }
 }
 
-/// List của item; chạm để chuyển list.
-class _ListRow extends ConsumerWidget {
-  const _ListRow({required this.item});
-  final ItemView item;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context);
-    final lists = ref.watch(listsProvider).value ?? const <ListSummary>[];
-    final current = lists.where((s) => item.listId == null ? s.isInbox : s.id == item.listId).firstOrNull;
-    String name(ListSummary s) => s.isInbox ? l.listsInbox : s.name!;
-    return ListTile(
-      key: const Key('itemList'),
-      contentPadding: EdgeInsetsDirectional.zero,
-      leading: const Icon(Icons.list_alt_outlined),
-      title: Text(l.itemListLabel),
-      subtitle: Text(current == null ? l.listsInbox : name(current)),
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (context) => SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              for (final s in lists)
-                ListTile(
-                  leading: Icon(s == current ? Icons.radio_button_checked : Icons.radio_button_unchecked),
-                  title: Text(name(s)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    ref.read(itemsRepositoryProvider).setList(item.id, s.id);
-                  },
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -1651,5 +1651,21 @@
   "quickAddFile": "File",
   "@quickAddFile": {
     "description": "Quick add sheet (Figma 02)"
+  },
+  "itemDetailTitle": "Details",
+  "@itemDetailTitle": {
+    "description": "Item details (Figma 04)"
+  },
+  "itemStatusOpen": "Not done",
+  "@itemStatusOpen": {
+    "description": "Item details (Figma 04)"
+  },
+  "itemStatusDone": "Completed",
+  "@itemStatusDone": {
+    "description": "Item details (Figma 04)"
+  },
+  "itemDateTimeLabel": "Date & time",
+  "@itemDateTimeLabel": {
+    "description": "Item details (Figma 04)"
   }
 }
