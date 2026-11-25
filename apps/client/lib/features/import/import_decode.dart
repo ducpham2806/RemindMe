@@ -58,6 +58,8 @@ class ImportPreview {
     this.pendingAttachments = const [],
     this.docType,
     this.templateId,
+    this.reminderDefaults = const [],
+    this.trips = const [],
   });
 
   final ImportFormat format;
@@ -75,6 +77,33 @@ class ImportPreview {
   final DocType? docType;
   /// Mẫu nhà cung cấp đã khớp (`id@version`).
   final String? templateId;
+  /// Nhắc mặc định theo loại cho từng đề xuất (cùng thứ tự `candidates`; null = như Quick Add).
+  final List<DefaultReminders?> reminderDefaults;
+  /// Gợi ý gom đặt chỗ đi lại thành chuyến đi (US-21).
+  final List<TripSuggestion> trips;
+
+  /// Múi giờ sân bay cho vé chỉ có offset, nhắc mặc định, gợi ý chuyến đi: cần từ điển sân bay nên làm trong isolate.
+  ImportPreview _withTravel(AirportIndex? airports) {
+    final cs = airports == null ? candidates : [for (final c in candidates) withAirportTimeZones(c, airports)];
+    return ImportPreview(
+      format: format,
+      candidates: cs,
+      sheetNames: sheetNames,
+      sheetIndex: sheetIndex,
+      dateOrder: dateOrder,
+      dateOrderAmbiguous: dateOrderAmbiguous,
+      docLanguage: docLanguage,
+      subject: subject,
+      pendingAttachments: pendingAttachments,
+      docType: docType,
+      templateId: templateId,
+      reminderDefaults: [for (final c in cs) defaultReminders(c, airports: airports)],
+      trips: suggestTrips(cs, airports: airports),
+    );
+  }
+
+  /// `imports.tier_used`: qua tầng luật thì `t1t2` (CHECK của server), decoder định dạng thì `t0`.
+  String get tierUsed => docType != null ? 't1t2' : 't0';
 
   /// Giá trị `imports.kind`.
   String get recordKind => switch (format) {
@@ -127,8 +156,13 @@ ImportFormat detectFormat(String name, List<int> bytes) {
   return ImportFormat.unsupported;
 }
 
-/// Giải mã tệp thành đề xuất. Thuần Dart, không đụng Flutter: chạy được trong `Isolate.run`.
+/// Giải mã tệp thành đề xuất, kèm nhắc mặc định và gợi ý chuyến đi. Thuần Dart, không đụng Flutter: chạy được trong `Isolate.run`.
 ImportPreview decodeImport(ImportRequest r) {
+  final airports = r.airportsTsv == null ? null : AirportIndex.parse(r.airportsTsv!);
+  return _decode(r, airports)._withTravel(airports);
+}
+
+ImportPreview _decode(ImportRequest r, AirportIndex? airports) {
   final packs = [for (final src in r.packSources.values) GrammarPack.fromYaml(src)];
   final nlu = NluEngine(packs);
   final format = detectFormat(r.name, r.bytes);
@@ -142,7 +176,7 @@ ImportPreview decodeImport(ImportRequest r) {
       final e = const EmailDecoder().decode(r.bytes, reference: reference);
       final pending = [for (final p in e.pending) p.filename ?? p.mediaType];
       if (e.candidates.isEmpty && e.text.trim().isNotEmpty) {
-        final t2 = _rules(packs, r, TextDocument.fromText(e.text, senderDomain: _domain(e.from)), e.sentAt ?? reference);
+        final t2 = _rules(packs, r, airports, TextDocument.fromText(e.text, senderDomain: _domain(e.from)), e.sentAt ?? reference);
         return ImportPreview(
           format: format,
           candidates: t2.candidates,
@@ -184,7 +218,7 @@ ImportPreview decodeImport(ImportRequest r) {
         return ImportPreview(format: format, candidates: const BcbpDecoder().decode(first, reference: reference) ?? const []);
       }
       // Văn bản của vé/phiếu (dán từ app khác, OCR) thì đọc bằng luật T2; không thì mỗi dòng 1 việc.
-      final t2 = _rules(packs, r, TextDocument.fromText(text), reference);
+      final t2 = _rules(packs, r, airports, TextDocument.fromText(text), reference);
       if (t2.candidates.isNotEmpty) {
         return ImportPreview(format: format, candidates: t2.candidates, docType: t2.docType, templateId: t2.templateId);
       }
@@ -194,11 +228,8 @@ ImportPreview decodeImport(ImportRequest r) {
   }
 }
 
-RuleExtraction _rules(List<GrammarPack> packs, ImportRequest r, TextDocument doc, DateTime reference) => RuleEngine(
-      packs: packs,
-      airports: r.airportsTsv == null ? null : AirportIndex.parse(r.airportsTsv!),
-      region: r.region,
-    ).extract(doc, reference: reference);
+RuleExtraction _rules(List<GrammarPack> packs, ImportRequest r, AirportIndex? airports, TextDocument doc, DateTime reference) =>
+    RuleEngine(packs: packs, airports: airports, region: r.region).extract(doc, reference: reference);
 
 /// `Hãng <no-reply@mail.example.com>` → `mail.example.com`.
 String? _domain(String? from) => from == null ? null : RegExp(r'@([\w.-]+)').firstMatch(from)?[1]?.toLowerCase();

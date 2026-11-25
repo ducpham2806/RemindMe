@@ -313,6 +313,9 @@ class ItemsRepository {
     List<Map<String, Object?>> checklist = const [],
     String status = 'open',
     String? importId,
+    String? tripId,
+    List<DateTime> absoluteReminders = const [],
+    Map<String, Object?>? booking,
   }) async {
     final trimmed = title.trim();
     if (trimmed.isEmpty) throw ArgumentError.value(title, 'title', 'không được rỗng');
@@ -339,6 +342,7 @@ class ItemsRepository {
       'location': ?location,
       if (checklist.isNotEmpty) 'checklist': checklist,
       'import_id': ?importId,
+      'trip_id': ?tripId,
       // Việc lặp "8h sáng mỗi ngày" kêu theo giờ nơi đang đứng (reminder-engine.md §5).
       if (recurrence != null) 'time_mode': kind == 'task' || kind == 'habit' ? 'floating' : 'fixed',
     });
@@ -348,10 +352,53 @@ class ItemsRepository {
         'dtstart': recurrenceStart!.toUtc().toIso8601String(),
       });
     }
+    if (booking != null) await engine.edit(SyncTable.bookingDetails, id, booking);
     for (final off in reminderOffsets) {
       await addReminder(id, offsetMinutes: off);
     }
+    for (final at in absoluteReminders) {
+      await addReminderAt(id, at);
+    }
     return id;
+  }
+
+  /// Vé nhập lại có giờ mới (đổi giờ bay): cập nhật thời điểm + chi tiết đặt chỗ của item đã có, giữ nhắc theo offset
+  /// (lập lại theo giờ mới). Nhắc tuyệt đối cũ bị thay bằng [absoluteReminders].
+  Future<void> updateBooking(
+    String id, {
+    DateTime? startsAt,
+    String? tz,
+    String? startDate,
+    DateTime? endsAt,
+    String? endTz,
+    String? endDate,
+    Map<String, Object?>? booking,
+    List<DateTime>? absoluteReminders,
+    String? tripId,
+  }) async {
+    if (startsAt != null && tz == null) throw ArgumentError('startsAt cần tz IANA đi kèm');
+    await engine.edit(SyncTable.items, id, {
+      'starts_at': startsAt?.toUtc().toIso8601String(),
+      'tz': tz,
+      'start_date': startDate,
+      'all_day': startDate != null && startsAt == null,
+      'ends_at': endsAt?.toUtc().toIso8601String(),
+      'end_tz': endTz,
+      'end_date': endDate,
+      'trip_id': ?tripId,
+    });
+    if (booking != null) await engine.edit(SyncTable.bookingDetails, id, booking);
+    if (absoluteReminders != null) {
+      final old = await (_db.select(_db.reminders)
+            ..where((t) => t.itemId.equals(id) & t.deletedAt.isNull() & t.triggerKind.equals('absolute')))
+          .get();
+      for (final r in old) {
+        await engine.delete(SyncTable.reminders, r.id);
+      }
+      for (final at in absoluteReminders) {
+        await addReminderAt(id, at);
+      }
+    }
   }
 
   Future<void> setDone(String id, {required bool done}) => engine.edit(SyncTable.items, id, {
@@ -426,6 +473,19 @@ class ItemsRepository {
       'offset_minutes': offsetMinutes,
       'channel': const ['push'],
       'is_alarm': isAlarm,
+    });
+    return id;
+  }
+
+  /// Nhắc vào 1 thời điểm cố định (khách sạn: 18:00 hôm trước nhận phòng, 1 giờ trước trả phòng).
+  Future<String> addReminderAt(String itemId, DateTime at) async {
+    final id = uuidV7(nowMillis: _now().millisecondsSinceEpoch);
+    await engine.edit(SyncTable.reminders, id, {
+      'item_id': itemId,
+      'trigger_kind': 'absolute',
+      'at': at.toUtc().toIso8601String(),
+      'channel': const ['push'],
+      'is_alarm': false,
     });
     return id;
   }

@@ -35,6 +35,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
   Candidate _candidate(int i) => _edits[i] ?? _preview!.candidates[i];
 
+  /// Đặt chỗ đã có trong máy (cùng thứ tự đề xuất): trùng thì mặc định bỏ chọn, đổi giờ thì cập nhật item cũ.
+  List<BookingMatch?> _matches = const [];
+  /// Chuyến đi còn hoạt động, để gợi ý gộp đặt chỗ mới vào.
+  List<TripSummary> _activeTrips = const [];
+  /// Lựa chọn cho từng gợi ý chuyến đi: [_newTrip], [_noTrip] hoặc id chuyến có sẵn.
+  final Map<int, String> _tripChoice = {};
+  static const _newTrip = 'new', _noTrip = 'none';
+
   Future<void> _pick() async {
     final file = await ref.read(filePickerProvider)();
     if (file == null || !mounted) return;
@@ -66,16 +74,46 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     setState(() => _busy = true);
     try {
       final preview = await ref.read(importDecoderProvider)(req);
+      final trips = ref.read(tripsRepositoryProvider);
+      final existing = await trips.bookingsWithCodes({for (final c in preview.candidates) ?c.fields.confirmationCode});
+      final today = CivilDate.of(ref.read(nowProvider)()).toIso();
+      final active = [for (final t in await trips.trips()) if (t.activeOn(today)) t];
       if (!mounted) return;
+      final matches = matchExistingBookings(preview.candidates, existing, deviceTz: ref.read(deviceTimeZoneProvider));
       setState(() {
         _request = req;
         _preview = preview;
         _edits.clear();
-        _selected = [for (final c in preview.candidates) !c.done || preview.candidates.every((x) => x.done)];
+        _matches = matches;
+        _activeTrips = active;
+        _selected = [
+          for (var i = 0; i < preview.candidates.length; i++)
+            (!preview.candidates[i].done || preview.candidates.every((x) => x.done)) && !(matches[i]?.duplicate ?? false),
+        ];
+        _tripChoice
+          ..clear()
+          ..addAll({for (var k = 0; k < preview.trips.length; k++) k: _defaultTrip(preview.trips[k], matches, active)});
       });
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Đặt chỗ đã thuộc 1 chuyến → chuyến đó; khoảng ngày chồng chuyến đang có → chuyến đó; chắc là chuyến mới → tạo; vé lẻ → không gộp.
+  static String _defaultTrip(TripSuggestion s, List<BookingMatch?> matches, List<TripSummary> active) {
+    for (final i in s.indices) {
+      if (matches[i]?.tripId case final id? when active.any((t) => t.id == id)) return id;
+    }
+    final overlap = active.where((t) => t.overlaps(s.startsOn, s.endsOn)).firstOrNull;
+    if (overlap != null) return overlap.id;
+    return s.confident ? _newTrip : _noTrip;
+  }
+
+  String _newTripTitle(BuildContext context, TripSuggestion s) {
+    final l = AppLocalizations.of(context);
+    return s.destination != null
+        ? l.tripTitleTo(s.destination!)
+        : l.tripTitleOn(Fmt.of(context).date(DateTime.parse(s.startsOn), now: ref.read(nowProvider)()));
   }
 
   String? _titleOf(int i) => _candidate(i).fields.title ?? fallbackTitle(_candidate(i));
@@ -91,10 +129,36 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       department: l.importDepartment,
       queueNumber: l.importQueueNumber,
     );
+    // Chuyến đi được chọn (chỉ khi có ít nhất 1 mục của nó được chọn) → TripDraft; mục trỏ tới bằng tripIndex.
+    final trips = <TripDraft>[];
+    final tripOf = <int, int>{};
+    for (var k = 0; k < preview.trips.length; k++) {
+      final s = preview.trips[k], choice = _tripChoice[k] ?? _noTrip;
+      final members = s.indices.where((i) => _selected[i]).toList();
+      if (choice == _noTrip || members.isEmpty) continue;
+      trips.add(TripDraft(
+        existingTripId: choice == _newTrip ? null : choice,
+        title: choice == _newTrip ? _newTripTitle(context, s) : null,
+        destination: s.destination,
+        startsOn: s.startsOn,
+        endsOn: s.endsOn,
+      ));
+      for (final i in members) {
+        tripOf[i] = trips.length - 1;
+      }
+    }
     final drafts = [
       for (var i = 0; i < preview.candidates.length; i++)
         if (_selected[i] && _titleOf(i) != null)
-          toImportedItem(_candidate(i), title: _titleOf(i)!, deviceTz: tz, labels: labels),
+          toImportedItem(
+            _candidate(i),
+            title: _titleOf(i)!,
+            deviceTz: tz,
+            labels: labels,
+            defaults: i < preview.reminderDefaults.length ? preview.reminderDefaults[i] : null,
+            tripIndex: tripOf[i],
+            updateItemId: _matches.length > i && !(_matches[i]?.duplicate ?? true) ? _matches[i]!.itemId : null,
+          ),
     ];
     setState(() => _busy = true);
     final result = await ref.read(importsRepositoryProvider).commit(
@@ -102,15 +166,20 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             kind: preview.recordKind,
             bytes: _request!.bytes.length,
             docLanguage: preview.docLanguage,
-            docType: preview.format == ImportFormat.csv || preview.format == ImportFormat.xlsx || preview.format == ImportFormat.markdown
-                ? 'todo_list'
-                : null,
+            docType: preview.docType?.wire ??
+                (preview.format == ImportFormat.csv || preview.format == ImportFormat.xlsx || preview.format == ImportFormat.markdown
+                    ? 'todo_list'
+                    : null),
+            tierUsed: preview.tierUsed,
+            templateId: preview.templateId?.split('@').first,
+            templateVersion: int.tryParse(preview.templateId?.split('@').last ?? ''),
           ),
           drafts,
           deviceTz: tz,
+          trips: trips,
         );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.importAdded(result.itemIds.length))));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.importAdded(result.itemIds.length + result.updatedItemIds.length))));
     if (context.canPop()) {
       context.pop();
     } else {
@@ -235,8 +304,30 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             ),
           ),
         const Divider(),
+        for (var k = 0; k < preview.trips.length; k++) _tripRow(context, k, preview.trips[k]),
         for (var i = 0; i < preview.candidates.length; i++) _tile(context, i, _candidate(i)),
       ],
+    );
+  }
+
+  /// "Gộp vào: [Chuyến Hà Nội ▾]" (UX §2.4).
+  Widget _tripRow(BuildContext context, int k, TripSuggestion s) {
+    final l = AppLocalizations.of(context);
+    return ListTile(
+      leading: const Icon(Icons.luggage_outlined),
+      title: Text(l.importTripLabel),
+      subtitle: DropdownButton<String>(
+        key: Key('importTrip-$k'),
+        isExpanded: true,
+        value: _tripChoice[k] ?? _noTrip,
+        items: [
+          DropdownMenuItem(value: _newTrip, child: Text(l.importTripNew(_newTripTitle(context, s)), overflow: TextOverflow.ellipsis)),
+          for (final t in _activeTrips)
+            DropdownMenuItem(value: t.id, child: Text(t.title ?? l.navTrips, overflow: TextOverflow.ellipsis)),
+          DropdownMenuItem(value: _noTrip, child: Text(l.importTripNone)),
+        ],
+        onChanged: (v) => setState(() => _tripChoice[k] = v ?? _noTrip),
+      ),
     );
   }
 
@@ -253,6 +344,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       if (c.listName != null) l.importListName(c.listName!),
       if (c.checklist.isNotEmpty) l.importChecklistCount(c.checklist.length),
       if (f.confirmationCode != null && c.kind != CandidateKind.task) l.importBookingCode(f.confirmationCode!),
+      if (_matches.length > i && _matches[i] != null) _matches[i]!.duplicate ? l.importDuplicate : l.importWillUpdate,
       for (final issue in c.issues) ?_issueText(l, issue),
       // Tầng luật T2: trường đọc theo nhãn/mẫu chung (độ tin cậy thấp) cần người dùng xem lại; sửa ở form thì hết (E5.1).
       if (needsCheck(c)) l.importCheckFields,

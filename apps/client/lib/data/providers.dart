@@ -61,8 +61,17 @@ final importsRepositoryProvider = Provider<ImportsRepository>((ref) => ImportsRe
       ref.watch(syncEngineProvider),
       ref.watch(itemsRepositoryProvider),
       ref.watch(listsRepositoryProvider),
+      trips: ref.watch(tripsRepositoryProvider),
       now: ref.watch(nowProvider),
     ));
+
+final tripsRepositoryProvider =
+    Provider<TripsRepository>((ref) => TripsRepository(ref.watch(syncEngineProvider), now: ref.watch(nowProvider)));
+
+final tripsProvider = StreamProvider<List<TripSummary>>((ref) => ref.watch(tripsRepositoryProvider).watchTrips());
+
+final tripSegmentsProvider =
+    StreamProvider.family<List<TripSegment>, String>((ref, id) => ref.watch(tripsRepositoryProvider).watchSegments(id));
 
 final recurringIdsProvider = StreamProvider<Set<String>>((ref) => ref.watch(itemsRepositoryProvider).watchRecurringIds());
 

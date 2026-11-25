@@ -9,3 +9,4 @@ export 'src/reminders/planner.dart';
 export 'src/reminders/scheduler.dart';
 export 'src/row_codec.dart';
 export 'src/sync_engine.dart';
+export 'src/trips_repository.dart';

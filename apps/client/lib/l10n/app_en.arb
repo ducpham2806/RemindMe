@@ -847,5 +847,83 @@
   "importFieldTrainNumber": "Train number",
   "@importFieldTrainNumber": {
     "description": "Review form label: train number printed on the ticket, e.g. SE3."
+  },
+  "importTripLabel": "Add to trip",
+  "@importTripLabel": {
+    "description": "Review screen: dropdown to group the found bookings into a trip. Glossary trip_trip."
+  },
+  "importTripNew": "New trip: {title}",
+  "@importTripNew": {
+    "description": "Dropdown option that creates a new trip with this name.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "Trip to Hanoi"
+      }
+    }
+  },
+  "importTripNone": "Don’t add to a trip",
+  "@importTripNone": {
+    "description": "Dropdown option: keep the bookings outside any trip."
+  },
+  "importDuplicate": "Already added, will be skipped",
+  "@importDuplicate": {
+    "description": "Review screen: the same booking (same code and time) is already in the app, so it is unselected."
+  },
+  "importWillUpdate": "Already added, the time will be updated",
+  "@importWillUpdate": {
+    "description": "Review screen: the same booking exists with a different time (flight rescheduled); saving updates it."
+  },
+  "tripTitleTo": "Trip to {destination}",
+  "@tripTitleTo": {
+    "description": "Default name of a new trip. destination is a city or station name from the ticket.",
+    "placeholders": {
+      "destination": {
+        "type": "String",
+        "example": "Hanoi"
+      }
+    }
+  },
+  "tripTitleOn": "Trip on {date}",
+  "@tripTitleOn": {
+    "description": "Default name of a new trip when the destination is unknown. date is a short date.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Dec 20"
+      }
+    }
+  },
+  "tripDates": "{start} – {end}",
+  "@tripDates": {
+    "description": "Date range of a trip. Both dates are already formatted for the locale.",
+    "placeholders": {
+      "start": {
+        "type": "String",
+        "example": "Dec 20"
+      },
+      "end": {
+        "type": "String",
+        "example": "Dec 24"
+      }
+    }
+  },
+  "tripsItemCount": "{count, plural, =1{1 booking} other{{count} bookings}}",
+  "@tripsItemCount": {
+    "description": "Number of bookings in a trip. Glossary trip_booking.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "tripDelete": "Delete trip",
+  "@tripDelete": {
+    "description": "Menu action on the trip screen."
+  },
+  "tripDeleteBody": "The bookings stay in your calendar.",
+  "@tripDeleteBody": {
+    "description": "Confirm dialog body: deleting a trip keeps its bookings."
   }
 }

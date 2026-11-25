@@ -6,6 +6,7 @@ import 'package:remindme_client/features/import/candidate_editor.dart';
 import 'package:remindme_client/features/import/import_decode.dart';
 import 'package:remindme_client/features/import/import_mapper.dart';
 import 'package:remindme_core/remindme_core.dart';
+import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_parsers/remindme_parsers.dart';
 
 const docs = '../../packages/parsers/fixtures/docs';
@@ -57,14 +58,44 @@ void main() {
   });
 
   group('toImportedItem', () {
-    test('vé máy bay: sự kiện, tên mặc định từ mã chuyến, mã đặt chỗ vào ghi chú, nhắc đúng giờ', () {
+    test('vé máy bay: đặt chỗ, tên mặc định từ mã chuyến, mã đặt chỗ vào ghi chú; không có mặc định theo loại thì nhắc đúng giờ', () {
       final c = decodeImport(req('$docs/synthetic-jsonld-flight-0001/input.eml')).candidates.single;
       final title = fallbackTitle(c)!;
       expect(title, 'ZZ 245 · SGN → HAN');
       final i = toImportedItem(c, title: title, deviceTz: 'Asia/Ho_Chi_Minh', labels: labels);
       expect((i.kind, i.startsAt, i.tz, i.endsAt, i.notes),
-          ('event', DateTime.utc(2026, 12, 21, 3, 30), 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 21, 5, 40), 'code XQ7K2M\nseat 14C'));
+          ('booking', DateTime.utc(2026, 12, 21, 3, 30), 'Asia/Ho_Chi_Minh', DateTime.utc(2026, 12, 21, 5, 40), 'code XQ7K2M\nseat 14C'));
       expect(i.reminderOffsets, [0]);
+    });
+
+    test('đặt chỗ: nhắc mặc định theo loại, booking_details không có tên hành khách; khách sạn nhắc 18:00 hôm trước + 1h trước trả phòng', () {
+      final flight = decodeImport(req('$docs/synthetic-jsonld-flight-0001/input.eml'));
+      final f = toImportedItem(flight.candidates.single, title: 'x', deviceTz: 'Europe/London', labels: labels, defaults: flight.reminderDefaults.single, tripIndex: 0);
+      expect(f.reminderOffsets, [-1440, -180, -120]);
+      expect(f.absoluteReminders, isEmpty);
+      expect(f.tripIndex, 0);
+      final b = f.booking!;
+      expect((b['booking_type'], b['carrier_code'], (b['origin']! as Map)['tz'], b.containsKey('passengers')), ('flight', 'ZZ', 'Asia/Ho_Chi_Minh', false));
+      expect((b['extraction_meta']! as Map)['source'], 'jsonld');
+
+      final hotel = decodeImport(req('$docs/synthetic-email-hotel-0001/input.eml'));
+      expect(hotel.trips.single.confident, isTrue);
+      final h = toImportedItem(hotel.candidates.single, title: 'x', deviceTz: 'Asia/Ho_Chi_Minh', labels: labels, defaults: hotel.reminderDefaults.single);
+      expect(h.reminderOffsets, isEmpty, reason: 'khách sạn chỉ có mốc tuyệt đối');
+      expect(h.absoluteReminders, [DateTime.utc(2026, 12, 20, 11), DateTime.utc(2026, 12, 23, 4)]);
+      expect((h.booking!['check_in_at'], h.booking!['check_out_at']), ('2026-12-21T07:00:00.000Z', '2026-12-23T05:00:00.000Z'));
+    });
+
+    test('đặt chỗ đã có: cùng mã + chặng + giờ là trùng; giờ khác là cập nhật; chặng khác là mới', () {
+      final c = decodeImport(req('$docs/synthetic-email-flight-text-0001/input.eml', region: 'US')).candidates;
+      final existing = [
+        ExistingBooking(itemId: 'a', confirmationCode: 'k7pq2w', bookingType: 'flight', carrierCode: 'ZY', number: '1208', startsAt: DateTime.utc(2027, 1, 10, 4, 55), tripId: 't'),
+        ExistingBooking(itemId: 'b', confirmationCode: 'K7PQ2W', bookingType: 'flight', carrierCode: 'ZY', number: '1213', startsAt: DateTime.utc(2027, 1, 17, 8)),
+      ];
+      final m = matchExistingBookings(c, existing, deviceTz: 'Asia/Ho_Chi_Minh');
+      expect((m[0]!.itemId, m[0]!.duplicate, m[0]!.tripId), ('a', true, 't'));
+      expect((m[1]!.itemId, m[1]!.duplicate), ('b', false), reason: 'LHR 09:40 = 09:40Z, đã lưu 08:00Z');
+      expect(matchExistingBookings(c, [existing[0]], deviceTz: 'Asia/Ho_Chi_Minh')[1], isNull);
     });
 
     test('Markdown: việc cả ngày có lặp, việc con, đã xong, list', () {
@@ -153,7 +184,7 @@ void main() {
       final train = decodeImport(req('$docs/synthetic-train-text-0001/input.txt')).candidates.single;
       expect(fallbackTitle(train), 'SE3 · Sài Gòn → Đà Nẵng');
       final t = toImportedItem(train, title: 'SE3', deviceTz: 'Asia/Ho_Chi_Minh', labels: labels);
-      expect((t.kind, t.locationText, t.notes, t.tz), ('event', 'Sài Gòn', 'code TQ8L4P\ncar 5\nseat 23', 'Asia/Ho_Chi_Minh'));
+      expect((t.kind, t.locationText, t.notes, t.tz), ('booking', 'Sài Gòn', 'code TQ8L4P\ncar 5\nseat 23', 'Asia/Ho_Chi_Minh'));
       expect((t.startsAt, t.endsAt), (DateTime.utc(2026, 12, 28, 15), DateTime.utc(2026, 12, 29, 8, 40)));
 
       final slip = decodeImport(req('$docs/synthetic-medical-text-0001/input.txt'));

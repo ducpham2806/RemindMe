@@ -152,5 +152,16 @@
   "importFieldPreparation": "Dặn dò",
   "importFieldCheck": "Đọc tự động, hãy kiểm tra lại",
   "importFieldFlightNumber": "Số hiệu chuyến bay",
-  "importFieldTrainNumber": "Số hiệu tàu"
+  "importFieldTrainNumber": "Số hiệu tàu",
+  "importTripLabel": "Gộp vào chuyến đi",
+  "importTripNew": "Chuyến mới: {title}",
+  "importTripNone": "Không gộp",
+  "importDuplicate": "Đã có, sẽ bỏ qua",
+  "importWillUpdate": "Đã có, sẽ cập nhật giờ",
+  "tripTitleTo": "Chuyến đi {destination}",
+  "tripTitleOn": "Chuyến đi ngày {date}",
+  "tripDates": "{start} – {end}",
+  "tripsItemCount": "{count, plural, other{{count} đặt chỗ}}",
+  "tripDelete": "Xóa chuyến đi",
+  "tripDeleteBody": "Các đặt chỗ vẫn được giữ trong lịch."
 }

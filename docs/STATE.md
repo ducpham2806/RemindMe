@@ -34,8 +34,13 @@
   `data/airports.tsv` (ADR-016). App: email không JSON-LD và `.txt` dạng vé đi qua T2, màn Xem lại có cảnh báo + "hãy kiểm tra lại"; ghi chú item có mã đặt chỗ, toa, ghế, khoa, số thứ tự, dặn dò. Eval 15 mẫu: 100%, 0 điền sai.
 - Màn Xem lại E5.1: chạm 1 mục mở form sửa từng trường (ngày/giờ đi-đến giữ múi giờ nguồn, địa điểm, mã, số chuyến, ghế, toa, khoa, số thứ tự, dặn dò);
   trường độ tin cậy thấp viền `warning` + ⓘ, xác nhận/sửa thì hết dấu trên thẻ.
+- S6 chuyến đi (offline): đặt chỗ lưu `kind = booking` + `booking_details` (không có tên hành khách), nhắc mặc định theo loại (reminder-engine §5,
+  khách sạn bằng nhắc tuyệt đối), trùng/đổi giờ với đặt chỗ đã có (bỏ qua hoặc cập nhật), gợi ý gom chuyến ở màn Xem lại (mới / có sẵn / không gộp),
+  tab Chuyến đi (danh sách + timeline giờ địa phương từng điểm, xóa chuyến giữ đặt chỗ), múi giờ sân bay cho vé chỉ có offset. `TripsRepository` trong `packages/data`.
+  Contract test Postgres: trips + booking_details + nhắc tuyệt đối + cập nhật qua `sync_push` thật.
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
-  mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + gộp trip + hạn mức ở màn Xem lại, auth/flavors, `SupabaseSyncApi`.
+  mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + hạn mức ở màn Xem lại, sửa/đổi tên chuyến, gợi ý "Thêm hoạt động" khi trống > 3h,
+  tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.
 
 ## Tiếp theo (ưu tiên)
 1. **Chủ dự án duyệt** đề xuất ở `research/global-market.md` §9 (chưa áp vào docs): thêm `it` vào đợt 1 cấp B; đợt 2 `tr, th, zh-Hans, ar, nl, pl, ms`;
@@ -62,6 +67,8 @@
   hủy thông báo khi `session_revoked` (chờ luồng sync thật), cài đặt "giờ nhắc của item cả ngày" (đang 09:00).
 - T2: chưa có dedupe với item đã có + gom trip (S6), tên thành phố → sân bay, ga → múi giờ, tàu/xe nhiều chặng, SĐT; tệp `.txt` dạng vé (đi qua T2) đang ghi `imports.kind = text`
   nên không tính `smart_imports_per_month` (cần chủ dự án chốt: văn bản dán vào có tính là nhập thông minh không).
+- Chuyến đi: server từ chối trip vượt `max_active_trips` (Free: 1) thì item trỏ `trip_id` tới trip đó cũng bị từ chối (khóa ngoại) → SyncEngine cần gỡ
+  `trip_id` khỏi item khi trip bị `quota_exceeded`; app chưa kiểm hạn mức trip khi offline (chưa có cache `quota_status`).
 - Nhập từ tệp: chưa thử `file_picker` trên máy thật; hạn mức `smart_imports_per_month` chưa kiểm khi offline (chưa có cache `quota_status`);
   đặt chỗ chưa thành `booking_details` + chuyến đi (S6); lặp âm lịch từ dòng chữ trong tệp .txt chưa giữ (chỉ RRULE).
 - ADR-013 phía worker/app chưa làm: job `session.notify_revoked`, `cleanup.sessions`, kiểm phiên ở endpoint worker, màn UX §3.7.

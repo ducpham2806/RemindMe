@@ -12,6 +12,20 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · S6 chuyến đi: booking_details, trùng/cập nhật, gom chuyến, nhắc mặc định, tab Chuyến đi · Claude Code
+- **Làm:** `packages/data`: `TripsRepository` (tạo, nới ngày, đổi tên, xóa giữ đặt chỗ, `segments`, `bookingsWithCodes`), `ItemsRepository.create` nhận
+  `tripId`/`booking`/`absoluteReminders`, `updateBooking`, `addReminderAt`; `ImportsRepository.commit(trips:)`, `ImportedItem.booking/tripIndex/updateItemId`,
+  `ImportRecord` kiểm `tier_used`/`kind` theo CHECK của server, ghi `template_id`. `packages/parsers`: `suggestTrips`, `defaultReminders`, `withAirportTimeZones`.
+  App: đặt chỗ thành `kind = booking` + `bookingRow`, `matchExistingBookings`, màn Xem lại có dòng "Gộp vào chuyến đi" + "Đã có, sẽ bỏ qua/cập nhật giờ",
+  `tier_used = t1t2` khi qua T2, tab Chuyến đi + `/trips/:id` (timeline theo ngày, giờ đi/đến theo múi giờ từng nơi). 11 key ARB.
+- **Quyết định:** quy tắc gom chuyến ở on-device-extraction.md §4.4 (khoảng cách ≤ 2 ngày; vé lẻ mặc định không gộp để giữ lượt Free); khách sạn chỉ nhắc
+  tuyệt đối (18:00 hôm trước, 1h trước trả phòng), không thêm "đúng giờ".
+- **Lỗi bắt được nhờ test:** contract test Postgres từ chối `tier_used = 't2'` (CHECK chỉ có `t1t2`) kéo theo cả item của lần nhập (khóa ngoại) → chặn ngay ở
+  client; app ghi `t0` cho kết quả T2 → sửa. Vé JSON-LD chỉ có offset nên `booking_details.origin.tz` rỗng → suy múi giờ theo sân bay.
+- **Kiểm chứng:** data 43 (+3 trips), contract Postgres 7 (+1), pgTAP 109; parsers 74 (+4); client 60 (+2 logic, +1 widget chuyến đi end-to-end); analyze 0; lint/ARB/docs 0 lỗi.
+  Postgres 16 + pgTAP cài lại trong container (apt), `PGPASSWORD=postgres`.
+- **Tiếp theo:** gỡ `trip_id` khi trip bị từ chối quota; sửa/đổi tên chuyến; gợi ý "Thêm hoạt động"; tab Tài liệu; share intent/extension (cần máy thật).
+
 ## 2026-11-25 · Màn Xem lại: sửa từng trường, tô `warning` (E5.1) · Claude Code
 - **Làm:** `parsers`: `CandidateFields.copyWith` (phân biệt "giữ" với "xóa"), `Candidate.copyWith`. App: `features/import/candidate_editor.dart`
   (`editCandidate` mở form toàn màn hình; `reviewKeys`/`needsCheck`; ô ngày/giờ sửa giờ tường của nguồn, giữ tz/offset; số chuyến "ZZ 245" tách lại mã hãng + số),

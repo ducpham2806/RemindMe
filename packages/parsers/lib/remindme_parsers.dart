@@ -20,6 +20,7 @@ export 'src/extract/candidate.dart';
 export 'src/extract/eval.dart';
 export 'src/extract/html_text.dart';
 export 'src/extract/table_tasks.dart';
+export 'src/extract/trips.dart';
 export 'src/nlu/engine.dart';
 export 'src/nlu/pack.dart';
 export 'src/nlu/result.dart';

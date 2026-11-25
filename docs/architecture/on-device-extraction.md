@@ -137,7 +137,14 @@ Mẫu dạng JSON khai báo, không phải code, nên **cập nhật qua CDN mà
 - Kiểm tra: giờ đến < giờ đi khi không qua đêm; ngày quá khứ (cảnh báo, không chặn); năm thiếu thì lấy lần gần nhất trong tương lai;
   check-in/check-out khách sạn thiếu giờ thì dùng 14:00/12:00; mã IATA đi = đến thì loại.
 - Dedupe với dữ liệu sẵn có: `(confirmation_code, starts_at)` hoặc hash file. Trùng thì đề xuất **cập nhật** (đổi giờ bay).
-- Gom trip, nhắc mặc định: như `reminder-engine.md` mục 5.
+  **Đã có** (`matchExistingBookings`): cùng mã + cùng loại + cùng chặng (số chuyến, không có thì cặp mã sân bay) + cùng giờ = trùng (mặc định bỏ chọn);
+  giờ khác = cập nhật item cũ (`ItemsRepository.updateBooking`). Hash file chưa làm.
+- Gom trip (US-21, `suggestTrips`): chỉ đặt chỗ đi lại (bay, tàu, xe, phà, lưu trú, thuê xe), sắp theo ngày bắt đầu; đặt chỗ bắt đầu trong vòng 2 ngày
+  sau khi đặt chỗ trước kết thúc thì cùng chuyến. Tên mặc định theo thành phố của sân bay đến chặng đầu (hoặc ga/điểm đến), không có thì theo ngày.
+  Mặc định gộp khi ≥ 2 đặt chỗ hoặc có lưu trú; vé lẻ mặc định không gộp (giữ lượt `max_active_trips`). Khoảng ngày chồng chuyến đang có (±1 ngày)
+  hoặc đặt chỗ đã thuộc 1 chuyến thì mặc định gộp vào chuyến đó.
+- Nhắc mặc định: `reminder-engine.md` mục 5 (`defaultReminders`; bay nội địa/quốc tế theo nước của 2 sân bay, không biết thì như quốc tế).
+- Vé chỉ có offset (JSON-LD, `.ics` không TZID): `withAirportTimeZones` lấy múi giờ sân bay khi offset khớp múi đó lúc bay.
 
 **Đã có (E3.1-E3.4 phần đầu, E4.1):** `packages/parsers/lib/src/engine/`. `TextDocument` (dòng + bbox tùy chọn, dạng chung cho text email/PDF và OCR),
 anchor mờ (bỏ dấu, lỗi OCR ≤ 1 ký tự/6, trọn từ trừ CJK), vùng phải/dưới theo bbox; `ValueReader` (ngày/giờ bằng mẫu của gói NLU, thứ tự `03/04` theo vùng,

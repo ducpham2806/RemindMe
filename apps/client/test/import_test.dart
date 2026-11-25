@@ -97,8 +97,8 @@ void main() {
     final db = c.read(appDatabaseProvider);
     final (items, reminders) = (await tester.runAsync(() async => (await db.select(db.items).get(), await db.select(db.reminders).get())))!;
     expect((items.single.kind, items.single.title, items.single.notes, items.single.source),
-        ('event', 'ZZ 245 · SGN → HAN', 'Booking code: XQ7K2M\nSeat: 14C', 'email'));
-    expect(reminders.single.offsetMinutes, 0, reason: 'nhắc đúng giờ bay (ngoài cửa sổ 14 ngày nên OS chưa có)');
+        ('booking', 'ZZ 245 · SGN → HAN', 'Booking code: XQ7K2M\nSeat: 14C', 'email'));
+    expect(reminders.map((r) => r.offsetMinutes).toSet(), {-1440, -180, -120}, reason: 'bay nội địa SGN → HAN: 24h, 3h, 2h trước (reminder-engine §5)');
   });
 
   testWidgets('vi: vé dạng chữ đọc bằng luật T2 → gợi ý kiểm tra lại, cảnh báo ngày đã qua', (tester) async {
@@ -157,6 +157,43 @@ void main() {
     expect(items.single.title, 'ZZ 245 · SGN → HAN', reason: 'tên đã hiện giữ nguyên dù sửa số chuyến');
   });
 
+  testWidgets('vi: đặt phòng → chuyến đi mới, tab Chuyến đi + timeline; nhập lại cùng email: "Đã có", gộp vào chuyến có sẵn', (tester) async {
+    final hotel = fixture('synthetic-email-hotel-0001', 'input.eml');
+    final c = await pumpApp(tester, size: phone, locale: const Locale('vi'), region: 'VN', overrides: [
+      syncDecoder,
+      filePickerProvider.overrideWithValue(picker([hotel, hotel])),
+    ]);
+    await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
+    await tester.tap(find.byKey(const Key('importPick')));
+    await tester.pumpAndSettle();
+    expect(find.text('Gộp vào chuyến đi'), findsOneWidget);
+    expect(find.text('Chuyến mới: Chuyến đi ngày 21 thg 12'), findsOneWidget, reason: 'khách sạn: mặc định gộp, chưa biết thành phố');
+    await tester.tap(find.byKey(const Key('importAdd')));
+    await settleReminders(tester);
+
+    final db = c.read(appDatabaseProvider);
+    final (items, trips, reminders) =
+        (await tester.runAsync(() async => (await db.select(db.items).get(), await db.select(db.trips).get(), await db.select(db.reminders).get())))!;
+    expect((items.single.kind, items.single.tripId, trips.single.title), ('booking', trips.single.id, 'Chuyến đi ngày 21 thg 12'));
+    expect(reminders.map((r) => r.triggerKind).toSet(), {'absolute'}, reason: 'khách sạn: 18:00 hôm trước + 1h trước trả phòng');
+
+    await tester.tap(find.text('Chuyến đi').last);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('1 đặt chỗ'), findsOneWidget);
+    await tester.tap(find.byKey(Key('trip-${trips.single.id}')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(Key('tripSegment-${items.single.id}')), findsOneWidget);
+    expect(find.text('14:00 → 12:00'), findsOneWidget, reason: 'nhận phòng → trả phòng theo giờ nơi ở');
+    expect(find.byIcon(Icons.hotel), findsOneWidget);
+
+    await openImport(tester, me: 'Tôi', row: 'Nhập từ tệp');
+    await tester.tap(find.byKey(const Key('importPick')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Đã có, sẽ bỏ qua'), findsOneWidget);
+    expect(tester.widget<Checkbox>(find.byKey(const Key('importCheck-0'))).value, isFalse);
+    expect(tester.widget<DropdownButton<String>>(find.byKey(const Key('importTrip-0'))).value, trips.single.id);
+  });
+
   testWidgets('bảng mơ hồ 03/04 khi không biết vùng: hỏi thứ tự ngày, chọn lại thì đọc lại tệp', (tester) async {
     await pumpApp(tester, size: phone, region: null, overrides: [
       syncDecoder,
@@ -192,7 +229,10 @@ void main() {
     expect(find.byIcon(Icons.attach_file), findsOneWidget);
     expect(tester.takeException(), isNull);
     // Form sửa (E5.1): khách sạn có nhận/trả phòng, địa điểm, mã.
-    await tester.tap(find.byKey(const Key('importItem-0')));
+    // Thẻ cao hơn vùng nhìn thấy ở cỡ này: cuộn tới rồi chạm phần đầu thẻ (tên).
+    await tester.ensureVisible(find.byKey(const Key('importItem-0')));
+    await tester.pumpAndSettle();
+    await tester.tapAt(tester.getTopLeft(find.byKey(const Key('importItem-0'))) + const Offset(120, 16));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('importEdit-check_in-date')), findsOneWidget);
     expect(find.byKey(const Key('importEdit-check_out-time')), findsOneWidget);
