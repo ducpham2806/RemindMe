@@ -12,6 +12,20 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Hạn mức chuyến đi, đổi tên/Thêm hoạt động, ngày lễ + tab Lịch, lặp ngày làm việc · Claude Code
+- **Làm:** `SyncEngine`: lượt push đầu hoãn lỗi khóa ngoại `23503`; chuyến mới bị `quota_exceeded` thì bỏ ở máy, gỡ `trip_id` khỏi item, gửi lại mutation lỗi
+  (`SyncReport.rejectedTrips`); cache `quota_status` sau mỗi lần sync (`cachedQuota`, `SyncApi.quotaStatus`). Màn Xem lại đếm chuyến đang hoạt động, hết lượt thì
+  khóa "Chuyến mới" + dòng `importTripLimit`, `commit` nhận quota từ cache. Chuyến đi: đổi tên, "Thêm hoạt động" ở khoảng trống > 3h (`freeGapsAfter`).
+  `packages/core`: `HolidayCalendar` + gói VN/US/GB, `easterSunday`, `weekendDays` (CLDR), `HolidayCalendars`, `WorkdaysRecurrence`. Tab Lịch dạng tháng
+  (`countsByDay`, ngày âm, ngày lễ, chạm ngày). Lựa chọn lặp "Các ngày làm việc" (`workdays_region`).
+- **Quyết định:** ADR-017 (ngày lễ là gói luật tự viết theo văn bản luật, tính trên máy; không dùng dữ liệu `date-holidays`). Chuyến bị từ chối thì bỏ chuyến,
+  giữ đặt chỗ (như xóa chuyến). `workdays_region` ghi cả khi vùng chưa có gói ngày lễ (chỉ bỏ cuối tuần tới khi có gói).
+- **Lỗi bắt được nhờ test:** `RRuleRecurrence.between` assert khi khoảng ngày nằm trước ngày bắt đầu chuỗi. Contract test mới fail đúng chỗ khi bỏ phần sửa SyncEngine.
+- **Kiểm chứng:** core 50 (+10), data 48 (+5), contract Postgres 8 (+1), pgTAP 109, parsers 74, client 68 (+7: hạn mức chuyến, đổi tên/xóa chuyến,
+  Thêm hoạt động, 3 lịch, 2 ngày làm việc); analyze 0; check-docs/fixtures/lint/ARB (177 key)/platform 0 lỗi.
+- **Tiếp theo:** UI báo chuyến bị từ chối + paywall; gợi ý dời nhắc rơi vào ngày lễ; gói ngày lễ AU/CA/IN; tab Tài liệu + checklist hành lý; màn Cài đặt
+  (hệ âm lịch, vùng ngày lễ).
+
 ## 2026-11-25 · S6 chuyến đi: booking_details, trùng/cập nhật, gom chuyến, nhắc mặc định, tab Chuyến đi · Claude Code
 - **Làm:** `packages/data`: `TripsRepository` (tạo, nới ngày, đổi tên, xóa giữ đặt chỗ, `segments`, `bookingsWithCodes`), `ItemsRepository.create` nhận
   `tripId`/`booking`/`absoluteReminders`, `updateBooking`, `addReminderAt`; `ImportsRepository.commit(trips:)`, `ImportedItem.booking/tripIndex/updateItemId`,
