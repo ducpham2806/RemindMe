@@ -2291,5 +2291,203 @@
         "example": "2:40 PM"
       }
     }
+  },
+  "planTitle": "Plan & usage",
+  "@planTitle": {
+    "description": "Title of Me → Plan & usage (Figma C46)"
+  },
+  "planCardName": "RemindMe {plan}",
+  "@planCardName": {
+    "description": "Plan card title; {plan} is the plan name (Free/Plus, not translated)",
+    "placeholders": {
+      "plan": {
+        "type": "String",
+        "example": "Free"
+      }
+    }
+  },
+  "planFreeTagline": "Light and simple for every day",
+  "@planFreeTagline": {
+    "description": "Tagline under the Free plan name"
+  },
+  "planPlusTagline": "No limits on reminders, trips or imports",
+  "@planPlusTagline": {
+    "description": "Tagline under the Plus plan name"
+  },
+  "planRenews": "Renews {date}",
+  "@planRenews": {
+    "description": "Under the Plus plan name",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12/1/2026"
+      }
+    }
+  },
+  "planUpdatedAt": "Usage from the last sync · {time}",
+  "@planUpdatedAt": {
+    "description": "Caption above the usage card",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "10:30 AM"
+      }
+    }
+  },
+  "planUsageReminders": "Reminders in a day",
+  "@planUsageReminders": {
+    "description": "Usage row: busiest day of reminders"
+  },
+  "planUsageSeries": "Repeating series",
+  "@planUsageSeries": {
+    "description": "Usage row"
+  },
+  "planUsageAppointments": "Active appointments",
+  "@planUsageAppointments": {
+    "description": "Usage row"
+  },
+  "planUsageTrips": "Trips",
+  "@planUsageTrips": {
+    "description": "Usage row: active trips"
+  },
+  "planUsageImports": "Smart imports / month",
+  "@planUsageImports": {
+    "description": "Usage row"
+  },
+  "planUsageLists": "Lists · Inbox not counted",
+  "@planUsageLists": {
+    "description": "Usage row"
+  },
+  "planUsed": "{used} / {limit} used",
+  "@planUsed": {
+    "description": "Usage value",
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "4"
+      },
+      "limit": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "planUnlimited": "{used} used · no limit",
+  "@planUnlimited": {
+    "description": "Usage value on an unlimited plan",
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "planDevices": "Devices: {used} / {limit} active",
+  "@planDevices": {
+    "description": "Device card title",
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "1"
+      },
+      "limit": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "planIncluded": "Voice input and lunar calendars are included.",
+  "@planIncluded": {
+    "description": "Under the device count when both features are in the plan"
+  },
+  "planImportsReset": "Imports reset on {date}. Failed imports don’t count.",
+  "@planImportsReset": {
+    "description": "Note under the usage card",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12/1/2026"
+      }
+    }
+  },
+  "planUpgrade": "Upgrade to Plus",
+  "@planUpgrade": {
+    "description": "Primary button (in-app purchase not ready yet)"
+  },
+  "planRestore": "Restore purchases",
+  "@planRestore": {
+    "description": "Secondary button"
+  },
+  "planStoreSoon": "In-app purchase is coming soon.",
+  "@planStoreSoon": {
+    "description": "Shown under the disabled upgrade buttons"
+  },
+  "planDowngradeNote": "If you change to a smaller plan, existing reminders still fire on time and your data isn’t locked or deleted.",
+  "@planDowngradeNote": {
+    "description": "Footer note"
+  },
+  "planNoData": "No usage yet",
+  "@planNoData": {
+    "description": "Empty state title when the app has never synced"
+  },
+  "planNoDataBody": "Connect to the internet and sync to see your plan limits.",
+  "@planNoDataBody": {
+    "description": "Empty state body"
+  },
+  "planOffline": "This build works offline only, so there is no plan to show.",
+  "@planOffline": {
+    "description": "Empty state body when the app has no server"
+  },
+  "notifSettingsHint": "Choose how RemindMe reminds you on time.",
+  "@notifSettingsHint": {
+    "description": "Subtitle of Me → Notifications & reminders (Figma C51)"
+  },
+  "notifOn": "Notifications are on",
+  "@notifOn": {
+    "description": "Status card when the OS allows notifications"
+  },
+  "notifOnBody": "Permission status on this device.",
+  "@notifOnBody": {
+    "description": "Under notifOn"
+  },
+  "notifOff": "Notifications are off",
+  "@notifOff": {
+    "description": "Status card when notifications are blocked"
+  },
+  "notifOffBody": "Reminders won’t show until you allow notifications.",
+  "@notifOffBody": {
+    "description": "Under notifOff"
+  },
+  "notifAllow": "Allow notifications",
+  "@notifAllow": {
+    "description": "Button asking the OS for notification permission"
+  },
+  "notifExactOff": "Exact alarms are off: reminders can be a few minutes late.",
+  "@notifExactOff": {
+    "description": "Android 12+ when exact alarms are not allowed"
+  },
+  "notifExactAllow": "Allow exact alarms",
+  "@notifExactAllow": {
+    "description": "Button opening the exact alarm settings (Android)"
+  },
+  "notifDefaults": "Default reminders",
+  "@notifDefaults": {
+    "description": "Section header"
+  },
+  "notifDefaultOffset": "Reminder time for new items",
+  "@notifDefaultOffset": {
+    "description": "Row label: default reminder offset used by Quick Add"
+  },
+  "notifAllDayTime": "Reminder time for all-day items",
+  "@notifAllDayTime": {
+    "description": "Row label: when all-day items ring"
+  },
+  "notifSystemNote": "System permissions are managed in the device settings.",
+  "@notifSystemNote": {
+    "description": "Footer note"
+  },
+  "settingsDone": "Done",
+  "@settingsDone": {
+    "description": "Bottom button that closes a settings screen"
   }
 }

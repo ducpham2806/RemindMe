@@ -8,6 +8,8 @@ import 'features/items/item_detail_screen.dart';
 import 'features/lists/lists_screen.dart';
 import 'features/me/language_region_screen.dart';
 import 'features/me/me_screen.dart';
+import 'features/me/notifications_screen.dart';
+import 'features/me/plan_screen.dart';
 import 'features/search/search_screen.dart';
 import 'features/today/today_screen.dart';
 import 'features/trips/trips_screen.dart';
@@ -32,6 +34,8 @@ GoRouter buildRouter() => GoRouter(
               GoRoute(path: '/me', builder: (_, _) => const MeScreen(), routes: [
                 GoRoute(path: 'language', builder: (_, _) => const LanguageRegionScreen()),
                 GoRoute(path: 'account', builder: (_, _) => const AccountScreen()),
+                GoRoute(path: 'plan', builder: (_, _) => const PlanScreen()),
+                GoRoute(path: 'notifications', builder: (_, _) => const NotificationsScreen()),
                 GoRoute(path: 'lists', builder: (_, _) => const ListsScreen(), routes: [
                   GoRoute(path: ':id', builder: (_, state) => ListDetailScreen(id: state.pathParameters['id']!)),
                 ]),

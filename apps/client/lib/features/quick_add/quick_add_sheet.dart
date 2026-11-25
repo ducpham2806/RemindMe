@@ -31,7 +31,7 @@ class _Draft {
   final Map<int, int> picks = {};
   /// Người dùng chạm chip thời điểm và chọn lại ngày/giờ: thay kết quả phân tích.
   CivilDateTime? manualWhen;
-  /// Độ lệch nhắc (phút, âm = trước); null = không nhắc. Mặc định đúng giờ.
+  /// Độ lệch nhắc (phút, âm = trước); null = không nhắc. Mặc định theo cài đặt Thông báo & nhắc (đúng giờ).
   int? reminder = 0;
 
   String get title => result.title.isEmpty ? fallbackTitle : result.title;
@@ -75,11 +75,12 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
       return;
     }
     if (engine == null) {
-      setState(() => _drafts = [_Draft(NluResult(title: raw), raw)]);
+      setState(() => _drafts = [_Draft(NluResult(title: raw), raw)..reminder = ref.read(defaultReminderProvider).value ?? 0]);
       return;
     }
     final ctx = NluContext(now: ref.read(nowProvider)(), region: ref.read(deviceRegionProvider));
-    setState(() => _drafts = [for (final r in engine.parseAll(raw, ctx)) _Draft(r, raw)]);
+    final reminder = ref.read(defaultReminderProvider).value ?? 0;
+    setState(() => _drafts = [for (final r in engine.parseAll(raw, ctx)) _Draft(r, raw)..reminder = reminder]);
   }
 
   bool get _canSave => !_saving && _drafts.isNotEmpty && _drafts.every((d) => d.title.trim().isNotEmpty);

@@ -39,7 +39,8 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
     WidgetsBinding.instance.addObserver(this);
     final db = ref.read(appDatabaseProvider);
     _dbSub = db
-        .tableUpdates(TableUpdateQuery.onAllTables([db.items, db.reminders, db.recurrences, db.occurrenceLog]))
+        .tableUpdates(TableUpdateQuery.onAllTables([db.items, db.reminders, db.recurrences, db.occurrenceLog, db.syncState]))
+        // sync_state: cài đặt giờ nhắc việc cả ngày (LocalPrefs) đổi thì lập lại.
         .listen((_) => _soon());
     _tapSub = ref.read(notificationTapsProvider).listen(_onTap);
     final launch = ref.read(launchNotificationTapProvider);

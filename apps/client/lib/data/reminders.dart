@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:remindme_core/remindme_core.dart';
 import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_platform/remindme_platform.dart';
 
@@ -58,6 +59,24 @@ const reminderPresets = [0, -10, -30, -60, -1440];
 
 const _uiLocaleKey = 'ui_locale';
 
+/// Cài đặt ở Tôi → Thông báo & nhắc (Figma C51), lưu trên máy ([LocalPrefs]).
+/// [defaultReminderPref]: mốc nhắc mặc định của việc mới (`offset_minutes`, hoặc [prefNoReminder]); [allDayTimePref]: giờ kêu
+/// của việc cả ngày ("HH:mm", reminder-engine.md §5).
+const defaultReminderPref = 'default_reminder', allDayTimePref = 'all_day_time', prefNoReminder = 'none';
+
+/// Giờ kêu mặc định của việc cả ngày khi người dùng chưa chọn (reminder-engine.md §5).
+final defaultAllDayTime = CivilTime(9);
+
+/// Đọc [allDayTimePref]; sai định dạng thì dùng mặc định.
+Future<CivilTime> allDayTimeOf(AppDatabase db) async {
+  final v = await LocalPrefs(db).get(allDayTimePref);
+  try {
+    return v == null ? defaultAllDayTime : CivilTime.parse(v);
+  } on FormatException {
+    return defaultAllDayTime;
+  }
+}
+
 /// Lập lịch lại toàn bộ (dùng cả ở app lẫn isolate nền sau khi bấm nút trên thông báo).
 Future<ScheduleReport> rescheduleReminders({
   required AppDatabase db,
@@ -74,7 +93,7 @@ Future<ScheduleReport> rescheduleReminders({
   return ReminderScheduler(
     db: db,
     os: os,
-    planner: ReminderPlanner(deviceTz: deviceTz, maxPending: os.maxPending),
+    planner: ReminderPlanner(deviceTz: deviceTz, maxPending: os.maxPending, allDayTime: await allDayTimeOf(db)),
     texts: AppNotificationTexts(l, localeTag: tag, use24h: use24h),
     locale: tag,
     now: now,

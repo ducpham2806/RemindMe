@@ -10,6 +10,7 @@ import 'package:remindme_parsers/remindme_parsers.dart';
 import 'package:remindme_platform/remindme_platform.dart';
 
 import '../platform/device_time.dart';
+import 'reminders.dart';
 import 'remote/account.dart';
 import 'remote/remote_sync.dart';
 
@@ -198,6 +199,14 @@ Future<HolidayCalendar?> loadBundledHolidays(String? region) async {
   HolidayCalendars.register(c);
   return c;
 }
+
+/// Mốc nhắc mặc định của việc mới (phút, âm = trước; null = không nhắc). Chưa chọn thì đúng giờ.
+final defaultReminderProvider = FutureProvider<int?>((ref) async {
+  final v = await ref.watch(localPrefsProvider).get(defaultReminderPref);
+  return v == prefNoReminder ? null : int.tryParse(v ?? '') ?? 0;
+});
+
+final allDayTimeProvider = FutureProvider<CivilTime>((ref) => allDayTimeOf(ref.watch(appDatabaseProvider)));
 
 /// Cài đặt chỉ trên máy ở màn Ngôn ngữ & vùng (UX §1), tới khi có đồng bộ `profiles.region`/`calendar_systems`.
 /// Giá trị: [prefAuto] (theo máy/ngôn ngữ, mặc định), [prefNone], hoặc mã vùng ('VN') / hệ lịch ('lunar_vi').

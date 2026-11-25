@@ -49,8 +49,8 @@ class MeScreen extends ConsumerWidget {
               rows: [
                 _Row(AppIcons.user, l.meAccountDevices, l.meAccountDevicesHint, ref.watch(accountProvider) == null ? null : '/me/account'),
                 _Row(AppIcons.link, l.meIntegrations, l.meIntegrationsHint, null),
-                _Row(AppIcons.plus, l.mePlanUsage, l.mePlanUsageHint, null),
-                _Row(AppIcons.bell, l.meNotifications, l.meNotificationsHint, null),
+                _Row(AppIcons.plus, l.mePlanUsage, l.mePlanUsageHint, '/me/plan'),
+                _Row(AppIcons.bell, l.meNotifications, l.meNotificationsHint, '/me/notifications'),
                 _Row(AppIcons.shield, l.mePrivacy, l.mePrivacyHint, null),
                 _Row(AppIcons.globe, l.meLanguageRegion, l.meLanguageRegionHint, '/me/language'),
               ],
