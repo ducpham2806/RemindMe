@@ -23,7 +23,10 @@
   "Kiểm tra để tiếp tục" và mở form mục đó (ux-flows §2.4). Bỏ chọn mục cũng mở khóa nút lưu.
 - **Kiểm chứng:** client 74 (+3 màn Tôi; test nhập đổi theo UI mới + luồng xác nhận + thẻ hạn mức); analyze 0; ARB 267 key 0 lỗi; lint chuỗi 0;
   unslop không đổi; ảnh chụp sáng/tối đối chiếu Figma 15/15b/16/27.
-- **Tiếp theo:** Ngôn ngữ & vùng (C50) theo Figma, Thêm nhanh (02), chi tiết nhắc (04); evidence khi chạm ⓘ (cần lưu vị trí chữ ở T2).
+- **Thêm:** Ngôn ngữ & vùng theo Figma C50 (ngôn ngữ giao diện, định dạng + múi giờ theo máy, quốc gia ngày lễ kèm ngày nghỉ cuối tuần CLDR,
+  hệ lịch phụ chọn ở bottom sheet, xem trước ngày giờ); `ChoiceButtons`, `utcOffsetLabel` dùng chung. Chủ dự án gửi URL project Supabase
+  `msgamxrlohgszgpvvyfd`: connector Supabase của phiên chỉ thấy project khác (không đụng tới), chưa áp migration.
+- **Tiếp theo:** quyền vào project Supabase mới → áp migrations + `SupabaseSyncApi`; Thêm nhanh (02), chi tiết nhắc (04); evidence khi chạm ⓘ.
 
 ## 2026-11-25 · UI theo Figma đợt 1 (Hôm nay, Lịch, Chuyến đi, chi tiết chuyến) + 2 lỗi dữ liệu · Claude Code
 - **Làm:** đọc file Figma qua MCP (236 frame); token màu/chữ/bo góc theo Figma (design-system.md §2-5), font Be Vietnam Pro bundle (OFL ở màn
