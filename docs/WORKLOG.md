@@ -12,6 +12,17 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Dời việc khỏi ngày nghỉ lễ, màn Ngôn ngữ & vùng · Claude Code
+- **Làm:** `nextWorkday` (core); `ItemsRepository.openTasksOn`/`moveToDate`, `LocalPrefs` (data, khóa `pref.*` trong `sync_state`, không đồng bộ).
+  Hôm nay có thẻ ngày nghỉ lễ trong 7 ngày tới còn việc 1 lần: "Dời sang <ngày làm việc kế tiếp>" (giữ giờ, Hoàn tác) / "Để nguyên".
+  Tôi → Ngôn ngữ & vùng: quốc gia ngày lễ (theo máy / VN / US / GB / không dùng), hệ lịch phụ (theo ngôn ngữ / âm lịch VN/TQ/HQ / không dùng);
+  gói ngày lễ có thêm tên quốc gia (`name`). 17 key ARB.
+- **Quyết định:** chỉ gợi ý dời việc (kind `task`, không lặp); sự kiện, lịch hẹn, đặt chỗ không dời. Cài đặt lưu trên máy tới khi có `profiles` đồng bộ.
+- **Kiểm chứng:** core 51, data 50, client 71 (+3); analyze 0; ARB 194 key 0 lỗi.
+- **Figma:** chủ dự án gửi file thiết kế (236 frame = ~59 màn × VI/EN × sáng/tối, gồm onboarding, đăng nhập, gói, cài đặt); đọc được qua Figma MCP.
+  File không có variables (token phải đọc từ giá trị màu/chữ của layer).
+- **Tiếp theo:** áp token + từng màn theo Figma (Hôm nay, Lịch, Chuyến đi, Xem lại, Tôi, Ngôn ngữ & vùng).
+
 ## 2026-11-25 · Hạn mức chuyến đi, đổi tên/Thêm hoạt động, ngày lễ + tab Lịch, lặp ngày làm việc · Claude Code
 - **Làm:** `SyncEngine`: lượt push đầu hoãn lỗi khóa ngoại `23503`; chuyến mới bị `quota_exceeded` thì bỏ ở máy, gỡ `trip_id` khỏi item, gửi lại mutation lỗi
   (`SyncReport.rejectedTrips`); cache `quota_status` sau mỗi lần sync (`cachedQuota`, `SyncApi.quotaStatus`). Màn Xem lại đếm chuyến đang hoạt động, hết lượt thì
