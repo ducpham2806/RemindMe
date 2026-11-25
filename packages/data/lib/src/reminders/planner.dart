@@ -99,7 +99,7 @@ class PlanResult {
 
 /// Chuỗi đã dịch cho thông báo (app cấp từ ARB theo ngôn ngữ hiện tại, AGENTS quy tắc 5b).
 abstract interface class NotificationTexts {
-  /// Nội dung 1 lần nhắc của [item] cho lần [occurrenceAt] ([offsetMinutes] trước giờ đó).
+  /// Nội dung 1 lần nhắc của [item] cho lần [occurrenceAt] ([offsetMinutes] so với giờ đó, âm = trước).
   ({String title, String body}) forOccurrence(PlannerItem item, DateTime occurrenceAt, int offsetMinutes);
   ({String title, String body}) forSnooze(PlannerItem item);
   /// Thông báo dự phòng khi bị cắt bởi giới hạn số thông báo (§1 bước 4).
@@ -170,16 +170,17 @@ class ReminderPlanner {
               notificationId: notificationIdFor(r.id, at), reminderId: r.id, itemId: item.id, occurrenceAt: at, fireAt: at,
               title: t.title, body: t.body, isAlarm: r.isAlarm));
         case 'offset':
+          // data-model.md: `offset_minutes` âm = trước giờ của item (-120 = 2 giờ trước), dương = sau.
           final off = Duration(minutes: r.offsetMinutes ?? 0);
-          // Lần có giờ kêu trong cửa sổ: lần nằm trong [now + offset, end + offset] (offset âm = sau giờ đó).
-          final from = off.isNegative ? now.add(off) : now;
-          final to = off.isNegative ? end : end.add(off);
+          // Lần có giờ kêu (giờ lần + offset) trong cửa sổ [now, end]: lần nằm trong [now - offset, end - offset].
+          final from = off.isNegative ? now : now.subtract(off);
+          final to = off.isNegative ? end.subtract(off) : end;
           for (final o in occurrences(item, from, to)) {
             if (handledOccurrences.contains((item.id, o.at.millisecondsSinceEpoch))) continue;
             final t = texts.forOccurrence(item, o.at, r.offsetMinutes ?? 0);
             add(PlannedNotification(
                 notificationId: notificationIdFor(r.id, o.at), reminderId: r.id, itemId: item.id, occurrenceAt: o.at,
-                fireAt: o.base.subtract(off), title: t.title, body: t.body, isAlarm: r.isAlarm, dstAdjusted: o.dstAdjusted));
+                fireAt: o.base.add(off), title: t.title, body: t.body, isAlarm: r.isAlarm, dstAdjusted: o.dstAdjusted));
           }
         default:
           continue; // location: Phase 2

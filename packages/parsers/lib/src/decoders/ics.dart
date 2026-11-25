@@ -101,7 +101,7 @@ class IcsDecoder {
     return LocalTime(start.hasTime ? '${d}T${two(base.hour)}:${two(base.minute)}' : d, tz: start.tz, utcOffsetMinutes: start.utcOffsetMinutes);
   }
 
-  /// TRIGGER:-PT15M (trước giờ bắt đầu) → 15. Nhắc theo thời điểm tuyệt đối hoặc sau giờ (dương) bỏ qua.
+  /// TRIGGER:-PT15M (trước giờ bắt đầu) → -15 (quy ước `offset_minutes`: âm = trước). Nhắc theo thời điểm tuyệt đối hoặc sau giờ bỏ qua.
   static int? _alarmMinutes(List<_Prop> props) {
     final t = props.where((p) => p.name == 'TRIGGER').firstOrNull;
     if (t == null || t.params['VALUE']?.toUpperCase() == 'DATE-TIME' || (t.params['RELATED']?.toUpperCase() == 'END')) return null;
@@ -112,7 +112,7 @@ class IcsDecoder {
         (int.tryParse(m[4] ?? '') ?? 0) * 60 +
         (int.tryParse(m[5] ?? '') ?? 0);
     if (m[1] == null && minutes != 0) return null;
-    return minutes;
+    return -minutes;
   }
 
   /// Bỏ escape TEXT của RFC 5545.

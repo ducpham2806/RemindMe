@@ -229,6 +229,7 @@ class Candidate {
   /// Lặp lại (từ .ics), dạng `FREQ=...` như bảng `recurrences.rrule`.
   final String? rrule;
   /// Nhắc có sẵn trong nguồn (VALARM của .ics), phút trước giờ bắt đầu.
+  /// Theo `offset_minutes`: âm = trước giờ bắt đầu.
   final List<int> reminderOffsetsMinutes;
   final String? notes;
   /// 0-3 như `items.priority` (danh sách việc: cột Ưu tiên, emoji Obsidian).

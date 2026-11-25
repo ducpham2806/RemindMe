@@ -24,7 +24,7 @@ void main() {
       PlannerItem(id: 'a', title: 'Meeting', startsAt: DateTime.utc(2026, 12, 1, 8), tz: 'Asia/Ho_Chi_Minh'),
       PlannerItem(id: 'old', title: 'Old', startsAt: DateTime.utc(2026, 11, 30), tz: 'Asia/Ho_Chi_Minh'),
     ];
-    final r = p.plan(items: items, reminders: [at0('a'), at0('a', off: 15), at0('old')], now: now, texts: texts);
+    final r = p.plan(items: items, reminders: [at0('a'), at0('a', off: -15), at0('old')], now: now, texts: texts);
     expect(r.notifications.map((n) => n.fireAt), [DateTime.utc(2026, 12, 1, 7, 45), DateTime.utc(2026, 12, 1, 8)]);
     expect(r.truncated, isFalse);
   });
