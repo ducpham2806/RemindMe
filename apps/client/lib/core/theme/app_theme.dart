@@ -14,9 +14,11 @@ class RemindColors extends ThemeExtension<RemindColors> {
     required this.primaryTrack,
     required this.checkOutline,
     required this.checkOverdue,
+    required this.travelContainer,
+    required this.textDisabled,
   });
 
-  final Color travel, health, lunar, warning, success, primaryTrack, checkOutline, checkOverdue;
+  final Color travel, health, lunar, warning, success, primaryTrack, checkOutline, checkOverdue, travelContainer, textDisabled;
 
   static RemindColors of(BuildContext context) => Theme.of(context).extension<RemindColors>()!;
 
@@ -30,6 +32,8 @@ class RemindColors extends ThemeExtension<RemindColors> {
     Color? primaryTrack,
     Color? checkOutline,
     Color? checkOverdue,
+    Color? travelContainer,
+    Color? textDisabled,
   }) =>
       RemindColors(
         travel: travel ?? this.travel,
@@ -40,6 +44,8 @@ class RemindColors extends ThemeExtension<RemindColors> {
         primaryTrack: primaryTrack ?? this.primaryTrack,
         checkOutline: checkOutline ?? this.checkOutline,
         checkOverdue: checkOverdue ?? this.checkOverdue,
+        travelContainer: travelContainer ?? this.travelContainer,
+        textDisabled: textDisabled ?? this.textDisabled,
       );
 
   @override
@@ -49,7 +55,8 @@ class RemindColors extends ThemeExtension<RemindColors> {
           travel: Color.lerp(travel, other.travel, t)!, health: Color.lerp(health, other.health, t)!,
           lunar: Color.lerp(lunar, other.lunar, t)!, warning: Color.lerp(warning, other.warning, t)!,
           success: Color.lerp(success, other.success, t)!, primaryTrack: Color.lerp(primaryTrack, other.primaryTrack, t)!,
-          checkOutline: Color.lerp(checkOutline, other.checkOutline, t)!, checkOverdue: Color.lerp(checkOverdue, other.checkOverdue, t)!);
+          checkOutline: Color.lerp(checkOutline, other.checkOutline, t)!, checkOverdue: Color.lerp(checkOverdue, other.checkOverdue, t)!,
+          travelContainer: Color.lerp(travelContainer, other.travelContainer, t)!, textDisabled: Color.lerp(textDisabled, other.textDisabled, t)!);
 }
 
 ThemeData buildTheme(Brightness b) {
@@ -116,7 +123,8 @@ ThemeData buildTheme(Brightness b) {
       RemindColors(
         travel: pick(Tokens.travel), health: pick(Tokens.health), lunar: pick(Tokens.lunar),
         warning: pick(Tokens.warning), success: pick(Tokens.success), primaryTrack: pick(Tokens.primaryTrack),
-        checkOutline: pick(Tokens.checkOutline), checkOverdue: pick(Tokens.checkOverdue)),
+        checkOutline: pick(Tokens.checkOutline), checkOverdue: pick(Tokens.checkOverdue),
+        travelContainer: pick(Tokens.travelContainer), textDisabled: pick(Tokens.textDisabled)),
     ],
   );
 }

@@ -28,7 +28,9 @@ Nguồn thiết kế: file Figma "RemindMe" (~59 màn × VI/EN × sáng/tối, k
 | `color.checkOutline` / `checkOverdue` | `#BDC5D1` / `#DA8B8F` | `#596575` / `#A45259` | Vòng "đánh dấu xong" thường / quá hạn |
 | `color.warning` | `#C98A00` | `#FFC94D` | Trường đọc tự động có độ tin cậy thấp, sắp tới hạn |
 | `color.success` | `#1E9E62` | `#5FD39A` | Hoàn thành |
-| `color.travel` | `#0E9AA7` | `#55D6E0` | Booking, chuyến đi |
+| `color.travel` | `#087E89` | `#55D6E0` | Booking, chuyến đi, giờ lịch hẹn (`#0E9AA7` cũ ~3,4:1 trên nền trắng, chưa đạt AA) |
+| `color.travelContainer` | `#E6F5F4` | `#102D30` | Nền ngày thuộc chuyến đi trên lịch |
+| `color.textDisabled` | `#A1A8B3` | `#8993A2` | Ngày ngoài tháng đang xem |
 | `color.health` | `#C2410C` | `#FF9F6E` | Lịch khám, thuốc |
 | `color.lunar` | `#B4235A` | `#FF8DB8` | Nhãn âm lịch |
 | `priority.high/med/low` | `#D93A3A` / `#C98A00` / `#2F6BFF` | sáng hơn 1 bậc | Cờ ưu tiên |
@@ -55,7 +57,7 @@ Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương
 
 ## 5. Icon & hình
 - Icon nét 1,8 lấy từ Figma (`apps/client/assets/icons/*.svg`, widget `AppIcon` tô theo màu theme, 1 tệp cho sáng/tối): thanh điều hướng
-  (today, calendar, trip, user), `search`, `plus`, vòng `check`. Icon khác tạm dùng Material Symbols tới khi lấy đủ từ Figma.
+  (today, calendar, trip, user), `search`, `plus`, vòng `check`, `back`/`chevron`/`chevronSmall` (lật khi RTL), `plane`, `hotel`, `globe`. Icon khác tạm dùng Material Symbols tới khi lấy đủ từ Figma.
 - Icon loại booking: ✈ máy bay, 🚆 tàu, 🚌 xe, 🏨 khách sạn, 🚗 thuê xe, ⛴ phà, 🩺 khám bệnh, 🎫 sự kiện (dùng icon vector, emoji chỉ trong thông báo).
 - Minh họa empty state: nét đơn, 2 màu (`primary` + `textSecondary`).
 

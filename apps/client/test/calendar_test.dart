@@ -13,7 +13,7 @@ void main() {
     });
     await tester.tap(find.text('Lịch').last);
     await tester.pumpAndSettle();
-    expect(find.text('tháng 12 năm 2026'), findsOneWidget);
+    expect(find.text('Tháng 12 năm 2026'), findsOneWidget);
     expect(inDay('2026-12-03', find.byIcon(Icons.circle)), findsOneWidget);
     expect(inDay('2026-12-04', find.byIcon(Icons.circle)), findsNothing);
     // Mùng 1 âm lịch trong tháng: hiện "1/tháng".
@@ -27,7 +27,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('calendarNext')));
     await tester.pumpAndSettle();
-    expect(find.text('tháng 1 năm 2027'), findsOneWidget);
+    expect(find.text('Tháng 1 năm 2027'), findsOneWidget);
     await tester.tap(find.byKey(const Key('calendarDay-2027-01-01')));
     await tester.pumpAndSettle();
     expect(find.text('Tết Dương lịch'), findsOneWidget);
@@ -39,7 +39,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('calendarToday')));
     await tester.pumpAndSettle();
-    expect(find.text('tháng 12 năm 2026'), findsOneWidget);
+    expect(find.text('Tháng 12 năm 2026'), findsOneWidget);
   });
 
   testWidgets('en, US: 4/7/2027 là Chủ nhật → nghỉ bù thứ Hai 5/7; không có ngày âm; ngày trống có thông báo', (tester) async {

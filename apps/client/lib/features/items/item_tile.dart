@@ -12,10 +12,12 @@ import '../../l10n/app_localizations.dart';
 
 /// Một dòng item (UX §2.1): ô đánh dấu xong, tiêu đề, dòng "khi nào". Vuốt từ đầu dòng = Xong (có Hoàn tác).
 class ItemTile extends ConsumerWidget {
-  const ItemTile({super.key, required this.item, this.overdue = false});
+  const ItemTile({super.key, required this.item, this.overdue = false, this.inset = true});
 
   final ItemView item;
   final bool overdue;
+  /// Thêm lề màn hình hai bên (false khi thẻ đã nằm trong vùng có lề, như tab Lịch).
+  final bool inset;
 
   Future<void> _toggle(BuildContext context, WidgetRef ref) async {
     final repo = ref.read(itemsRepositoryProvider);
@@ -142,7 +144,7 @@ class ItemTile extends ConsumerWidget {
       ),
     );
     final tile = Padding(
-      padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.screenMargin, vertical: Tokens.space1),
+      padding: EdgeInsetsDirectional.symmetric(horizontal: inset ? Tokens.screenMargin : 0, vertical: Tokens.space1),
       child: card,
     );
     if (item.isDone) return tile;
@@ -150,7 +152,7 @@ class ItemTile extends ConsumerWidget {
       key: ValueKey('dismiss-${item.rowKey}'),
       direction: DismissDirection.startToEnd,
       background: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(horizontal: Tokens.screenMargin, vertical: Tokens.space1),
+        padding: EdgeInsetsDirectional.symmetric(horizontal: inset ? Tokens.screenMargin : 0, vertical: Tokens.space1),
         child: DecoratedBox(
           decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(Tokens.radiusMd)),
           child: Align(

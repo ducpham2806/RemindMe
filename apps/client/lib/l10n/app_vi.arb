@@ -41,6 +41,8 @@
   "calendarLunarShort": "{day}/{month}",
   "calendarLunarDate": "Ngày {day} tháng {month} âm lịch",
   "calendarItemCount": "{count, plural, other{{count} mục}}",
+  "calendarLocalTimeNote": "Giờ địa phương của từng lịch hẹn.",
+  "calendarArrives": "Đến {time}",
   "calendarDayOff": "Ngày nghỉ lễ",
   "calendarSubstituteDay": "Nghỉ bù",
   "calendarDayEmpty": "Ngày này chưa có gì",

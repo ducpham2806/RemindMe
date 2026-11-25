@@ -9,9 +9,21 @@ enum AppIcons {
   user,
   search,
   plus,
-  check;
+  check,
+  back,
+  chevron,
+  chevronSmall,
+  plane,
+  hotel,
+  globe;
 
-  String get asset => 'assets/icons/$name.svg';
+  String get asset => 'assets/icons/${switch (this) {
+        chevronSmall => 'chevron_small',
+        _ => name,
+      }}.svg';
+
+  /// Icon chỉ hướng: lật ngang khi viết từ phải sang trái.
+  bool get directional => this == back || this == chevron || this == chevronSmall;
 }
 
 class AppIcon extends StatelessWidget {
@@ -24,12 +36,16 @@ class AppIcon extends StatelessWidget {
   final String? semanticLabel;
 
   @override
-  Widget build(BuildContext context) => SvgPicture.asset(
-        icon.asset,
-        width: size,
-        height: size,
-        colorFilter: ColorFilter.mode(color ?? IconTheme.of(context).color ?? Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
-        semanticsLabel: semanticLabel,
-        excludeFromSemantics: semanticLabel == null,
-      );
+  Widget build(BuildContext context) {
+    final svg = SvgPicture.asset(
+      icon.asset,
+      width: size,
+      height: size,
+      colorFilter: ColorFilter.mode(color ?? IconTheme.of(context).color ?? Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
+      semanticsLabel: semanticLabel,
+      excludeFromSemantics: semanticLabel == null,
+    );
+    if (!icon.directional || Directionality.of(context) == TextDirection.ltr) return svg;
+    return Transform.flip(flipX: true, child: svg);
+  }
 }

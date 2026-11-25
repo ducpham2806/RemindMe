@@ -41,6 +41,8 @@
   "calendarLunarShort": "[{day}/{month}]",
   "calendarLunarDate": "[Ļûñàŕ ɱöñţĥ ~~~~{month}, đàý ~{day}]",
   "calendarItemCount": "[{count, plural, =1{1 îţéɱ~~} other{{count} îţéɱš~~}}]",
+  "calendarLocalTimeNote": "[Ţîɱéš àŕé šĥöŵñ îñ éàçĥ þļàçé’š ļöçàļ ţîɱé.~~~~~~~~~~~~~~]",
+  "calendarArrives": "[Àŕŕîṽéš ~~~{time}]",
   "calendarDayOff": "[Þûƀļîç ĥöļîđàý~~~~~]",
   "calendarSubstituteDay": "[Šûƀšţîţûţé đàý öƒƒ~~~~~~]",
   "calendarDayEmpty": "[Ñöţĥîñĝ þļàññéđ ƒöŕ ţĥîš đàý~~~~~~~~~~]",

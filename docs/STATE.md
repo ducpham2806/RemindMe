@@ -46,7 +46,9 @@
   Thẻ trên Hôm nay khi ngày nghỉ lễ trong 7 ngày tới có việc 1 lần đang hẹn: "Dời sang <ngày làm việc kế tiếp>" (giữ giờ, có Hoàn tác) hoặc "Để nguyên" (`LocalPrefs`).
   Lặp "Các ngày làm việc" (US-11): thứ không phải cuối tuần theo CLDR + bỏ ngày nghỉ lễ của vùng (`workdays_region`), áp cho Hôm nay, lịch và nhắc.
 - UI theo Figma (đợt 1): token màu/chữ/bo góc theo file Figma (design-system.md §2-5), font Be Vietnam Pro bundle trong app, icon SVG
-  (`AppIcon`), thanh dưới có nút "+" giữa, màn Hôm nay (tiêu đề lớn + ngày âm, thẻ tiến độ, nhóm có số việc, thẻ việc với giờ bên phải).
+  (`AppIcon`), thanh dưới có nút "+" giữa, màn Hôm nay (tiêu đề lớn + ngày âm, thẻ tiến độ, nhóm có số việc, thẻ việc với giờ bên phải),
+  màn Lịch (thẻ tháng, dải ngày chuyến đi + chú thích, thẻ lịch hẹn giờ theo từng nơi + icon loại, ô ngày cao thêm khi phóng chữ).
+  Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), các màn còn lại (Chuyến đi, Xem lại, Tôi, cài đặt, onboarding…).
 - Chưa có: worker, PDF decoder, chia sẻ vào app (share intent Android / share extension iOS), đổi cột + nhớ mapping ở màn xem trước,
   mẫu nhà cung cấp thật (cần mẫu thật), evidence khi chạm ⓘ + dòng hạn mức nhập thông minh ở màn Xem lại, ảnh điểm đến ở đầu chuyến,
   tab Tài liệu + checklist hành lý của chuyến, auth/flavors, `SupabaseSyncApi`.

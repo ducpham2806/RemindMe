@@ -262,6 +262,20 @@
       }
     }
   },
+  "calendarLocalTimeNote": "Times are shown in each place’s local time.",
+  "@calendarLocalTimeNote": {
+    "description": "Calendar footnote under bookings: a flight shows departure in the departure city's time and arrival in the arrival city's time."
+  },
+  "calendarArrives": "Arrives {time}",
+  "@calendarArrives": {
+    "description": "Calendar booking card: arrival time in the destination's local time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "12:40"
+      }
+    }
+  },
   "calendarDayOff": "Public holiday",
   "@calendarDayOff": {
     "description": "Calendar day details: under a holiday that is an official day off in the user's country."

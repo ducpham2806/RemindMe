@@ -19,7 +19,11 @@ abstract final class Tokens {
   static const checkOverdue = (Color(0xFFDA8B8F), Color(0xFFA45259));
   static const warning = (Color(0xFFC98A00), Color(0xFFFFC94D));
   static const success = (Color(0xFF1E9E62), Color(0xFF5FD39A));
-  static const travel = (Color(0xFF0E9AA7), Color(0xFF55D6E0));
+  static const travel = (Color(0xFF087E89), Color(0xFF55D6E0));
+  /// Nền ngày thuộc chuyến đi trên lịch.
+  static const travelContainer = (Color(0xFFE6F5F4), Color(0xFF102D30));
+  /// Ngày ngoài tháng đang xem.
+  static const textDisabled = (Color(0xFFA1A8B3), Color(0xFF8993A2));
   static const health = (Color(0xFFC2410C), Color(0xFFFF9F6E));
   static const lunar = (Color(0xFFB4235A), Color(0xFFFF8DB8));
 

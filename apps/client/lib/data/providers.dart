@@ -234,6 +234,13 @@ final calendarCountsProvider = StreamProvider.family<Map<String, int>, String>((
       .watchCountsByDay(CivilDate.parse(from), CivilDate.parse(to), deviceTz: ref.watch(deviceTimeZoneProvider));
 });
 
+/// Loại đặt chỗ, múi giờ nơi đến, tên chuyến cho thẻ lịch hẹn; khóa: id item nối bằng '|'.
+final bookingInfoProvider = FutureProvider.family<Map<String, ({String? bookingType, String? destinationTz, String? tripTitle})>, String>(
+    (ref, ids) {
+  ref.watch(tripsProvider);
+  return ref.watch(tripsRepositoryProvider).bookingInfo(ids.isEmpty ? const [] : ids.split('|'));
+});
+
 /// Item của 1 ngày bất kỳ ('YYYY-MM-DD', theo giờ máy) cho màn Lịch.
 final daySectionsProvider = StreamProvider.family<TodaySections, String>((ref, iso) {
   final d = CivilDate.parse(iso);

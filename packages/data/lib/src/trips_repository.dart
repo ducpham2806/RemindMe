@@ -162,6 +162,25 @@ class TripsRepository {
     }
   }
 
+  /// Loại đặt chỗ, múi giờ nơi đến và tên chuyến của các item (cho thẻ lịch hẹn trên tab Lịch); item không phải đặt chỗ thì bỏ qua.
+  Future<Map<String, ({String? bookingType, String? destinationTz, String? tripTitle})>> bookingInfo(Iterable<String> itemIds) async {
+    final ids = itemIds.toSet();
+    if (ids.isEmpty) return const {};
+    final items = await (_db.select(_db.items)..where((t) => t.id.isIn(ids))).get();
+    final details = {
+      for (final b in await (_db.select(_db.bookingDetails)..where((t) => t.itemId.isIn(ids) & t.deletedAt.isNull())).get()) b.itemId: b,
+    };
+    final tripIds = {for (final i in items) ?i.tripId};
+    final titles = tripIds.isEmpty
+        ? const <String, String?>{}
+        : {for (final t in await (_db.select(_db.trips)..where((t) => t.id.isIn(tripIds) & t.deletedAt.isNull())).get()) t.id: t.title};
+    String? tz(String? place) => place == null ? null : (jsonDecode(place) as Map)['tz'] as String?;
+    return {
+      for (final i in items)
+        i.id: (bookingType: details[i.id]?.bookingType, destinationTz: tz(details[i.id]?.destination), tripTitle: titles[i.tripId]),
+    };
+  }
+
   /// Đặt chỗ đã có với 1 trong [codes] (so không phân biệt hoa thường).
   Future<List<ExistingBooking>> bookingsWithCodes(Iterable<String> codes) async {
     final wanted = {for (final c in codes) c.toUpperCase()};
