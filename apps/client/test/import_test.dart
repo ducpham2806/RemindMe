@@ -87,10 +87,10 @@ void main() {
     expect(tester.widget<Checkbox>(find.byKey(const Key('importRemember'))).value, isTrue);
     await tester.tap(find.byKey(const Key('importAdd')));
     await settleReminders(tester);
-    expect(find.text('Đã thêm 3 mục'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('importDone')));
-    await tester.pumpAndSettle();
-    expect(find.text('Nhập từ tệp'), findsOneWidget, reason: 'quay về Tôi');
+    // Đã nhập bảng tính (Figma 29).
+    expect(find.text('Đã nhập bảng tính'), findsOneWidget);
+    expect(find.text('Đã nhập 3 việc'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('importTableFile'))).data, '15 thg 12 – 20 thg 12 · 4 dòng hợp lệ');
 
     final db = c.read(appDatabaseProvider);
     final (items, imports) = (await tester.runAsync(() async => (await db.select(db.items).get(), await db.select(db.imports).get())))!;
@@ -100,8 +100,8 @@ void main() {
         (DateTime.utc(2026, 12, 15, 2).millisecondsSinceEpoch, 'Asia/Ho_Chi_Minh', 3, null, imports.single.id, 'xlsx'));
     expect((imports.single.kind, imports.single.docLanguage, imports.single.docType), ('xlsx', 'vi', 'todo_list'));
 
-    // Lần 2 cùng dòng tiêu đề: tự dùng cách ghép đã nhớ (Ghi chú bỏ qua).
-    await tester.tap(find.text('Nhập từ tệp'));
+    // Lần 2 ("Nhập tệp khác", cùng dòng tiêu đề): tự dùng cách ghép đã nhớ (Ghi chú bỏ qua).
+    await tester.tap(find.byKey(const Key('importAnother')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('importPick')));
     await tester.pumpAndSettle();

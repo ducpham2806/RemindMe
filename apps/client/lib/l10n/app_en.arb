@@ -3651,5 +3651,49 @@
   "docViewerUnreadable": "This file can't be shown here. You can still open it in another app.",
   "@docViewerUnreadable": {
     "description": "Document viewer when the original file could not be read again."
+  },
+  "importTableDoneTitle": "Spreadsheet imported",
+  "@importTableDoneTitle": {
+    "description": "Title of the done screen after importing a spreadsheet (Figma 29)."
+  },
+  "importTableDoneMeta": "{count} valid rows · Done",
+  "@importTableDoneMeta": {
+    "description": "Subtitle of the spreadsheet done screen.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importTableDone": "{count, plural, =1{Imported 1 task} other{Imported {count} tasks}}",
+  "@importTableDone": {
+    "description": "Spreadsheet done screen headline.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importTableDoneBody": "{count, plural, =1{1 task was imported from the spreadsheet.} other{{count} tasks were imported from the spreadsheet.}} Dates and times are kept as in the preview.",
+  "@importTableDoneBody": {
+    "description": "Spreadsheet done screen body.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importTableValidRows": "{count, plural, =1{1 valid row} other{{count} valid rows}}",
+  "@importTableValidRows": {
+    "description": "Spreadsheet done screen file card: rows that became tasks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importAnother": "Import another file",
+  "@importAnother": {
+    "description": "Spreadsheet done screen primary button: start a new import."
   }
 }

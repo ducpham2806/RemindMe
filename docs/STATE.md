@@ -74,11 +74,12 @@
   Nhập tài liệu: chọn nguồn (13: chụp/thư viện ảnh "Sắp có" tới khi có OCR, tệp, bảng tính), đang đọc (14: tên tệp, Hủy), không đọc được
   (25: lý do, không tính lượt, chọn tệp khác / tự nhập), đã lưu (26: danh sách mục, "Xem chuyến đi" khi vừa gộp vào chuyến).
   Ghép cột bảng tính (18, E5.3): csv/xlsx mở màn Ghép cột thay màn Xem lại (trang tính, thứ tự ngày, dòng tiêu đề, cột → trường,
-  xem trước 10 dòng, "Nhớ cách ghép" theo chữ ký dòng tiêu đề trong `LocalPrefs`).
+  xem trước 10 dòng, "Nhớ cách ghép" theo chữ ký dòng tiêu đề trong `LocalPrefs`), Đã nhập bảng tính (29: số việc, khoảng ngày, Nhập tệp khác).
+  Tài liệu gốc (28): đọc lại bản gốc trên máy, thẻ vé/khách sạn/mục khác, "Mở bằng ứng dụng khác".
   Chi tiết chuyến 3 tab: Tài liệu (22: thẻ theo đặt chỗ, mã sao chép, mở tệp gốc giữ trên máy) và Hành lý (23: `trips.packing`,
   migration 10, danh sách gợi ý, nhóm, tiến độ).
   Chưa làm theo Figma: chế độ Tuần/Ngày và bộ lọc ở Lịch (chưa có chức năng), C34 (pin theo hãng Android, cần native),
-  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 17 (nhập tay kèm tài liệu), 19 (hộp đề xuất, cần worker/email).
+  tích hợp/email chuyển tiếp/To Do (C40-C45, chờ worker), nâng cấp/quản lý gói (C47-C49, chờ RevenueCat), giọng nói (03), 17 (nhập tay kèm tài liệu, cần OCR có tọa độ chữ), 19 (hộp đề xuất, cần worker/email), C56 (chỉ là hộp thoại của prototype).
 - Server dev (Supabase `msgamxrlohgszgpvvyfd`, ap-southeast-1, `guides/backend-setup.md`): đã áp migrations 01-09 (**10 `trip_packing` chờ chủ dự án chạy trong SQL Editor**), chạy thử
   `profile_init` → `session_claim` → `sync_push` → `sync_pull` → `quota_status` trên DB thật (rollback, không để dữ liệu).
   App: `SupabaseSyncApi` (RPC + đổi lỗi server sang `SyncErrorCode`), `RemoteSync` (đăng nhập ẩn danh → profile_init → session_claim →

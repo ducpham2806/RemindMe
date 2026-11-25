@@ -12,6 +12,14 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Figma 28-29: Tài liệu gốc, Đã nhập bảng tính · Claude Code
+- **Làm:** `OriginalsStore.read`; màn Tài liệu gốc `/document/:importId` (giải mã lại bản gốc trên máy bằng cùng decoder lúc nhập,
+  thẻ vé điện tử: mã sân bay lớn + giờ đi/đến theo giờ in trên vé; thẻ khách sạn: khoảng ngày, số đêm, nhận/trả phòng, mã; mục khác: tên, giờ, mã),
+  "Mở bằng ứng dụng khác" (`open_filex`), tệp không đọc lại được thì báo + vẫn mở ngoài được. Tab Tài liệu mở màn này thay vì gọi thẳng app khác
+  (Android thường không mở được .pkpass/.eml). Màn Đã nhập bảng tính: số việc, tệp + khoảng ngày + số dòng hợp lệ, "Nhập tệp khác". 25 key ARB.
+- **Kiểm chứng:** client 110 (test Tài liệu: thẻ khách sạn từ email mẫu, tệp hỏng → báo + mở ngoài; test csv thêm màn 29 + Nhập tệp khác); analyze 0; lint 0; ảnh chụp so với Figma.
+- **Tiếp theo:** 17 (cần OCR có tọa độ), 19 (cần worker), 03 giọng nói (cần máy thật), C34 native.
+
 ## 2026-11-25 · Figma 18: ghép cột bảng tính + nhớ cách ghép (E5.3) · Claude Code
 - **Làm:** parsers: `TableMapping.toJson/applySaved`, `TableTaskExtractor.signature` (FNV-1a 64 trên tên cột đã bỏ dấu), `headerLabels`, `withHeader`.
   App: `ImportRequest.columns/hasHeader/savedMappings`, `ImportPreview.table`; csv/xlsx mở màn Ghép cột (`TableMappingView`): thẻ tệp + chọn trang tính,

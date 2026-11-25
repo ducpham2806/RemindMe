@@ -270,7 +270,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_saved != null
-            ? l.importSavedTitle
+            ? (preview?.table != null ? l.importTableDoneTitle : l.importSavedTitle)
             : reviewing
                 ? (table != null ? l.importMapTitle : l.importReviewTitle)
                 : _busy && preview == null
@@ -571,6 +571,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     final theme = Theme.of(context);
     final colors = RemindColors.of(context);
     final saved = _saved!;
+    if (_preview?.table != null) return _tableDone(context);
     return ListView(
       padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space6),
       children: [
@@ -619,6 +620,91 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     );
   }
 
+  /// Đã nhập bảng tính (Figma 29): số việc, tệp + khoảng ngày của các việc có ngày, số dòng hợp lệ.
+  Widget _tableDone(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = RemindColors.of(context);
+    final saved = _saved!;
+    final preview = _preview!;
+    final dates = [
+      for (var i = 0; i < preview.candidates.length; i++)
+        if (_selected[i])
+          if (preview.candidates[i].fields.due?.local case final d?) DateTime.tryParse(d.length > 10 ? d.substring(0, 10) : d),
+    ].nonNulls.toList()
+      ..sort();
+    final fmt = Fmt.of(context);
+    final now = ref.read(nowProvider)();
+    final range = dates.isEmpty
+        ? null
+        : dates.first == dates.last
+            ? fmt.date(dates.first, now: now)
+            : l.tripDates(fmt.date(dates.first, now: now), fmt.date(dates.last, now: now));
+    return ListView(
+      padding: const EdgeInsetsDirectional.fromSTEB(Tokens.screenMargin, 0, Tokens.screenMargin, Tokens.space6),
+      children: [
+        Text(l.importTableDoneMeta(preview.candidates.length), style: theme.textTheme.bodySmall),
+        const SizedBox(height: Tokens.space4),
+        _box(
+          context,
+          key: const Key('importSaved'),
+          padding: const EdgeInsetsDirectional.all(Tokens.space6),
+          child: Column(
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: colors.success.withValues(alpha: 0.12), shape: BoxShape.circle),
+                child: AppIcon(AppIcons.tick, size: 28, color: colors.success),
+              ),
+              const SizedBox(height: Tokens.space4),
+              Text(l.importTableDone(saved.titles.length),
+                  key: const Key('importTableDone'), textAlign: TextAlign.center, style: theme.textTheme.titleLarge?.copyWith(fontSize: 28, height: 36 / 28)),
+              const SizedBox(height: Tokens.space3),
+              Text(l.importTableDoneBody(saved.titles.length), textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            ],
+          ),
+        ),
+        const SizedBox(height: Tokens.space4),
+        _box(
+          context,
+          padding: const EdgeInsetsDirectional.all(Tokens.space4),
+          child: Row(
+            children: [
+              Icon(Icons.table_chart_outlined, color: colors.success, size: 24),
+              const SizedBox(width: Tokens.space3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_request!.name, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                    Text([?range, l.importTableValidRows(preview.candidates.length)].join(' · '),
+                        key: const Key('importTableFile'), style: theme.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (saved.pending) ...[
+          const SizedBox(height: Tokens.space4),
+          _infoCard(context, AppIcons.alert, l.mePlanUsage, l.importPendingQuotaNote, colors.onWarningContainer, colors.warningContainer),
+        ],
+      ],
+    );
+  }
+
+  /// Về màn chọn nguồn để nhập tệp khác.
+  void _restart() => setState(() {
+        _saved = null;
+        _preview = null;
+        _request = null;
+        _fileName = null;
+        _failed = false;
+        _edits.clear();
+      });
+
   Widget _savedButtons(BuildContext context) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
@@ -639,11 +725,21 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
               ),
               const SizedBox(height: Tokens.space3),
             ],
-            (trip == null ? FilledButton.new : OutlinedButton.new)(
-              key: const Key('importDone'),
-              onPressed: _close,
-              child: Text(l.settingsDone),
-            ),
+            if (_preview?.table != null) ...[
+              FilledButton.icon(
+                key: const Key('importAnother'),
+                icon: AppIcon(AppIcons.file, size: 20, color: scheme.onPrimary),
+                label: Text(l.importAnother),
+                onPressed: _restart,
+              ),
+              const SizedBox(height: Tokens.space2),
+              TextButton(key: const Key('importDone'), onPressed: _close, child: Text(l.settingsDone)),
+            ] else
+              (trip == null ? FilledButton.new : OutlinedButton.new)(
+                key: const Key('importDone'),
+                onPressed: _close,
+                child: Text(l.settingsDone),
+              ),
           ],
         ),
       ),

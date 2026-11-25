@@ -692,5 +692,11 @@
   "docViewerFooter": "Bản gốc trên thiết bị · Xem được khi offline",
   "docViewerBack": "Quay lại",
   "docViewerOpenExternal": "Mở bằng ứng dụng khác",
-  "docViewerUnreadable": "Không hiện được tệp này ở đây. Bạn vẫn có thể mở bằng ứng dụng khác."
+  "docViewerUnreadable": "Không hiện được tệp này ở đây. Bạn vẫn có thể mở bằng ứng dụng khác.",
+  "importTableDoneTitle": "Đã nhập bảng tính",
+  "importTableDoneMeta": "{count} dòng hợp lệ · Hoàn tất",
+  "importTableDone": "Đã nhập {count} việc",
+  "importTableDoneBody": "{count} việc đã được nhập từ bảng tính. Ngày và giờ giữ nguyên như bản xem trước.",
+  "importTableValidRows": "{count} dòng hợp lệ",
+  "importAnother": "Nhập tệp khác"
 }
