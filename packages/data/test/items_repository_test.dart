@@ -138,6 +138,16 @@ void main() {
       expect(await repo.engine.pendingCount(), 0, reason: 'không vào outbox');
     });
 
+    test('updateBooking chỉ gắn chuyến thì giữ nguyên ngày/giờ; có giờ mới thì thay cả bộ', () async {
+      final id = await repo.create(title: 'Hotel', kind: 'booking', startDate: '2099-01-02');
+      await repo.updateBooking(id, tripId: 't1');
+      var i = (await repo.getItem(id))!;
+      expect((i.startDate, i.allDay), ('2099-01-02', true));
+      await repo.updateBooking(id, startsAt: DateTime.utc(2099, 1, 2, 7), tz: 'Asia/Ho_Chi_Minh');
+      i = (await repo.getItem(id))!;
+      expect((i.startDate, i.startsAt, i.allDay), (null, DateTime.utc(2099, 1, 2, 7), false));
+    });
+
     test('đổi tên, ghi chú, ưu tiên, xóa', () async {
       final id = await repo.create(title: 'Mua quà');
       await repo.rename(id, 'Mua quà sinh nhật');

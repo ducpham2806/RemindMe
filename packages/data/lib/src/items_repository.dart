@@ -475,16 +475,21 @@ class ItemsRepository {
     String? tripId,
   }) async {
     if (startsAt != null && tz == null) throw ArgumentError('startsAt cần tz IANA đi kèm');
-    await engine.edit(SyncTable.items, id, {
-      'starts_at': startsAt?.toUtc().toIso8601String(),
-      'tz': tz,
-      'start_date': startDate,
-      'all_day': startDate != null && startsAt == null,
-      'ends_at': endsAt?.toUtc().toIso8601String(),
-      'end_tz': endTz,
-      'end_date': endDate,
+    // Chỉ thay cả bộ thời điểm khi có giờ/ngày mới (vé đổi giờ); chỉ gắn chuyến thì không xóa lịch đang có.
+    final reschedule = startsAt != null || startDate != null;
+    final changes = {
+      if (reschedule) ...{
+        'starts_at': startsAt?.toUtc().toIso8601String(),
+        'tz': tz,
+        'start_date': startDate,
+        'all_day': startDate != null && startsAt == null,
+        'ends_at': endsAt?.toUtc().toIso8601String(),
+        'end_tz': endTz,
+        'end_date': endDate,
+      },
       'trip_id': ?tripId,
-    });
+    };
+    if (changes.isNotEmpty) await engine.edit(SyncTable.items, id, changes);
     if (booking != null) await engine.edit(SyncTable.bookingDetails, id, booking);
     if (absoluteReminders != null) {
       final old = await (_db.select(_db.reminders)
@@ -563,7 +568,7 @@ class ItemsRepository {
 
   // ------------------------------------------------------------------ nhắc (reminders)
 
-  /// Thêm nhắc [offsetMinutes] phút trước giờ của item (0 = đúng giờ).
+  /// Thêm nhắc lệch [offsetMinutes] phút so với giờ của item (âm = trước, 0 = đúng giờ; data-model.md).
   Future<String> addReminder(String itemId, {required int offsetMinutes, bool isAlarm = false}) async {
     final id = uuidV7(nowMillis: _now().millisecondsSinceEpoch);
     await engine.edit(SyncTable.reminders, id, {
