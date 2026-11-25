@@ -10,6 +10,7 @@ import 'package:remindme_platform/remindme_platform.dart';
 import '../l10n/app_localizations.dart';
 import '../platform/local_notifications.dart';
 import 'providers.dart';
+import 'remote/remote_sync.dart';
 import 'reminders.dart';
 
 const _askedKey = 'notification_permission_asked';
@@ -38,7 +39,8 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
     WidgetsBinding.instance.addObserver(this);
     final db = ref.read(appDatabaseProvider);
     _dbSub = db
-        .tableUpdates(TableUpdateQuery.onAllTables([db.items, db.reminders, db.recurrences, db.occurrenceLog]))
+        .tableUpdates(TableUpdateQuery.onAllTables([db.items, db.reminders, db.recurrences, db.occurrenceLog, db.syncState]))
+        // sync_state: cài đặt giờ nhắc việc cả ngày (LocalPrefs) đổi thì lập lại.
         .listen((_) => _soon());
     _tapSub = ref.read(notificationTapsProvider).listen(_onTap);
     final launch = ref.read(launchNotificationTapProvider);
@@ -94,6 +96,12 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
     try {
       final db = ref.read(appDatabaseProvider);
       final os = ref.read(notificationSchedulerProvider);
+      // Tài khoản đã đăng nhập ở máy khác (UX §3.7): hủy mọi thông báo, không lập lại tới khi đăng nhập lại.
+      if (ref.read(remoteSyncProvider)?.state == RemoteSyncState.revoked) {
+        await os.cancelAll();
+        await db.delete(db.scheduledNotifications).go();
+        return;
+      }
       final report = await rescheduleReminders(
         db: db,
         os: os,
@@ -126,7 +134,9 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
       return; // DB đổi → tự lập lịch lại
     }
     final p = NotificationPayload.tryParse(tap.payload);
-    if (p != null && mounted) unawaited(widget.router.push('/item/${p.itemId}'));
+    if (p != null && mounted) {
+      unawaited(widget.router.push('/item/${p.itemId}?reminder=${p.reminderId}&at=${p.occurrenceAt.millisecondsSinceEpoch}'));
+    }
   }
 
   @override

@@ -9,6 +9,20 @@ const _byday = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 /// Tên thứ lấy từ CLDR (DateFormat.E), không tự dịch.
 String describeRecurrence(BuildContext context, Map<String, Object?> r) {
   final l = AppLocalizations.of(context);
+  final base = _describe(context, r);
+  if (r['kind'] != 'rrule') return base;
+  final rrule = (r['rrule'] as String? ?? '').toUpperCase();
+  final until = RegExp(r'UNTIL=(\d{4})(\d{2})(\d{2})').firstMatch(rrule);
+  if (until != null) {
+    final d = DateTime(int.parse(until[1]!), int.parse(until[2]!), int.parse(until[3]!));
+    return l.recurUntil(base, DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag()).format(d));
+  }
+  final count = int.tryParse(RegExp(r'COUNT=(\d+)').firstMatch(rrule)?[1] ?? '');
+  return count == null ? base : l.recurTimes(base, count);
+}
+
+String _describe(BuildContext context, Map<String, Object?> r) {
+  final l = AppLocalizations.of(context);
   final locale = Localizations.localeOf(context).toLanguageTag();
   if (r['kind'] == 'calendar') {
     final c = (r['calendar']! as Map).cast<String, Object?>();

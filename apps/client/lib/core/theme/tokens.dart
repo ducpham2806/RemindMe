@@ -14,6 +14,8 @@ abstract final class Tokens {
   /// Rãnh thanh tiến độ trên nền primaryContainer.
   static const primaryTrack = (Color(0xFFD4E0FF), Color(0xFF26385E));
   static const danger = (Color(0xFFBF3035), Color(0xFFFF7A7A));
+  /// Nền thẻ cảnh báo xóa (Figma C54).
+  static const dangerContainer = (Color(0xFFFDEDEE), Color(0xFF3A1A1C));
   /// Vòng "đánh dấu xong" (thường / quá hạn).
   static const checkOutline = (Color(0xFFBDC5D1), Color(0xFF596575));
   static const checkOverdue = (Color(0xFFDA8B8F), Color(0xFFA45259));
@@ -29,6 +31,8 @@ abstract final class Tokens {
   static const textDisabled = (Color(0xFFA1A8B3), Color(0xFF8993A2));
   static const health = (Color(0xFFC2410C), Color(0xFFFF9F6E));
   static const lunar = (Color(0xFFB4235A), Color(0xFFFF8DB8));
+  /// Nền thẻ âm lịch (Figma 07); tối: tự chọn cùng độ đậm với travelContainer.
+  static const lunarContainer = (Color(0xFFFBEFF5), Color(0xFF34172A));
 
   // §4 khoảng cách (lưới 4dp), bo góc
   static const space1 = 4.0, space2 = 8.0, space3 = 12.0, space4 = 16.0, space5 = 20.0, space6 = 24.0, space8 = 32.0, space10 = 40.0;

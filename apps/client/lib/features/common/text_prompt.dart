@@ -3,17 +3,20 @@ import 'package:material_ui/material_ui.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Hỏi 1 dòng chữ (đặt tên list, sửa tên mục ở màn Xem lại). Trả chuỗi đã trim, null nếu hủy hoặc rỗng.
-Future<String?> askText(BuildContext context, {required String title, String? initial, String? hint, Key? fieldKey}) async {
+Future<String?> askText(BuildContext context,
+    {required String title, String? initial, String? hint, Key? fieldKey, TextInputType? keyboardType}) async {
   final v = await showDialog<String>(
-      context: context, builder: (_) => _TextDialog(title: title, initial: initial, hint: hint, fieldKey: fieldKey));
+      context: context,
+      builder: (_) => _TextDialog(title: title, initial: initial, hint: hint, fieldKey: fieldKey, keyboardType: keyboardType));
   final t = v?.trim();
   return t == null || t.isEmpty ? null : t;
 }
 
 /// Dialog tự giữ controller: TextField còn được vẽ trong lúc dialog đóng (animation), nên không được dispose sớm hơn widget.
 class _TextDialog extends StatefulWidget {
-  const _TextDialog({required this.title, this.initial, this.hint, this.fieldKey});
+  const _TextDialog({required this.title, this.initial, this.hint, this.fieldKey, this.keyboardType});
   final String title;
+  final TextInputType? keyboardType;
   final String? initial;
   final String? hint;
   final Key? fieldKey;
@@ -40,6 +43,7 @@ class _TextDialogState extends State<_TextDialog> {
         key: widget.fieldKey,
         controller: _controller,
         autofocus: true,
+        keyboardType: widget.keyboardType,
         decoration: InputDecoration(hintText: widget.hint),
         onSubmitted: (v) => Navigator.pop(context, v),
       ),

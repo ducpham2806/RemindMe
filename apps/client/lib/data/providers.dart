@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart' show TableUpdateQuery;
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,9 @@ import 'package:remindme_parsers/remindme_parsers.dart';
 import 'package:remindme_platform/remindme_platform.dart';
 
 import '../platform/device_time.dart';
+import 'reminders.dart';
+import 'remote/account.dart';
+import 'remote/remote_sync.dart';
 
 /// Mở DB local của app (file `remindme.sqlite` trong thư mục dữ liệu app, do drift_flutter chọn theo nền tảng).
 AppDatabase openAppDatabase() => AppDatabase(driftDatabase(name: 'remindme'));
@@ -109,8 +113,51 @@ final remindersProvider = StreamProvider.family<List<Reminder>, String>((ref, it
 /// Giờ hiện tại; test override để cố định ngày.
 final nowProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
-/// API đồng bộ. Tới khi có project Supabase (STATE "Tiếp theo" mục 6) app chạy offline: mọi thay đổi nằm trong outbox.
+/// API đồng bộ. Build không có cấu hình Supabase (`SupabaseConfig`) thì chạy offline: mọi thay đổi nằm trong outbox.
+/// main() override bằng `SupabaseSyncApi` khi có cấu hình.
 final syncApiProvider = Provider<SyncApi>((ref) => const OfflineSyncApi());
+
+/// Luồng đăng nhập + đồng bộ với server; null = offline (test, build không cấu hình). main() override.
+final remoteSyncProvider = Provider<RemoteSync?>((ref) => null);
+
+/// Đăng nhập email (OTP) + phiên; null = app không có server. main() override.
+final accountProvider = Provider<AccountApi?>((ref) => null);
+
+final accountInfoProvider = StreamProvider<AccountInfo?>((ref) async* {
+  final account = ref.watch(accountProvider);
+  yield account?.current;
+  if (account != null) yield* account.changes;
+});
+
+/// Lịch sử đăng nhập của tài khoản (màn Tài khoản & thiết bị).
+final accountSessionsProvider = FutureProvider.autoDispose<List<SessionInfo>>((ref) async {
+  ref.watch(accountInfoProvider);
+  return await ref.watch(accountProvider)?.sessions() ?? const [];
+});
+
+final revokedByProvider = FutureProvider.autoDispose<({String? device, DateTime? at})>(
+    (ref) async => await ref.watch(accountProvider)?.revokedBy() ?? (device: null, at: null));
+
+/// Trạng thái đồng bộ cho UI (banner offline, thẻ Đồng bộ ở Tôi); null = app không có server.
+final remoteSyncStatusProvider = StreamProvider<RemoteSyncStatus?>((ref) async* {
+  final sync = ref.watch(remoteSyncProvider);
+  if (sync == null) {
+    yield null;
+    return;
+  }
+  yield sync.status;
+  yield* sync.statuses;
+});
+
+/// Số thay đổi trên máy chưa gửi lên server (outbox).
+final pendingChangesProvider = StreamProvider<int>((ref) async* {
+  final engine = ref.watch(syncEngineProvider);
+  final db = ref.watch(appDatabaseProvider);
+  yield await engine.pendingCount();
+  await for (final _ in db.tableUpdates(TableUpdateQuery.onTable(db.outbox))) {
+    yield await engine.pendingCount();
+  }
+});
 
 final syncEngineProvider = Provider<SyncEngine>((ref) {
   final deviceId = ref.watch(deviceIdProvider);
@@ -152,6 +199,14 @@ Future<HolidayCalendar?> loadBundledHolidays(String? region) async {
   HolidayCalendars.register(c);
   return c;
 }
+
+/// Mốc nhắc mặc định của việc mới (phút, âm = trước; null = không nhắc). Chưa chọn thì đúng giờ.
+final defaultReminderProvider = FutureProvider<int?>((ref) async {
+  final v = await ref.watch(localPrefsProvider).get(defaultReminderPref);
+  return v == prefNoReminder ? null : int.tryParse(v ?? '') ?? 0;
+});
+
+final allDayTimeProvider = FutureProvider<CivilTime>((ref) => allDayTimeOf(ref.watch(appDatabaseProvider)));
 
 /// Cài đặt chỉ trên máy ở màn Ngôn ngữ & vùng (UX §1), tới khi có đồng bộ `profiles.region`/`calendar_systems`.
 /// Giá trị: [prefAuto] (theo máy/ngôn ngữ, mặc định), [prefNone], hoặc mã vùng ('VN') / hệ lịch ('lunar_vi').

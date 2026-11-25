@@ -68,7 +68,10 @@ Runbook: phát hiện → khoanh vùng → thu hồi token/khóa → thông báo
 ## 6. Xóa tài khoản, xuất dữ liệu, lưu trữ
 - **Xóa tài khoản** (trong app, yêu cầu của Apple và Google): xóa `auth.users` sẽ cascade toàn bộ bảng; thu hồi token tích hợp phía provider;
   xóa file Storage; hoàn tất trong ≤ 30 ngày, backup tự hết hạn sau ≤ 35 ngày. Subscription do store quản lý: nhắc người dùng hủy trong store.
+  Đã có: RPC `account_delete()` (migration 09) xóa `auth.users` ngay (cascade), ghi `app.account_deletions` (uuid + thời điểm) cho worker dọn
+  Storage và token tích hợp (worker chưa có); app gõ từ xác nhận, xong thì xóa dữ liệu trên máy và về dùng ẩn danh.
 - **Xuất dữ liệu**: file ZIP gồm `remindme-export.json` (schema có `export_version`, một mảng cho mỗi bảng đồng bộ, thời gian ISO 8601 + IANA tz)
-  và `calendar.ics` (VEVENT/VTODO, RRULE; hệ lịch phụ được trải phẳng 2 năm). Tạo trên máy, không cần server.
+  và `calendar.ics` (VEVENT/VTODO, RRULE; hệ lịch phụ được trải phẳng 2 năm). Tạo trên máy, không cần server
+  (`DataExporter` trong `packages/data`, `export_version` = 1, bỏ cột nội bộ `version`/`device_id`/`field_clock` và hàng đã xóa).
 - **Thời hạn lưu**: MIME email 7 ngày (hoặc tới khi máy `ack`); tombstone `deleted_at` 90 ngày rồi xóa hẳn; log server 30 ngày; telemetry ẩn danh 13 tháng;
   `user_sessions`: IP và quốc gia xóa sau 90 ngày, hàng đã kết thúc xóa sau 12 tháng (job `cleanup.sessions`).

@@ -24,6 +24,7 @@ Nguồn thiết kế: file Figma "RemindMe" (~59 màn × VI/EN × sáng/tối, k
 | `color.divider` | `#E4E7EC` | `#2A2E35` | |
 | `color.primaryContainer` | `#EAF0FF` | `#172443` | Thẻ tiến độ, nền nút phụ, ngày đang chọn |
 | `color.primaryTrack` | `#D4E0FF` | `#26385E` | Rãnh thanh tiến độ trên `primaryContainer` |
+| `color.dangerContainer` | `#FDEDEE` | `#3A1A1C` | Thẻ cảnh báo xóa tài khoản (`errorContainer`) |
 | `color.danger` | `#BF3035` | `#FF7A7A` | Quá hạn, xóa (`#D93A3A` cũ chỉ ~4,3:1 trên nền trắng, chưa đạt AA chữ nhỏ) |
 | `color.checkOutline` / `checkOverdue` | `#BDC5D1` / `#DA8B8F` | `#596575` / `#A45259` | Vòng "đánh dấu xong" thường / quá hạn |
 | `color.warning` | `#C98A00` | `#FFC94D` | Trường đọc tự động có độ tin cậy thấp, sắp tới hạn |
@@ -33,6 +34,7 @@ Nguồn thiết kế: file Figma "RemindMe" (~59 màn × VI/EN × sáng/tối, k
 | `color.travelContainer` | `#E6F5F4` | `#102D30` | Nền ngày thuộc chuyến đi trên lịch |
 | `color.textDisabled` | `#A1A8B3` | `#8993A2` | Ngày ngoài tháng đang xem |
 | `color.health` | `#C2410C` | `#FF9F6E` | Lịch khám, thuốc |
+| `color.lunarContainer` | `#FBEFF5` | `#34172A` | Thẻ hệ âm lịch, nút chọn và tóm tắt ở sheet lặp âm lịch (chữ `lunar`) |
 | `color.lunar` | `#B4235A` | `#FF8DB8` | Nhãn âm lịch |
 | `priority.high/med/low` | `#D93A3A` / `#C98A00` / `#2F6BFF` | sáng hơn 1 bậc | Cờ ưu tiên |
 
@@ -58,7 +60,7 @@ Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương
 
 ## 5. Icon & hình
 - Icon nét 1,8 lấy từ Figma (`apps/client/assets/icons/*.svg`, widget `AppIcon` tô theo màu theme, 1 tệp cho sáng/tối): thanh điều hướng
-  (today, calendar, trip, user), `search`, `plus`, vòng `check`, `back`/`chevron`/`chevronSmall` (lật khi RTL), `plane`, `hotel`, `globe`, `file`, `alert`, `edit`, `tick`, `inbox`, `mail`, `link`, `bell`, `shield`. Icon khác tạm dùng Material Symbols tới khi lấy đủ từ Figma.
+  (today, calendar, trip, user), `search`, `plus`, vòng `check`, `back`/`chevron`/`chevronSmall` (lật khi RTL), `plane`, `hotel`, `globe`, `file`, `alert`, `edit`, `tick`, `inbox`, `mail`, `link`, `bell`, `shield`, `close`, `list`, `repeat`, `mic`, `camera`, `image`, `flag`, `clock`, `moon`. Icon khác tạm dùng Material Symbols tới khi lấy đủ từ Figma.
 - Icon loại booking: ✈ máy bay, 🚆 tàu, 🚌 xe, 🏨 khách sạn, 🚗 thuê xe, ⛴ phà, 🩺 khám bệnh, 🎫 sự kiện (dùng icon vector, emoji chỉ trong thông báo).
 - Minh họa empty state: nét đơn, 2 màu (`primary` + `textSecondary`).
 
@@ -72,7 +74,10 @@ Màu list do người dùng chọn: 12 màu cố định đã kiểm tra tương
 | `ImportReviewCard` | Thẻ trắng: ô chọn, tên, nút sửa; tuyến lớn (SGN ✈ HAN) nếu có mã; ô "Cần kiểm tra: …" nền `warningContainer` (đã xác nhận: `travelContainer`). Form sửa: ô dạng thẻ, trường confidence thấp nền `warningContainer` + viền `warning` + ⓘ (sau sẽ hiện `evidence`) | |
 | `QuotaMeter` | Thanh tiến trình nhỏ "7/10 nhắc hôm nay" | ≥ 80% thì `warning` |
 | `PaywallSheet` | Bottom sheet, 3 gói, gói năm chọn sẵn, ghi rõ giá/kỳ/cách hủy, nút Khôi phục | |
-| `SnoozePicker` | 10', 30', 1h, Tối nay 20:00, Mai 08:00, Tùy chọn | |
+| `AppSheet` | Bottom sheet Figma 05-08: tiêu đề 20 + nút đóng, thân cuộn (khối cách 16), nút chính cố định ở đáy. `SheetOption`: hàng icon + tên + dòng phụ + giá trị phải, đang chọn nền `primaryContainer` (âm lịch: `lunarContainer`) + ✓. `SheetChips`: hàng nút chọn nhanh | |
+| `DateTimeSheet` (05) | Hôm nay / Ngày mai / Cuối tuần (theo vùng), lịch tháng (ngày đầu tuần và tên thứ theo CLDR), ô giờ (bỏ giờ = cả ngày), múi giờ máy, nút "Xác nhận · ngày, giờ" | |
+| `RepeatSheet` (06) | Không lặp, Hằng ngày, Ngày làm việc, Hằng tuần, Hằng tháng, Hằng năm; Âm lịch (07: mùng 1 / rằm / ngày riêng, ngày + tháng âm, tần suất, giờ, tháng nhuận, lần tới), Tùy chỉnh (mỗi N ngày/tuần/tháng/năm, chọn thứ), Kết thúc (không bao giờ / vào ngày / sau N lần) | |
+| `SnoozeSheet` (08) | 10 phút, 30 phút, 1 giờ, Tối nay 20:00 (ẩn khi còn dưới 1 giờ), Sáng mai 08:00, Chọn ngày & giờ; chỉ dời lần nhắc này | |
 | `LunarDateLabel` | "15/7 Âm lịch" chữ nhỏ màu `lunar` | |
 | `EmptyState` | Minh họa + 1 câu + 1 CTA | |
 

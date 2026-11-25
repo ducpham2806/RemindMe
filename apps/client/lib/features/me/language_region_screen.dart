@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -11,7 +13,8 @@ import '../../data/providers.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Tôi → Ngôn ngữ & vùng (UX §1, Figma C50): ngôn ngữ giao diện, định dạng + múi giờ (theo máy, chỉ xem), quốc gia ngày lễ
-/// (lịch, gợi ý dời việc, "ngày làm việc") và hệ lịch phụ (ngày âm trên lịch, lặp âm lịch). Lưu trên máy ([LocalPrefs]).
+/// (lịch, gợi ý dời việc, "ngày làm việc") và hệ lịch phụ (ngày âm trên lịch, lặp âm lịch). Lưu trên máy ([LocalPrefs]);
+/// có server thì RemoteSync ghi thêm vào `profiles.region` / `calendar_systems` / `ui_locale` sau mỗi lần đồng bộ.
 /// Chưa có chọn giọng nói (Figma có hàng này): chờ nhập bằng giọng nói.
 class LanguageRegionScreen extends ConsumerWidget {
   const LanguageRegionScreen({super.key});
@@ -144,6 +147,8 @@ class LanguageRegionScreen extends ConsumerWidget {
     ref
       ..invalidate(holidayRegionSettingProvider)
       ..invalidate(calendarSystemSettingProvider);
+    // Đẩy lên profiles ở lượt đồng bộ này (RemoteSync ghi khi cài đặt khác lần trước).
+    unawaited(ref.read(remoteSyncProvider)?.run());
   }
 }
 

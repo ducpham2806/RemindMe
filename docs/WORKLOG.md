@@ -12,6 +12,49 @@
 - **Dở dang / tiếp theo:** ...
 -->
 
+## 2026-11-25 · Figma 05-08, Gói & mức sử dụng, Thông báo & nhắc, quyền riêng tư, xuất dữ liệu, xóa tài khoản · Claude Code
+- **Làm:** `AppSheet`/`SheetOption`/`SheetChips`; sheet Ngày & giờ (05), Lặp lại + Tùy chỉnh + Kết thúc (06, `UNTIL`/`COUNT` trong RRULE),
+  Lặp âm lịch (07), Hoãn nhắc (08, `snoozeItem`: nút ở chi tiết, vuốt trái ở danh sách, mở từ thông báo qua `?reminder=&at=`).
+  Tôi → Gói & mức sử dụng (C46), Thông báo & nhắc (C51: `default_reminder`, `all_day_time` → `ReminderPlanner.allDayTime`),
+  Dữ liệu & quyền riêng tư / Xuất dữ liệu / Xóa tài khoản / Đã nhận yêu cầu xóa (C52-C55). `DataExporter` (JSON `export_version` 1 + ICS)
+  trong `packages/data`. Migration 09 `account_delete()` + `app.account_deletions`, pgTAP 008. RemoteSync ghi `ui_locale`/`region`/`calendar_systems`
+  vào `profiles` sau mỗi lần đồng bộ (không đổi `home_tz`). Token `lunarContainer`, `dangerContainer`; icon `clock`, `moon`. ARB 495 key.
+- **Quyết định:** xóa tài khoản xóa `auth.users` ngay (không có thời gian chờ), việc ngoài DB để worker làm qua `app.account_deletions`.
+  Từ xác nhận xóa dịch theo ngôn ngữ ("XÓA"/"DELETE"). Hoãn việc chưa có nhắc thì thêm nhắc tuyệt đối vào giờ hoãn.
+- **Kiểm chứng:** client 100 pass (+14), data 54 (+2 xuất dữ liệu), pgTAP 116 (+7) trên Postgres 16 cục bộ; analyze 0; lint chuỗi/nền tảng 0;
+  check-arb 0; ảnh chụp các màn mới so với Figma.
+- **Dở dang / tiếp theo:** migration 09 chưa áp lên dev (Supabase MCP báo không có quyền sau khi phiên khởi động lại); test live chưa chạy lại
+  (không dọn được user ẩn danh khi không có SQL). Onboarding C30-C34, màn 09-14.
+
+## 2026-11-25 · Đăng nhập email (OTP), Tài khoản & thiết bị, màn bị đăng xuất · Claude Code
+- **Làm:** `AccountApi` + `SupabaseAccount` (gửi mã: user ẩn danh thử `updateUser(email)`, email đã có thì `signInWithOtp`; xác nhận mã; đổi tài khoản
+  hỏi trước rồi `resetLocalData` + claim phiên mới; đăng xuất qua `session_end`; lịch sử phiên từ `user_sessions`; `revokedBy` từ `session_status`).
+  `RemoteSync.pause/resume` (không claim/đồng bộ giữa lúc đổi tài khoản). Màn Đăng nhập, Xác nhận mã (gửi lại sau 60 giây), Tài khoản & thiết bị,
+  Bạn đã được đăng xuất (`/revoked`, ReminderBinding hủy mọi thông báo khi phiên bị kết thúc). Tôi → Tài khoản & thiết bị bật khi có server. 47 key ARB.
+- **Quyết định:** email đã có tài khoản thì dữ liệu ẩn danh trên máy bị thay (không gộp 2 tài khoản), có hộp thoại xác nhận (UX §3.7).
+- **Kiểm chứng:** client 87 (+4 tài khoản với AccountApi giả), data 52 (+1 resetLocalData), live 1 pass; analyze 0; lint 0; ARB 350 key; unslop không đổi.
+  Chưa thử gửi mã thật: email template mặc định không có mã, SMTP mặc định giới hạn.
+- **Tiếp theo:** chủ dự án sửa email template → thử trên máy thật; Google/Apple; SMTP riêng.
+
+## 2026-11-25 · Đồng bộ thật với Supabase dev, trạng thái đồng bộ trong app · Claude Code
+- **Làm:** chủ dự án bật anonymous sign-ins; test live pass (đăng nhập ẩn danh → profile_init → session_claim → push → máy thứ 2 pull; server có
+  1 việc + Inbox + 1 phiên), đã xóa user test. Xác nhận `postgres` (owner `app.end_sessions`) xóa được `auth.sessions`. App: `RemoteSyncStatus`,
+  `remoteSyncStatusProvider`, `pendingChangesProvider`; banner offline dưới tiêu đề Hôm nay; thẻ Đồng bộ ở Tôi (trạng thái, giờ đồng bộ gần nhất,
+  số thay đổi chờ, Đồng bộ ngay). 12 key ARB.
+- **Quyết định:** màn "phiên bị kết thúc" (UX §3.7) để tới khi có đăng nhập tài khoản: user ẩn danh không thể bị máy khác đăng nhập chiếm phiên.
+- **Kiểm chứng:** client 83 (+3 trạng thái đồng bộ); live 1 pass; analyze 0; lint 0; ARB 303 key.
+- **Tiếp theo:** đăng nhập email OTP/Google/Apple liên kết user ẩn danh + màn §3.7; đẩy cài đặt Ngôn ngữ & vùng lên `profiles`.
+
+## 2026-11-25 · Server Supabase dev: áp migrations, nối app (SupabaseSyncApi, RemoteSync) · Claude Code
+- **Làm:** áp 8 migration lên project `msgamxrlohgszgpvvyfd` (ap-southeast-1) qua Supabase MCP; chạy thử luồng chính bằng SQL trong transaction
+  rollback (profile_init, session_claim, sync_push, sync_pull, quota_status đều đúng; DB vẫn trống). App: `supabase_flutter`, `SupabaseSyncApi`,
+  `RemoteSync` + `RemoteSyncBinding`, `SupabaseConfig` (dart-define), `env/dev.json`, `guides/backend-setup.md`.
+- **Quyết định:** publishable key nằm trong `env/dev.json` (công khai theo thiết kế Supabase); đăng nhập đầu tiên là ẩn danh; máy không có vùng thì
+  chưa tạo profile (không đoán vùng, AGENTS quy tắc 5).
+- **Kiểm chứng:** client 80 test (+4 SupabaseSyncApi với PostgREST giả; test live bỏ qua mặc định); analyze 0; lint 0. Test live với server thật:
+  app báo `signedOut` đúng vì project chưa bật đăng nhập ẩn danh (settings `anonymous_users: false`).
+- **Tiếp theo:** chủ dự án bật anonymous sign-ins → chạy test live; UI trạng thái đồng bộ, màn phiên bị kết thúc; đăng nhập Google/Apple/email.
+
 ## 2026-11-25 · UI theo Figma đợt 2: Xem lại khi nhập, form sửa, Tôi + chọn ngôn ngữ/giao diện · Claude Code
 - **Làm:** màn Xem lại (Figma 15/15b): thẻ tệp nguồn, thẻ từng mục (ô chọn, nút sửa, tuyến lớn SGN ✈ HAN, giờ đi/đến hoặc nhận/trả phòng,
   ô "Cần kiểm tra: <trường>" / "Đã kiểm tra"), banner cần kiểm tra / đã xác nhận đủ, thẻ gộp chuyến chạm mở danh sách chọn (thay dropdown),
@@ -26,7 +69,9 @@
 - **Thêm:** Ngôn ngữ & vùng theo Figma C50 (ngôn ngữ giao diện, định dạng + múi giờ theo máy, quốc gia ngày lễ kèm ngày nghỉ cuối tuần CLDR,
   hệ lịch phụ chọn ở bottom sheet, xem trước ngày giờ); `ChoiceButtons`, `utcOffsetLabel` dùng chung. Chủ dự án gửi URL project Supabase
   `msgamxrlohgszgpvvyfd`: connector Supabase của phiên chỉ thấy project khác (không đụng tới), chưa áp migration.
-- **Tiếp theo:** quyền vào project Supabase mới → áp migrations + `SupabaseSyncApi`; Thêm nhanh (02), chi tiết nhắc (04); evidence khi chạm ⓘ.
+- **Thêm nữa:** Thêm nhanh theo Figma 02 (chip chạm được: thời điểm, nhắc; nút Tệp; Nói/Chụp/Ảnh mờ). +2 test. Connector Supabase vẫn chỉ thấy project cũ.
+- **Và:** Chi tiết theo Figma 04 (`SettingRow`; trạng thái chạm để xong; ưu tiên qua bottom sheet). client 76 test pass.
+- **Tiếp theo:** quyền vào project Supabase mới → áp migrations + `SupabaseSyncApi`; Figma 05-08 (chọn ngày giờ, lặp, hoãn); evidence khi chạm ⓘ.
 
 ## 2026-11-25 · UI theo Figma đợt 1 (Hôm nay, Lịch, Chuyến đi, chi tiết chuyến) + 2 lỗi dữ liệu · Claude Code
 - **Làm:** đọc file Figma qua MCP (236 frame); token màu/chữ/bo góc theo Figma (design-system.md §2-5), font Be Vietnam Pro bundle (OFL ở màn
