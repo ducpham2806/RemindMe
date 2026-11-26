@@ -29,6 +29,37 @@ void main() {
     expect(r.truncated, isFalse);
   });
 
+  test('offline 20 ngày: đặt ngay nhắc đơn, nhắc tuyệt đối và hoãn; chuỗi lặp vẫn giới hạn 14 ngày', () {
+    final now = DateTime.utc(2026, 12, 1);
+    final far = now.add(const Duration(days: 20));
+    final plan = ReminderPlanner(deviceTz: 'Etc/UTC', maxPending: 60).plan(
+      items: [
+        PlannerItem(id: 'visit', title: 'Visit', startsAt: far),
+        PlannerItem(id: 'weekly', title: 'Weekly', startsAt: far, recurrence: RRuleRecurrence('FREQ=WEEKLY')),
+      ],
+      reminders: [
+        at0('visit', off: -15), at0('weekly'),
+        PlannerReminder(id: 'absolute', itemId: 'visit', triggerKind: 'absolute', at: far, snoozedUntil: far.add(const Duration(hours: 1))),
+      ],
+      now: now, texts: texts,
+    );
+    expect(plan.notifications.map((n) => n.fireAt), [far.subtract(const Duration(minutes: 15)), far, far.add(const Duration(hours: 1))]);
+    expect(plan.truncated, isFalse);
+  });
+
+  test('khi ít chỗ, nhắc gần được ưu tiên trước nhắc xa', () {
+    final now = DateTime.utc(2026, 12, 1);
+    final items = [for (final days in [30, 20, 1]) PlannerItem(id: '$days', title: 'Visit', startsAt: now.add(Duration(days: days)))];
+    for (final limit in [0, 1, 2]) {
+      final plan = ReminderPlanner(deviceTz: 'Etc/UTC', maxPending: limit).plan(
+        items: items, reminders: [for (final item in items) at0(item.id)], now: now, texts: texts,
+      );
+      expect(plan.notifications.length, limit);
+      if (limit > 0) expect(plan.notifications.first.itemId, '1');
+      if (limit == 2) expect(plan.notifications.last.kind, PlannedKind.fallback);
+    }
+  });
+
   test('giờ yên lặng 22:00–07:00 (qua nửa đêm, theo giờ máy): nhắc vẫn lập nhưng im lặng; báo thức vẫn kêu; đổi khung đổi contentHash', () {
     final q = QuietHours(CivilTime(22), CivilTime(7));
     expect([for (final h in [21, 22, 23, 0, 6, 7]) q.covers(CivilTime(h))], [false, true, true, true, true, false]);

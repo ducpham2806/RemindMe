@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:remindme_core/remindme_core.dart';
@@ -17,6 +19,18 @@ class Device {
 
   Future<Map<String, Object?>?> row(String table, String id, {String key = 'id'}) async =>
       (await db.customSelect('SELECT * FROM $table WHERE $key = ?', variables: [Variable.withString(id)]).getSingleOrNull())?.data;
+}
+
+// Mất tiến trình trước request thứ hai: lô đầu đã được xử lý và commit xuống SQLite.
+class _StopAfterFirstPush extends FakeApi {
+  _StopAfterFirstPush(FakeServer server) : super(server, 'phone');
+  int pushes = 0;
+
+  @override
+  Future<List<MutationResult>> push(String deviceId, List<Mutation> mutations) {
+    if (++pushes == 2) throw StateError('app stopped');
+    return super.push(deviceId, mutations);
+  }
 }
 
 void main() {
@@ -193,6 +207,54 @@ void main() {
     expect((await a.row('items', 'b1'))!['trip_id'], isNull);
     expect(await a.engine.pendingCount(), 0);
   });
+
+  for (final interruptBeforeRepair in [true, false]) {
+    final stage = interruptBeforeRepair ? 'trước khi gỡ chuyến' : 'sau khi gỡ chuyến, trước khi gửi lại';
+    test('tắt app $stage: mở lại SQLite vẫn gửi đủ booking, chi tiết và nhắc', () async {
+      final dir = await Directory.systemTemp.createTemp('remindme-trip-retry-');
+      addTearDown(() => dir.delete(recursive: true));
+      final file = File('${dir.path}/app.sqlite');
+      var db = AppDatabase(NativeDatabase(file));
+      addTearDown(() => db.close());
+      SyncEngine openEngine(SyncApi api) => SyncEngine(db: db, api: api, clock: HlcClock('phone', now: now), deviceId: 'phone');
+      server
+        ..checkForeignKeys = true
+        ..rejectQuota = (m) => m.table == SyncTable.trips;
+      var engine = openEngine(_StopAfterFirstPush(server));
+      await db.transaction(() async {
+        await engine.edit(SyncTable.trips, 't', {'title': 'Huế'});
+        await engine.edit(SyncTable.items, 'b', {'kind': 'booking', 'title': 'Hotel', 'trip_id': 't'});
+        await engine.edit(SyncTable.bookingDetails, 'b', {'booking_type': 'hotel'});
+        await engine.edit(SyncTable.reminders, 'r', {'item_id': 'b', 'trigger_kind': 'offset', 'offset_minutes': -30});
+        if (interruptBeforeRepair) {
+          // Còn một lô chưa gửi sau lô bị từ chối, trước lúc quét hết outbox để gỡ trip_id.
+          for (var i = 4; i <= SyncEngine.pushBatchSize; i++) {
+            await engine.edit(SyncTable.lists, 'list-$i', {'name': 'List $i'});
+          }
+        }
+      });
+      await expectLater(engine.sync(), throwsA(isA<StateError>().having((e) => e.message, 'message', 'app stopped')));
+      expect((await db.select(db.syncIssues).get()).single.kind, 'quota_exceeded');
+      expect(server.rows.containsKey('items/b'), isFalse);
+      await db.close();
+
+      db = AppDatabase(NativeDatabase(file));
+      engine = openEngine(server.apiFor('phone'));
+      final result = await engine.sync();
+      expect(result.error, isNull);
+      expect(result.issues, isEmpty);
+      expect(server.rows.containsKey('trips/t'), isFalse);
+      expect(server.rows['items/b'], containsPair('trip_id', null));
+      expect(server.rows['items/b']!['title'], 'Hotel');
+      expect(server.rows['booking_details/b']!['booking_type'], 'hotel');
+      expect(server.rows['reminders/r']!['item_id'], 'b');
+      expect((await db.select(db.items).getSingle()).tripId, isNull);
+      expect((await db.select(db.trips).getSingle()).deletedAt, isNotNull);
+      expect((await db.select(db.syncIssues).get()), hasLength(1));
+      expect(await engine.pendingCount(), 0);
+      expect((await engine.sync()).pushed, 0);
+    });
+  }
 
   test('quota_status được cache sau lần sync thành công; lỗi lấy hạn mức giữ cache cũ', () async {
     final a = Device('phone', server, now: now);

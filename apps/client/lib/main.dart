@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:remindme_data/remindme_data.dart';
 import 'package:remindme_platform/remindme_platform.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthClientOptions, AuthFlowType, Supabase, SupabaseClient;
 
 import 'app.dart';
 import 'core/l10n/locale_resolution.dart';
@@ -49,7 +49,7 @@ Future<void> main() async {
     overrides: [
       appDatabaseProvider.overrideWithValue(db),
       deviceIdProvider.overrideWithValue(deviceId),
-      deviceTimeZoneProvider.overrideWithValue(tz),
+      initialDeviceTimeZoneProvider.overrideWithValue(tz),
       notificationSchedulerProvider.overrideWithValue(os),
       notificationTapsProvider.overrideWithValue(local?.taps ?? const Stream.empty()),
       launchNotificationTapProvider.overrideWithValue(launchTap),
@@ -98,6 +98,9 @@ Future<({SupabaseSyncApi api, RemoteSync Function(SyncEngine) sync, AccountApi F
     sync: (SyncEngine engine) => RemoteSync(client: client, engine: engine, deviceId: deviceId, profile: profile),
     account: (SyncEngine engine, RemoteSync sync) =>
         SupabaseAccount(
-            client: client, engine: engine, sync: sync, deviceId: deviceId, deviceProfile: profile, clearLocalFiles: FileOriginalsStore().clear),
+            client: client, engine: engine, sync: sync, deviceId: deviceId, deviceProfile: profile,
+            createVerificationClient: () => SupabaseClient(SupabaseConfig.url, SupabaseConfig.publishableKey,
+                authOptions: const AuthClientOptions(authFlowType: AuthFlowType.implicit, autoRefreshToken: false)),
+            clearLocalFiles: FileOriginalsStore().clear),
   );
 }

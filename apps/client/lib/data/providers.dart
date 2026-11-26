@@ -25,7 +25,17 @@ final appDatabaseProvider = Provider<AppDatabase>((ref) => throw UnimplementedEr
 final deviceIdProvider = Provider<String>((ref) => throw UnimplementedError('override trong main() hoặc test'));
 
 /// Múi giờ IANA của máy (`deviceTimeZone()`), đọc trong `main()` trước runApp.
-final deviceTimeZoneProvider = Provider<String>((ref) => throw UnimplementedError('override trong main() hoặc test'));
+final initialDeviceTimeZoneProvider = Provider<String>((ref) => throw UnimplementedError('override trong main() hoặc test'));
+
+final readDeviceTimeZoneProvider = Provider<Future<String> Function()>((ref) => deviceTimeZone);
+final deviceTimeZoneProvider = NotifierProvider<DeviceTimeZone, String>(DeviceTimeZone.new);
+
+class DeviceTimeZone extends Notifier<String> {
+  @override
+  String build() => ref.watch(initialDeviceTimeZoneProvider);
+
+  void update(String zone) => state = zone;
+}
 
 /// Vùng của máy (ISO 3166-1) hoặc null; quyết định đọc 03/04 là ngày 3 tháng 4 hay ngày 4 tháng 3.
 final deviceRegionProvider = Provider<String?>((ref) => deviceRegion());
