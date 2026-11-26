@@ -183,6 +183,7 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
   }
 
   Future<void> _verify() async {
+    if (_busy) return;
     final account = ref.read(accountProvider)!;
     final l = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
@@ -201,6 +202,11 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
       }
       setState(() => _busy = false);
       if (await _confirmSwitch(r.willReplace)) {
+        if (!mounted) {
+          await account.cancelSwitch();
+          return;
+        }
+        setState(() => _busy = true);
         await account.finishSwitch();
         messenger.showSnackBar(SnackBar(content: Text(l.accountSwitched)));
         router.go('/today');

@@ -1,8 +1,11 @@
 # STATE (hiện trạng, cập nhật cuối mỗi phiên; chỉ giữ hiện tại, lịch sử ở WORKLOG)
 
-**Cập nhật:** 2026-11-25 · **Phase:** 0 → S1-S3 (đồng bộ với Supabase dev chạy thật; chờ Firebase, mua trong app) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
+**Cập nhật:** 2026-11-26 · **Phase:** 0 → S1-S3 (đồng bộ với Supabase dev chạy thật; chờ Firebase, mua trong app) · **Nhánh:** `claude/stoic-einstein-8g8f7v`
 
 ## Đã có
+- Khi server từ chối chuyến mới vì vượt hạn mức, SQLite giữ ID chuyến và các thay đổi đang chờ để gỡ liên kết và gửi lại booking sau khi mở lại app.
+- Nhắc một lần xa hơn 14 ngày được đưa vào lịch OS khi còn chỗ. App đọc lại ngày và múi giờ khi trở lại từ nền và khi qua nửa đêm. Kiểm tra giờ kêu và khởi động lại trên điện thoại thật còn chờ thiết bị.
+- Đăng nhập OTP vào tài khoản đã có dùng phiên tạm trong bộ nhớ. Trong lúc chờ xác nhận, dữ liệu và đồng bộ vẫn thuộc tài khoản cũ, kể cả khi nhập sai mã hoặc mở lại app.
 - Bộ docs v2 (`docs/INDEX.md`) + 17 ADR (ADR-017: ngày lễ là gói luật tự viết, tính trên máy; ADR-016: dữ liệu sân bay mwgg/Airports, từ vựng T2 trong gói NLU; ADR-015: decoder MIME/csv/xlsx/md tự viết; ADR-013: Free 1 thiết bị, Plus 1 điện thoại + 1 tablet + 1 máy tính; ADR-014: một codebase Flutter, app máy tính macOS/Windows ở Phase 4, paywall ghi "sắp có"). Nghiên cứu thị trường global (`research/global-market.md`). L0: glossary 258 thuật ngữ, style guide en/vi, so sánh TMS (`docs/l10n/`).
 - DB: `supabase/migrations/` (schema, RLS chỉ đọc, `sync_push`/`sync_pull`/`quota_status`/`profile_init`, giới hạn thiết bị `session_claim`/`session_status`/`session_end`
   + lịch sử đăng nhập + cắt thiết bị khi hạ gói, seed gói, chặn/kẹp `field_clock` sai) + 120 test pgTAP.

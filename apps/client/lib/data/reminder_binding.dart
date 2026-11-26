@@ -31,7 +31,8 @@ class ReminderBinding extends ConsumerStatefulWidget {
 }
 
 class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsBindingObserver {
-  Timer? _timer;
+  Timer? _timer, _midnight;
+  int _refreshGeneration = 0;
   StreamSubscription<void>? _dbSub;
   StreamSubscription<NotificationTap>? _tapSub;
   String? _formatKey;
@@ -41,6 +42,7 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _armMidnight();
     final db = ref.read(appDatabaseProvider);
     _dbSub = db
         .tableUpdates(TableUpdateQuery.onAllTables([db.items, db.reminders, db.recurrences, db.occurrenceLog, db.syncState]))
@@ -69,13 +71,31 @@ class _ReminderBindingState extends ConsumerState<ReminderBinding> with WidgetsB
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.invalidate(notificationHealthProvider);
-      _soon();
+      unawaited(_refreshClock());
     }
+  }
+
+  void _armMidnight() {
+    _midnight?.cancel();
+    final now = ref.read(nowProvider)().toLocal();
+    final next = DateTime(now.year, now.month, now.day + 1);
+    _midnight = Timer(next.difference(now), _refreshClock);
+  }
+
+  Future<void> _refreshClock() async {
+    final generation = ++_refreshGeneration;
+    final zone = await ref.read(readDeviceTimeZoneProvider)();
+    if (!mounted || generation != _refreshGeneration) return;
+    ref.read(deviceTimeZoneProvider.notifier).update(zone);
+    ref.invalidate(todayWindowProvider);
+    _armMidnight();
+    _soon();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _midnight?.cancel();
     _timer?.cancel();
     _dbSub?.cancel();
     _tapSub?.cancel();

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:remindme_data/remindme_data.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -64,8 +65,8 @@ class SessionInfo {
   final DateTime? createdAt, lastSeenAt, endedAt;
 }
 
-/// Kết quả xác nhận mã. [switched]: đã sang tài khoản khác, cần người dùng đồng ý (dữ liệu trên máy sẽ được thay,
-/// [willReplace] là các máy sẽ bị đăng xuất) rồi gọi [AccountApi.finishSwitch] hoặc [AccountApi.cancelSwitch].
+/// Kết quả xác nhận mã. [switched]: đã xác minh một tài khoản khác, cần người dùng đồng ý (dữ liệu trên máy sẽ được thay,
+/// [willReplace] là các máy sẽ bị đăng xuất) rồi gọi [AccountApi.finishSwitch] hoặc [AccountApi.cancelSwitch]. Phiên hiện tại giữ nguyên trong lúc chờ.
 typedef VerifyResult = ({bool switched, List<SessionInfo> willReplace});
 
 /// Đăng nhập bằng email + mã (OTP), không mật khẩu (UX C35/C36). UI chỉ phụ thuộc interface này (test dùng bản giả).
@@ -99,6 +100,7 @@ class SupabaseAccount implements AccountApi {
     required this.sync,
     required this.deviceId,
     required this.deviceProfile,
+    required this.createVerificationClient,
     this.clearLocalFiles,
   });
 
@@ -107,6 +109,8 @@ class SupabaseAccount implements AccountApi {
   final RemoteSync sync;
   final String deviceId;
   final Future<DeviceProfile> Function() deviceProfile;
+  final SupabaseClient Function() createVerificationClient;
+  Session? _pendingSession;
   /// Xóa tệp chỉ có trên máy (bản gốc đã nhập) cùng lúc với dữ liệu local.
   final Future<void> Function()? clearLocalFiles;
 
@@ -145,30 +149,61 @@ class SupabaseAccount implements AccountApi {
 
   @override
   Future<VerifyResult> verify(String email, String code, OtpMode mode) => _guard(() async {
-        final before = current?.userId;
-        if (mode == OtpMode.signIn) await sync.pause();
-        await client.auth.verifyOTP(type: mode == OtpMode.link ? OtpType.emailChange : OtpType.email, email: email, token: code.trim());
-        if (current?.userId == before) {
-          await sync.resume(reset: mode == OtpMode.signIn);
+        _pendingSession = null;
+        if (mode == OtpMode.link) {
+          await client.auth.verifyOTP(type: OtpType.emailChange, email: email, token: code.trim());
+          await sync.run();
           return (switched: false, willReplace: const <SessionInfo>[]);
         }
-        final p = await deviceProfile();
-        final status = await client.rpc<Object?>('session_status',
-            params: {'device_id': deviceId, 'platform': p.platform, 'device_class': p.deviceClass});
-        final will = ((status as Map?)?['will_replace'] as List<Object?>?) ?? const [];
-        return (switched: true, willReplace: [for (final w in will) SessionInfo.fromJson((w! as Map).cast<String, Object?>())]);
+
+        // Chỉ client chính có lưu phiên. Đóng app ở màn xác nhận vẫn mở lại tài khoản cũ.
+        final verification = createVerificationClient();
+        try {
+          final result = await verification.auth.verifyOTP(type: OtpType.email, email: email, token: code.trim());
+          final session = result.session;
+          if (session == null) throw const AccountException(AccountError.invalidCode);
+          if (session.user.id == current?.userId) {
+            await _activate(session, replaceData: false);
+            return (switched: false, willReplace: const <SessionInfo>[]);
+          }
+          final p = await deviceProfile();
+          final status = await verification.rpc<Object?>('session_status',
+              params: {'device_id': deviceId, 'platform': p.platform, 'device_class': p.deviceClass});
+          final will = ((status as Map?)?['will_replace'] as List<Object?>?) ?? const [];
+          final devices = [for (final w in will) SessionInfo.fromJson((w! as Map).cast<String, Object?>())];
+          _pendingSession = session;
+          return (switched: true, willReplace: devices);
+        } finally {
+          await verification.dispose();
+        }
       });
 
-  @override
-  Future<void> finishSwitch() async {
-    await _resetLocal();
-    await sync.resume(reset: true);
+  Future<void> _activate(Session session, {required bool replaceData}) async {
+    await sync.pause();
+    try {
+      if (session.isExpired || session.refreshToken == null) throw const AccountException(AccountError.invalidCode);
+      if (replaceData) {
+        await _resetLocal();
+        await client.auth.recoverSession(jsonEncode(session.toJson()));
+      } else {
+        await client.auth.setSession(session.refreshToken!, accessToken: session.accessToken);
+      }
+    } finally {
+      await sync.resume(reset: true);
+    }
   }
 
   @override
+  Future<void> finishSwitch() => _guard(() async {
+        final session = _pendingSession;
+        if (session == null) throw const AccountException(AccountError.invalidCode);
+        _pendingSession = null;
+        await _activate(session, replaceData: true);
+      });
+
+  @override
   Future<void> cancelSwitch() async {
-    await client.auth.signOut();
-    await sync.resume(reset: true);
+    _pendingSession = null;
   }
 
   @override

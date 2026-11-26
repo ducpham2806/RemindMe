@@ -19,7 +19,7 @@ late InMemoryNotificationScheduler testOs;
 
 /// App với DB in-memory. Trả container để test đọc repo/DB.
 Future<ProviderContainer> pumpApp(WidgetTester tester,
-    {required Size size, Locale? locale, double textScale = 1.0, String? region = 'US', Future<void> Function(ItemsRepository repo)? seed,
+    {required Size size, Locale? locale, double textScale = 1.0, String? region = 'US', DateTime Function()? now, Future<void> Function(ItemsRepository repo)? seed,
     NotificationHealth health = const NotificationHealth(notificationsAllowed: true), Stream<NotificationTap>? taps,
     List<Override> overrides = const [], OriginalsStore? originals}) async {
   testOs = InMemoryNotificationScheduler(maxPending: 60, healthValue: health);
@@ -34,11 +34,11 @@ Future<ProviderContainer> pumpApp(WidgetTester tester,
   final container = ProviderContainer(overrides: [
     appDatabaseProvider.overrideWithValue(db),
     deviceIdProvider.overrideWithValue('test-device'),
-    deviceTimeZoneProvider.overrideWithValue('Asia/Ho_Chi_Minh'),
+    initialDeviceTimeZoneProvider.overrideWithValue('Asia/Ho_Chi_Minh'),
     deviceRegionProvider.overrideWithValue(region),
     notificationSchedulerProvider.overrideWithValue(testOs),
     notificationTapsProvider.overrideWithValue(taps ?? const Stream.empty()),
-    nowProvider.overrideWithValue(() => testNow),
+    nowProvider.overrideWithValue(now ?? () => testNow),
     originalsStoreProvider.overrideWithValue(originals ?? MemoryOriginalsStore()),
     ...overrides,
   ]);

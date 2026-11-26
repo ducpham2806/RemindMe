@@ -193,7 +193,7 @@ class ReminderPlanner {
     final out = <int, PlannedNotification>{};
 
     void add(PlannedNotification n) {
-      if (!n.fireAt.isAfter(now) || n.fireAt.isAfter(end)) return;
+      if (!n.fireAt.isAfter(now)) return;
       final q = quietHours;
       if (q != null && !n.isAlarm && q.covers(TimeZones.toWall(n.fireAt, deviceTz).time!)) n = n._withSilent(true);
       final prev = out[n.notificationId];
@@ -229,9 +229,9 @@ class ReminderPlanner {
           // data-model.md: `offset_minutes` âm = trước giờ của item (-120 = 2 giờ trước), dương = sau.
           final off = Duration(minutes: r.offsetMinutes ?? 0);
           // Lần có giờ kêu (giờ lần + offset) trong cửa sổ [now, end]: lần nằm trong [now - offset, end - offset].
-          final from = off.isNegative ? now : now.subtract(off);
-          final to = off.isNegative ? end.subtract(off) : end;
-          for (final o in occurrences(item, from, to)) {
+          final from = now.subtract(off);
+          final to = end.subtract(off);
+          for (final o in expandOccurrences(item, from, to, deviceTz: deviceTz, allDayTime: allDayTime, includeDistantSingle: true)) {
             if (handledOccurrences.contains((item.id, o.at.millisecondsSinceEpoch))) continue;
             final t = texts.forOccurrence(item, o.at, r.offsetMinutes ?? 0);
             add(PlannedNotification(
@@ -251,7 +251,7 @@ class ReminderPlanner {
     if (sorted.length <= maxPending) {
       return PlanResult(sorted, truncated: false, horizonEnd: end, dropped: 0);
     }
-    final strict = maxPending < strictLimit;
+    final strict = maxPending > 1 && maxPending < strictLimit;
     final keep = sorted.take(strict ? maxPending - 1 : maxPending).toList();
     if (strict) {
       final t = texts.fallback();
@@ -293,7 +293,8 @@ class Occurrence {
 
 /// Các lần của [item] có [Occurrence.base] trong [from, to] (UTC).
 /// Múi giờ: `tz` của item nếu `fixed`, [deviceTz] nếu `floating` hoặc item cả ngày (reminder-engine.md §5).
-List<Occurrence> expandOccurrences(PlannerItem item, DateTime from, DateTime to, {required String deviceTz, required CivilTime allDayTime}) {
+List<Occurrence> expandOccurrences(PlannerItem item, DateTime from, DateTime to, {required String deviceTz, required CivilTime allDayTime, bool includeDistantSingle = false}) {
+  bool inRange(DateTime base) => !base.isBefore(from) && ((includeDistantSingle && item.recurrence == null) || !base.isAfter(to));
   final allDay = item.allDay || item.startsAt == null;
   final zone = allDay || item.timeMode == 'floating' || item.tz == null ? deviceTz : item.tz!;
   final CivilDateTime start;
@@ -301,7 +302,7 @@ List<Occurrence> expandOccurrences(PlannerItem item, DateTime from, DateTime to,
     if (item.recurrence == null && item.timeMode != 'floating') {
       final s = item.startsAt!;
       final o = Occurrence(at: s, base: s, date: TimeZones.toWall(s, item.tz ?? deviceTz).date, allDay: false);
-      return !s.isBefore(from) && !s.isAfter(to) ? [o] : const [];
+      return inRange(s) ? [o] : const [];
     }
     start = TimeZones.toWall(item.startsAt!, item.tz ?? deviceTz);
   } else if (item.startDate != null) {
@@ -320,16 +321,16 @@ List<Occurrence> expandOccurrences(PlannerItem item, DateTime from, DateTime to,
     return Occurrence(at: r.utc, base: r.utc, date: w.date, allDay: false, dstAdjusted: r.dstAdjusted);
   }
 
-  bool inRange(Occurrence o) => !o.base.isBefore(from) && !o.base.isAfter(to);
+
   final rec = item.recurrence;
   if (rec == null) {
     final o = make(start);
-    return inRange(o) ? [o] : const [];
+    return inRange(o.base) ? [o] : const [];
   }
   final fromDate = TimeZones.toWall(from, zone).date.addDays(-1);
   final toDate = TimeZones.toWall(to, zone).date.addDays(1);
   return [
     for (final w in rec.between(allDay ? CivilDateTime(start.date) : start, fromDate, toDate, exdates: item.exdates))
-      if (make(w) case final o when inRange(o)) o,
+      if (make(w) case final o when inRange(o.base)) o,
   ];
 }

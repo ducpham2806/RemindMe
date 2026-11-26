@@ -135,13 +135,19 @@ class SyncEngine {
 
   /// Lỗi khóa ngoại của Postgres: hàng cha (chuyến, item) chưa có trên server.
   static const _fkViolation = '23503';
+  static const _rejectedTripsKey = 'push_rejected_trips';
 
   Future<void> _push(SyncReport report) async {
     // Lượt 1 hoãn lỗi khóa ngoại: chúng thường do hàng cha bị từ chối trong cùng lượt (chuyến vượt hạn mức → item trỏ
     // `trip_id` tới chuyến đó → nhắc/booking_details của item). Sửa xong hàng cha thì gửi lại 1 lần, lượt 2 ghi lỗi như thường.
     final pass = _PushPass();
+    final savedTrips = await _getState(_rejectedTripsKey);
+    if (savedTrips != null) pass.rejectedTrips.addAll((jsonDecode(savedTrips) as List<Object?>).cast<String>());
+    // Chỉ con trỏ của lượt quét nằm trong RAM. Các mutation đang chờ cha vẫn ở nguyên trong outbox.
+    var afterSeq = 0;
     while (true) {
       final batch = await (db.select(db.outbox)
+            ..where((o) => o.seq.isBiggerThanValue(afterSeq))
             ..orderBy([(o) => OrderingTerm.asc(o.seq)])
             ..limit(pushBatchSize))
           .get();
@@ -149,10 +155,17 @@ class SyncEngine {
         if (!pass.retried && pass.rejectedTrips.isNotEmpty) {
           await _detachRejectedTrips(pass, report);
           pass.retried = true;
+          afterSeq = 0;
           continue;
         }
-        for (final (m, r) in pass.deferred) {
-          await _recordIssue(m, r, report);
+        if (pass.deferred.isNotEmpty) {
+          await db.transaction(() async {
+            for (final entry in pass.deferred.entries) {
+              final (m, r) = entry.value;
+              await _recordIssue(m, r, report);
+              await (db.delete(db.outbox)..where((o) => o.seq.equals(entry.key))).go();
+            }
+          });
         }
         return;
       }
@@ -164,18 +177,25 @@ class SyncEngine {
         await _bumpAttempts(batch);
         rethrow;
       }
+      if (results.length != batch.length) throw const SyncException(SyncErrorCode.invalidBatch, 'Incomplete push response');
+      final tripCount = pass.rejectedTrips.length;
       final pendingAfter = await _pendingFields(afterSeq: batch.last.seq);
       await db.transaction(() async {
         for (var i = 0; i < results.length; i++) {
-          await _applyResult(mutations[i], results[i], report, pendingAfter, pass);
+          await _applyResult(batch[i].seq, mutations[i], results[i], report, pendingAfter, pass);
         }
-        await (db.delete(db.outbox)..where((o) => o.seq.isIn(batch.map((e) => e.seq)))).go();
+        if (pass.rejectedTrips.length != tripCount) {
+          await _setState(_rejectedTripsKey, jsonEncode(pass.rejectedTrips.toList()));
+        }
+        final finished = batch.map((e) => e.seq).where((seq) => !pass.deferred.containsKey(seq));
+        await (db.delete(db.outbox)..where((o) => o.seq.isIn(finished))).go();
       });
+      afterSeq = batch.last.seq;
       report.pushed += results.length;
     }
   }
 
-  Future<void> _applyResult(Mutation m, MutationResult r, SyncReport report, Set<String> pendingAfter, _PushPass pass) async {
+  Future<void> _applyResult(int seq, Mutation m, MutationResult r, SyncReport report, Set<String> pendingAfter, _PushPass pass) async {
     final row = r.serverRow;
     // Trường bị kẹp: clock local (ở tương lai) phải nhường clock server, nếu không bản sửa đúng giờ từ máy khác
     // sẽ không bao giờ thắng ở máy này. Bỏ qua trường còn bản sửa mới hơn đang chờ trong outbox.
@@ -188,7 +208,7 @@ class SyncEngine {
     if (r.status == MutationStatus.ok) return;
     if (!pass.retried) {
       if (r.status == MutationStatus.invalid && r.error == _fkViolation) {
-        pass.deferred.add((m, r));
+        pass.deferred[seq] = (m, r);
         return;
       }
       if (m.table == SyncTable.trips && r.status == MutationStatus.quotaExceeded && await _neverSynced(SyncTable.trips, m.id)) {
@@ -215,8 +235,14 @@ class SyncEngine {
   Future<void> _detachRejectedTrips(_PushPass pass, SyncReport report) => db.transaction(() async {
         final trips = pass.rejectedTrips.toList();
         final nowMs = _now().millisecondsSinceEpoch;
-        final unlink = clock.send().pack();
+
         final members = await (db.select(db.items)..where((t) => t.tripId.isIn(trips))).get();
+        // Sau khi mở lại app, HLC mới phải vượt bản sửa trip_id bền vững trước đó.
+        for (final i in members) {
+          final stamp = (jsonDecode(i.fieldClock) as Map<String, Object?>)['trip_id'] as String?;
+          if (stamp != null) clock.receive(Hlc.parse(stamp));
+        }
+        final unlink = clock.send().pack();
         for (final i in members) {
           await _mergeIntoLocal(SyncTable.items, {'id': i.id, 'trip_id': null}, {'trip_id': unlink}, fromServer: false);
         }
@@ -227,10 +253,15 @@ class SyncEngine {
           updates: {tripsCodec.table},
         );
         report.rejectedTrips.addAll(trips);
-        final retry = [...pass.deferred]..sort((a, b) => a.$1.table.index.compareTo(b.$1.table.index));
+        final retry = pass.deferred.entries.toList()..sort((a, b) {
+          final byTable = a.value.$1.table.index.compareTo(b.value.$1.table.index);
+          return byTable != 0 ? byTable : a.key.compareTo(b.key);
+        });
         pass.deferred.clear();
         final unlinked = {for (final i in members) i.id};
-        for (final (m, _) in retry) {
+        for (final entry in retry) {
+          final m = entry.value.$1;
+          await (db.delete(db.outbox)..where((o) => o.seq.equals(entry.key))).go();
           final payload = {...m.payload}, clocks = {...m.fieldClock};
           if (m.table == SyncTable.items && trips.contains(payload['trip_id'])) {
             payload['trip_id'] = null;
@@ -239,6 +270,7 @@ class SyncEngine {
           }
           await _enqueue(Mutation(table: m.table, id: m.id, op: m.op, payload: payload, fieldClock: clocks, baseClock: m.baseClock));
         }
+        await (db.delete(db.syncState)..where((s) => s.key.equals(_rejectedTripsKey))).go();
         // Item đã có trên server mà mutation gắn vào chuyến không nằm trong lượt này: gửi riêng việc gỡ `trip_id`.
         for (final id in unlinked) {
           if (!await _neverSynced(SyncTable.items, id)) {
@@ -397,6 +429,6 @@ class SyncEngine {
 /// Trạng thái 1 lần push (có thể 2 lượt).
 class _PushPass {
   bool retried = false;
-  final List<(Mutation, MutationResult)> deferred = [];
+  final Map<int, (Mutation, MutationResult)> deferred = {};
   final Set<String> rejectedTrips = {};
 }

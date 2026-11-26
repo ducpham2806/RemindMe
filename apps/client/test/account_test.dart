@@ -7,6 +7,7 @@ import 'package:remindme_client/data/remote/account.dart';
 import 'package:remindme_client/data/remote/remote_sync.dart';
 
 import 'helpers.dart';
+import 'quick_add_test.dart' show openQuickAdd;
 
 const phone = Size(390, 844);
 
@@ -14,7 +15,7 @@ class FakeAccount implements AccountApi {
   FakeAccount({this.info = const AccountInfo(userId: 'anon', isAnonymous: true), this.mode = OtpMode.link, this.switchTo});
   AccountInfo? info;
   final OtpMode mode;
-  /// Email đã có tài khoản: xác nhận mã thì sang user này.
+  /// Tài khoản được kích hoạt sau khi người dùng đồng ý đổi.
   final AccountInfo? switchTo;
   final _changes = StreamController<AccountInfo?>.broadcast();
   final calls = <String>[];
@@ -46,12 +47,15 @@ class FakeAccount implements AccountApi {
       _set(AccountInfo(userId: info!.userId, email: email, isAnonymous: false));
       return (switched: false, willReplace: const <SessionInfo>[]);
     }
-    _set(switchTo);
+
     return (switched: true, willReplace: const [SessionInfo(id: 's1', deviceModel: 'Pixel 9', active: true, current: false)]);
   }
 
   @override
-  Future<void> finishSwitch() async => calls.add('finish');
+  Future<void> finishSwitch() async {
+    calls.add('finish');
+    _set(switchTo);
+  }
   @override
   Future<void> cancelSwitch() async => calls.add('cancel');
   @override
@@ -136,6 +140,35 @@ void main() {
     await tester.pumpAndSettle();
     expect(fake.calls.last, 'finish');
     expect(find.text('Signed in. Loading your data…'), findsOneWidget);
+  });
+
+  testWidgets('OTP đăng nhập sai: quay lại Hôm nay và lưu việc mới', (tester) async {
+    final fake = FakeAccount(mode: OtpMode.signIn);
+    await pumpApp(tester, size: phone, overrides: [accountProvider.overrideWithValue(fake)]);
+    await openAccount(tester);
+    await tester.tap(find.byKey(const Key('accountSignIn')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('loginEmail')), 'lan@example.com');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('loginSend')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('verifyCode')), '000000');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('verifyConfirm')));
+    await tester.pumpAndSettle();
+    expect(find.text('That code is wrong or has expired.'), findsOneWidget);
+    // Quay lại từ màn mã OTP qua đăng nhập, tài khoản rồi về tab Tôi.
+    for (var i = 0; i < 3; i++) {
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.byKey(const Key('nav-0')));
+    await tester.pumpAndSettle();
+    await openQuickAdd(tester, 'Buy apples');
+    await tester.tap(find.byKey(const Key('quickAddSave')));
+    await tester.pumpAndSettle();
+    expect(find.text('Buy apples'), findsOneWidget);
+    expect(fake.current?.userId, 'anon');
   });
 
   testWidgets('đăng xuất có xác nhận', (tester) async {

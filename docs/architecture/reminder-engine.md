@@ -10,8 +10,8 @@ sau sync pull, khi nhận silent push, BGAppRefresh/WorkManager, `BOOT_COMPLETED
 **đổi ngôn ngữ app** (nội dung thông báo đã lập lịch là chuỗi đã dịch, nên phải lập lại) và đổi định dạng 12/24h.
 
 ```
-1. occurrences = expand(all active reminders, from=now, to=now+HORIZON)   # HORIZON = 14 ngày
-2. sort theo occurrence_at; lấy N đầu tiên                                # iOS N = 60 (chừa 4 slot), Android N = 500
+1. Trải chuỗi lặp trong 14 ngày tới. Thêm các nhắc một lần, mốc tuyệt đối và lần hoãn còn ở tương lai, kể cả ngoài 14 ngày.
+2. Sắp theo giờ kêu thực tế; lấy N đầu tiên                                # iOS N = 60 (chừa 4 slot), Android N = 500
 3. diff với bảng scheduled_notifications:
      - cái thừa: cancel; cái thiếu: schedule; cái đổi giờ/nội dung: cancel + schedule
 4. nếu bị cắt (còn occurrence sau N), chỉ iOS:
@@ -26,7 +26,7 @@ ID thông báo xác định (deterministic): `hash(reminder_id + occurrence_at)`
 
 **Code (S3):** `packages/data/lib/src/reminders/` (`planner.dart` hàm thuần + `expandOccurrences` dùng chung với màn Hôm nay;
 `scheduler.dart` đọc DB, diff với `scheduled_notifications`; `actions.dart` nút Xong/Hoãn), `packages/core/lib/src/tz.dart` (giờ tường ↔ UTC).
-App: `apps/client/lib/data/reminder_binding.dart` (lập lại khi DB đổi, app mở lại, đổi ngôn ngữ/12-24h; hỏi quyền 1 lần khi có nhắc đầu tiên),
+App: `apps/client/lib/data/reminder_binding.dart` (lập lại khi DB đổi, app mở lại, qua nửa đêm hoặc đổi ngôn ngữ/12-24h; đọc lại múi giờ khi trở lại và lúc sang ngày mới; hỏi quyền 1 lần khi có nhắc đầu tiên),
 `lib/platform/local_notifications.dart` (adapter `flutter_local_notifications`), `lib/platform/notification_background.dart` (nút bấm khi app tắt).
 FNV-1a 32 bit, lấy 31 bit dương (Android dùng int32). Khóa của lần cả ngày là 00:00 theo múi giờ, giờ kêu là giờ mặc định của người dùng.
 
